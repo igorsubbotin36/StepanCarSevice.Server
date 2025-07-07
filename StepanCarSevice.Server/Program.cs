@@ -5,6 +5,8 @@ using NLog;
 using NLog.Web;
 using StepanCarSevice.Server.DbContexts;
 using StepanCarSevice.Server.Auth;
+using StepanCarSevice.Server.Repository.Interfaces;
+using StepanCarSevice.Server.Repository.PostgreRepository;
 var logger = LogManager.Setup().GetCurrentClassLogger();
 logger.Debug("Start program");
 try
@@ -45,7 +47,7 @@ try
                 ValidateIssuerSigningKey = true,
             };
         });
-
+    builder.Services.AddScoped<IUserRepository, UserRepository>();
     var app = builder.Build();
     using (var scope = app.Services.CreateScope())
     {
