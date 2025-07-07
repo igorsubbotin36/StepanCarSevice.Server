@@ -19,7 +19,7 @@ try
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     builder.Services.AddOpenApi();
     builder.Services.AddSwaggerGen();
-    string connectionString = "host=localhost;port=5432;database=CarService;User Id=postgres;password=q1w2e3r4";
+    string connectionString = builder.Configuration.GetConnectionString("PostgreSQL");
     builder.Services.AddDbContext<PostgreDbContext>(options => options.UseNpgsql(connectionString));
     builder.Logging.ClearProviders();
     builder.Host.UseNLog();
