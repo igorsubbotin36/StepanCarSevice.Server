@@ -11,8 +11,8 @@ using StepanCarSevice.Server.DbContexts;
 namespace StepanCarSevice.Server.Migrations
 {
     [DbContext(typeof(PostgreDbContext))]
-    [Migration("20250627103226_ChangedTadbleUser")]
-    partial class ChangedTadbleUser
+    [Migration("20250707130723_Init2")]
+    partial class Init2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -111,9 +111,6 @@ namespace StepanCarSevice.Server.Migrations
                     b.Property<bool>("InStock")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("ModelId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -171,7 +168,6 @@ namespace StepanCarSevice.Server.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("FirstName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Password")
@@ -179,7 +175,6 @@ namespace StepanCarSevice.Server.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Phone")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Role")
@@ -187,7 +182,6 @@ namespace StepanCarSevice.Server.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("SecondName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
