@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using StepanCarSevice.Server.Controllers;
 using StepanCarSevice.Server.DbContexts;
 using StepanCarSevice.Server.Entities;
-using StepanCarSevice.Server.Migrations;
 using StepanCarSevice.Server.Models;
 using StepanCarSevice.Server.Repository.Interfaces;
 using EditUserModel = StepanCarSevice.Server.Models.EditUserModel;

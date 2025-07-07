@@ -6,7 +6,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace StepanCarSevice.Server.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class Init2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -32,11 +32,12 @@ namespace StepanCarSevice.Server.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    FirstName = table.Column<string>(type: "text", nullable: false),
-                    SecondName = table.Column<string>(type: "text", nullable: false),
+                    FirstName = table.Column<string>(type: "text", nullable: true),
+                    SecondName = table.Column<string>(type: "text", nullable: true),
                     Email = table.Column<string>(type: "text", nullable: false),
                     Password = table.Column<string>(type: "text", nullable: false),
-                    Phone = table.Column<string>(type: "text", nullable: false)
+                    Phone = table.Column<string>(type: "text", nullable: true),
+                    Role = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -125,7 +126,6 @@ namespace StepanCarSevice.Server.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Code = table.Column<string>(type: "text", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    ModelId = table.Column<int>(type: "integer", nullable: false),
                     CarModelId = table.Column<int>(type: "integer", nullable: false),
                     Price = table.Column<decimal>(type: "numeric", nullable: false),
                     InStock = table.Column<bool>(type: "boolean", nullable: false),

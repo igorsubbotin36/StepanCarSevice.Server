@@ -108,9 +108,6 @@ namespace StepanCarSevice.Server.Migrations
                     b.Property<bool>("InStock")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("ModelId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
