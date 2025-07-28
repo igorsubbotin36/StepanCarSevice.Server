@@ -47,7 +47,10 @@ try
                 ValidateIssuerSigningKey = true,
             };
         });
+
     builder.Services.AddScoped<IUserRepository, UserRepository>();
+    builder.Services.AddScoped<IDetailRepository, DetailRepository>();
+
     var app = builder.Build();
     using (var scope = app.Services.CreateScope())
     {

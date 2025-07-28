@@ -8,8 +8,8 @@ namespace StepanCarSevice.Server.Repository.Interfaces
         public Task<List<Detail>> GetDetailByCode(string code);
         public Task<List<Detail>> GetAllDetails();
         public Task<Detail?> GetDetailById(int id);
-        public Task<bool> AddDetail(Detail detail);
+        public Task<bool> AddDetail(DetailAddingModel detail);
         public Task<bool> EditDetail(Detail detail);
-        public Task<bool> DeleteDetail(int id);
+        public Task<bool> DeleteDetails(int[] id);
     }
 }
