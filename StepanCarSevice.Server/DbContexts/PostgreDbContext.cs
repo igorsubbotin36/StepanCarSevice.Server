@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StepanCarSevice.Server.Entities;
+using StepanCarService.Server.Entities;
 
-namespace StepanCarSevice.Server.DbContexts
+namespace StepanCarService.Server.DbContexts
 {
     public partial class PostgreDbContext : DbContext
     {

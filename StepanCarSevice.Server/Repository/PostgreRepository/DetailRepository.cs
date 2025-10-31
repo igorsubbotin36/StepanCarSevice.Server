@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StepanCarSevice.Server.DbContexts;
-using StepanCarSevice.Server.Entities;
-using StepanCarSevice.Server.Repository.Interfaces;
+using StepanCarService.Server.DbContexts;
+using StepanCarService.Server.Entities;
+using StepanCarService.Server.Repository.Interfaces;
 
-namespace StepanCarSevice.Server.Repository.PostgreRepository
+namespace StepanCarService.Server.Repository.PostgreRepository
 {
     public class DetailRepository : IDetailRepository
     {

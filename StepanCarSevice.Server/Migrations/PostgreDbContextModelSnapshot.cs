@@ -3,11 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using StepanCarSevice.Server.DbContexts;
+using StepanCarService.Server.DbContexts;
 
 #nullable disable
 
-namespace StepanCarSevice.Server.Migrations
+namespace StepanCarService.Server.Migrations
 {
     [DbContext(typeof(PostgreDbContext))]
     partial class PostgreDbContextModelSnapshot : ModelSnapshot
@@ -21,7 +21,7 @@ namespace StepanCarSevice.Server.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("StepanCarSevice.Server.Entities.Car", b =>
+            modelBuilder.Entity("StepanCarService.Server.Entities.Car", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -55,7 +55,7 @@ namespace StepanCarSevice.Server.Migrations
                     b.ToTable("Cars");
                 });
 
-            modelBuilder.Entity("StepanCarSevice.Server.Entities.CarModel", b =>
+            modelBuilder.Entity("StepanCarService.Server.Entities.CarModel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -90,7 +90,7 @@ namespace StepanCarSevice.Server.Migrations
                     b.ToTable("CarModels");
                 });
 
-            modelBuilder.Entity("StepanCarSevice.Server.Entities.Detail", b =>
+            modelBuilder.Entity("StepanCarService.Server.Entities.Detail", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -127,7 +127,7 @@ namespace StepanCarSevice.Server.Migrations
                     b.ToTable("Details");
                 });
 
-            modelBuilder.Entity("StepanCarSevice.Server.Entities.Manufacture", b =>
+            modelBuilder.Entity("StepanCarService.Server.Entities.Manufacture", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -152,7 +152,7 @@ namespace StepanCarSevice.Server.Migrations
                     b.ToTable("Manufactures");
                 });
 
-            modelBuilder.Entity("StepanCarSevice.Server.Entities.User", b =>
+            modelBuilder.Entity("StepanCarService.Server.Entities.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -186,7 +186,7 @@ namespace StepanCarSevice.Server.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("StepanCarSevice.Server.Entities.Visit", b =>
+            modelBuilder.Entity("StepanCarService.Server.Entities.Visit", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -210,7 +210,7 @@ namespace StepanCarSevice.Server.Migrations
                     b.ToTable("Visits");
                 });
 
-            modelBuilder.Entity("StepanCarSevice.Server.Entities.Work", b =>
+            modelBuilder.Entity("StepanCarService.Server.Entities.Work", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -235,15 +235,15 @@ namespace StepanCarSevice.Server.Migrations
                     b.ToTable("Works");
                 });
 
-            modelBuilder.Entity("StepanCarSevice.Server.Entities.Car", b =>
+            modelBuilder.Entity("StepanCarService.Server.Entities.Car", b =>
                 {
-                    b.HasOne("StepanCarSevice.Server.Entities.CarModel", "CarModel")
+                    b.HasOne("StepanCarService.Server.Entities.CarModel", "CarModel")
                         .WithMany()
                         .HasForeignKey("CarModelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("StepanCarSevice.Server.Entities.User", "Owner")
+                    b.HasOne("StepanCarService.Server.Entities.User", "Owner")
                         .WithMany()
                         .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -254,9 +254,9 @@ namespace StepanCarSevice.Server.Migrations
                     b.Navigation("Owner");
                 });
 
-            modelBuilder.Entity("StepanCarSevice.Server.Entities.CarModel", b =>
+            modelBuilder.Entity("StepanCarService.Server.Entities.CarModel", b =>
                 {
-                    b.HasOne("StepanCarSevice.Server.Entities.Manufacture", "Manufacture")
+                    b.HasOne("StepanCarService.Server.Entities.Manufacture", "Manufacture")
                         .WithMany()
                         .HasForeignKey("ManufactureId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -265,24 +265,24 @@ namespace StepanCarSevice.Server.Migrations
                     b.Navigation("Manufacture");
                 });
 
-            modelBuilder.Entity("StepanCarSevice.Server.Entities.Detail", b =>
+            modelBuilder.Entity("StepanCarService.Server.Entities.Detail", b =>
                 {
-                    b.HasOne("StepanCarSevice.Server.Entities.CarModel", "CarModel")
+                    b.HasOne("StepanCarService.Server.Entities.CarModel", "CarModel")
                         .WithMany()
                         .HasForeignKey("CarModelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("StepanCarSevice.Server.Entities.Visit", null)
+                    b.HasOne("StepanCarService.Server.Entities.Visit", null)
                         .WithMany("UsedDetails")
                         .HasForeignKey("VisitId");
 
                     b.Navigation("CarModel");
                 });
 
-            modelBuilder.Entity("StepanCarSevice.Server.Entities.Visit", b =>
+            modelBuilder.Entity("StepanCarService.Server.Entities.Visit", b =>
                 {
-                    b.HasOne("StepanCarSevice.Server.Entities.Car", "Car")
+                    b.HasOne("StepanCarService.Server.Entities.Car", "Car")
                         .WithMany()
                         .HasForeignKey("CarId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -291,14 +291,14 @@ namespace StepanCarSevice.Server.Migrations
                     b.Navigation("Car");
                 });
 
-            modelBuilder.Entity("StepanCarSevice.Server.Entities.Work", b =>
+            modelBuilder.Entity("StepanCarService.Server.Entities.Work", b =>
                 {
-                    b.HasOne("StepanCarSevice.Server.Entities.Visit", null)
+                    b.HasOne("StepanCarService.Server.Entities.Visit", null)
                         .WithMany("Works")
                         .HasForeignKey("VisitId");
                 });
 
-            modelBuilder.Entity("StepanCarSevice.Server.Entities.Visit", b =>
+            modelBuilder.Entity("StepanCarService.Server.Entities.Visit", b =>
                 {
                     b.Navigation("UsedDetails");
 

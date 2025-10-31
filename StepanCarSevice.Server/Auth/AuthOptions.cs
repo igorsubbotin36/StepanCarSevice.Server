@@ -1,7 +1,7 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-namespace StepanCarSevice.Server.Auth
+namespace StepanCarService.Server.Auth
 {
     public class AuthOptions
     {

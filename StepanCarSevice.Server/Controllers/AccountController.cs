@@ -1,39 +1,50 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using StepanCarSevice.Server.Auth;
-using StepanCarSevice.Server.DbContexts;
-using StepanCarSevice.Server.Entities;
-using StepanCarSevice.Server.Models;
-using StepanCarSevice.Server.Repository.Interfaces;
+using StepanCarService.Server.Auth;
+using StepanCarService.Server.Entities;
+using StepanCarService.Server.Models;
+using StepanCarService.Server.Repository.Interfaces;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using Microsoft.Extensions.Options;
+using System.Text;
 
-namespace StepanCarSevice.Server.Controllers
+using StepanCarService.Server.Models.Dto;
+
+namespace StepanCarService.Server.Controllers
 {
-    public class AccountController : Controller
+    [ApiController]
+    [Route("api/[controller]")]
+    public class AccountController : ControllerBase
     {
         private readonly ILogger<AccountController> _logger;
-        private readonly PostgreDbContext _dbContext;
         private readonly IUserRepository _rep;
-        public AccountController(IUserRepository rep, ILogger<AccountController> logger, PostgreDbContext db)
+        private readonly IPasswordHasher _passwordHasher;
+        private readonly JwtOptions _jwtOptions;
+        public AccountController(IUserRepository rep, ILogger<AccountController> logger, IPasswordHasher passwordHasher, IOptions<JwtOptions> jwtOptions)
         {
             _logger = logger;
-            _dbContext = db;
             _rep = rep;
+            _passwordHasher = passwordHasher;
+            _jwtOptions = jwtOptions.Value;
         }
-        [HttpPost("/register")]
-        public async Task<IActionResult> Register(RegisterModel model)
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
             if (await _rep.GetUserByPhone(model.Phone) != null)
             {
-                return BadRequest(new { errorText = "User with this email alrady exists" });
+                return Conflict(new { errorText = "Пользователь с таким телефоном уже существует" });
             }
             else if (model.Password != model.ConfirmPassword)
             {
-                return BadRequest(new { errorText = "Passwords don't match" });
+                return BadRequest(new { errorText = "Пароли не совпадают" });
             }
             if (await _rep.AddUser(model))
             {
@@ -41,89 +52,114 @@ namespace StepanCarSevice.Server.Controllers
             }
             else
             {
-                return BadRequest(new { errorText = "Something wrong" });
+                return StatusCode(500, new { errorText = "Произошла ошибка при регистрации" });
             }
         }
-        [HttpDelete("/deleteUser")]
+        [HttpDelete("deleteUser")]
         [Authorize(Roles = "admin, user")]
-        public async Task<IActionResult> DeleteUser(string phone)
+        public async Task<IActionResult> DeleteUser([FromQuery] string phone)
         {
-            string role = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Role).Value;
+            string role = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value;
+            if (string.IsNullOrEmpty(role)) return Unauthorized();
             if (role == "admin")
             {
+                var user = await _rep.GetUserByPhone(phone);
+                if (user == null)
+                {
+                    return NotFound(new { errorText = "Пользователь не найден" });
+                }
                 if (await _rep.DeleteUser(phone))
                 {
                     return Ok();
                 }
                 else
                 {
-                    return BadRequest(new { errorText = "Unable to delete user" });
+                    return StatusCode(500, new { errorText = "Не удалось удалить пользователя" });
                 }
             }
             else
             {
-                string phoneUser = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.MobilePhone).Value;
+                string phoneUser = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.MobilePhone)?.Value;
+                if (string.IsNullOrEmpty(phoneUser)) return Unauthorized();
                 if (phone == phoneUser)
                 {
+                    var user = await _rep.GetUserByPhone(phone);
+                    if (user == null)
+                    {
+                        return NotFound(new { errorText = "Пользователь не найден" });
+                    }
                     if (await _rep.DeleteUser(phone))
                     {
                         return Ok();
                     }
                     else
                     {
-                        return BadRequest(new { errorText = "Unable to delete user" });
+                        return StatusCode(500, new { errorText = "Не удалось удалить пользователя" });
                     }
                 }
                 else
                 {
-                    return BadRequest(new { errorText = "You haven't access to delete this user" });
+                    return Forbid();
                 }
             }
         }
 
-        [HttpGet("/getAllUsers")]
+        [HttpGet("getAllUsers")]
         [Authorize(Roles = "admin")]
-        public async Task<List<User>> GetAllUsers()
+        public async Task<IActionResult> GetAllUsers()
         {
-            return await _rep.GetAllUsers();
+            var users = await _rep.GetAllUsers();
+            var result = users.Select(u => new UserDto { Id = u.Id, FirstName = u.FirstName, SecondName = u.SecondName, Email = u.Email, Phone = u.Phone ?? string.Empty, Role = u.Role }).ToList();
+            return Ok(result);
         }
 
-        [HttpPatch("/changePassword")]
+        [HttpPatch("changePassword")]
         [Authorize(Roles = "admin, user")]
-        public async Task<IActionResult> ChangePassword(ChangePasswordModel passwordModel)
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto passwordModel)
         {
-            string phoneUser = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.MobilePhone).Value;
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
+            string phoneUser = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.MobilePhone)?.Value;
+            if (string.IsNullOrEmpty(phoneUser)) return Unauthorized();
             if (passwordModel.OldPassword != null 
                 && passwordModel.NewPassword != null
                 && passwordModel.ConfirmPassword != null
-                && passwordModel.NewPassword == passwordModel.ConfirmPassword
-                && _rep.GetUserByPhone(phoneUser).Result.Password == passwordModel.OldPassword)
+                && passwordModel.NewPassword == passwordModel.ConfirmPassword)
             {
-                if (await _rep.ChangePassword(passwordModel.NewPassword, phoneUser))
+                var user = await _rep.GetUserByPhone(phoneUser);
+                if (user != null && _passwordHasher.Verify(passwordModel.OldPassword, user.Password)
+                    && await _rep.ChangePassword(passwordModel.NewPassword, phoneUser))
                 {
                     return Ok();
                 }
                 else
                 {
-                    return BadRequest(new { errorText = "Can't change password" });
+                return BadRequest(new { errorText = "Не удалось сменить пароль" });
                 }
             }
             else
             {
-                return BadRequest(new { errorText = "Passwords don't match" });
+                return BadRequest(new { errorText = "Пароли не совпадают" });
             }
         }
 
-        [HttpPatch("/editProfile")]
+        [HttpPatch("editProfile")]
         [Authorize(Roles = "admin, user")]
-        public async Task<IActionResult> EditProfile(EditUserModel editModel)
+        public async Task<IActionResult> EditProfile([FromBody] EditUserDto editModel)
         {
-            string role = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Role).Value;
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
+            string role = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value;
+            if (string.IsNullOrEmpty(role)) return Unauthorized();
             if (role == "admin")
             {
                 if (await _rep.GetUserByPhone(editModel.Phone) != null)
                 {
-                    return BadRequest(new { errorText = "User with this phone already exists" });
+                    return Conflict(new { errorText = "Пользователь с таким телефоном уже существует" });
                 }
                 else if (await _rep.EditUser(editModel))
                 {
@@ -131,17 +167,18 @@ namespace StepanCarSevice.Server.Controllers
                 }
                 else
                 {
-                    return BadRequest(new { errorText = "Unable to edit user profile" });
+                    return StatusCode(500, new { errorText = "Не удалось изменить профиль пользователя" });
                 }
             }
             else
             {
-                string phoneUser = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.MobilePhone).Value;
+                string phoneUser = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.MobilePhone)?.Value;
+                if (string.IsNullOrEmpty(phoneUser)) return Unauthorized();
                 if (editModel.OldPhone == phoneUser)
                 {
                     if (await _rep.GetUserByPhone(editModel.Phone) != null)
                     {
-                        return BadRequest(new { errorText = "User with this phone already exists" });
+                        return Conflict(new { errorText = "Пользователь с таким телефоном уже существует" });
                     }
                     else if (await _rep.EditUser(editModel))
                     {
@@ -149,48 +186,52 @@ namespace StepanCarSevice.Server.Controllers
                     }
                     else
                     {
-                        return BadRequest(new { errorText = "Unable to edit user" });
+                        return StatusCode(500, new { errorText = "Не удалось изменить пользователя" });
                     }
                 }
                 else
                 {
-                    return BadRequest(new { errorText = "You haven't access to edit this user" });
+                    return Forbid();
                 }
             }
         }
 
-        [HttpPost("/login")]
-        public IActionResult Login(LoginModel model)
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDto model)
         {
-            var identity = GetIdentity(model.Phone, model.Password);
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
+            var identity = await GetIdentityAsync(model.Phone, model.Password);
             if (identity == null)
             {
-                return BadRequest(new { errorText = "Invalid username or password." });
+                return Unauthorized(new { errorText = "Неверный логин или пароль." });
             }
 
             var now = DateTime.UtcNow;
             // создаем JWT-токен
             var jwt = new JwtSecurityToken(
-                    issuer: AuthOptions.ISSUER,
-                    audience: AuthOptions.AUDIENCE,
+                    issuer: _jwtOptions.Issuer,
+                    audience: _jwtOptions.Audience,
                     notBefore: now,
                     claims: identity.Claims,
-                    expires: now.Add(TimeSpan.FromMinutes(AuthOptions.LIFETIME)),
-                    signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
+                    expires: now.Add(TimeSpan.FromMinutes(_jwtOptions.LifetimeMinutes)),
+                    signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key)), SecurityAlgorithms.HmacSha256));
             var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
 
-            var response = new
+            var response = new AuthResponseDto
             {
-                access_token = encodedJwt,
-                email = identity.Name
+                AccessToken = encodedJwt,
+                Phone = identity.FindFirst(ClaimTypes.MobilePhone)?.Value ?? string.Empty
             };
             _logger.LogInformation($@"Пользователь {model.Phone} залогинился");
-            return Json(response);
+            return Ok(response);
         }
-        private ClaimsIdentity GetIdentity(string phone, string password)
+        private async Task<ClaimsIdentity> GetIdentityAsync(string phone, string password)
         {
-            User person = _dbContext.Users.FirstOrDefault(x => x.Phone == phone && x.Password == password);
-            if (person != null)
+            var person = await _rep.GetUserByPhone(phone);
+            if (person != null && _passwordHasher.Verify(password, person.Password))
             {
                 var claims = new List<Claim>
                 {

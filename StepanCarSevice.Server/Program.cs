@@ -3,10 +3,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NLog;
 using NLog.Web;
-using StepanCarSevice.Server.DbContexts;
-using StepanCarSevice.Server.Auth;
-using StepanCarSevice.Server.Repository.Interfaces;
-using StepanCarSevice.Server.Repository.PostgreRepository;
+using StepanCarService.Server.DbContexts;
+using StepanCarService.Server.Auth;
+using StepanCarService.Server.Repository.Interfaces;
+using StepanCarService.Server.Repository.PostgreRepository;
+using Microsoft.Extensions.Options;
+using FluentValidation.AspNetCore;
+using FluentValidation;
 var logger = LogManager.Setup().GetCurrentClassLogger();
 logger.Debug("Start program");
 try
@@ -16,9 +19,13 @@ try
     // Add services to the container.
 
     builder.Services.AddControllers();
+    builder.Services.AddFluentValidationAutoValidation();
+    builder.Services.AddValidatorsFromAssemblyContaining<StepanCarService.Server.Models.Dto.RegisterDto>();
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     builder.Services.AddOpenApi();
     builder.Services.AddSwaggerGen();
+    builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
+    builder.Services.AddSingleton<IPasswordHasher, PasswordHasher>();
     string connectionString = builder.Configuration.GetConnectionString("PostgreSQL");
     builder.Services.AddDbContext<PostgreDbContext>(options => options.UseNpgsql(connectionString));
     builder.Logging.ClearProviders();
@@ -27,23 +34,18 @@ try
         .AddJwtBearer(options =>
         {
             options.RequireHttpsMetadata = false;
+            var jwtSection = builder.Configuration.GetSection("Jwt");
+            var issuer = jwtSection["Issuer"];
+            var audience = jwtSection["Audience"];
+            var key = jwtSection["Key"];
             options.TokenValidationParameters = new TokenValidationParameters
             {
-                // укзывает, будет ли валидироваться издатель при валидации токена
                 ValidateIssuer = true,
-                // строка, представляющая издателя
-                ValidIssuer = AuthOptions.ISSUER,
-
-                // будет ли валидироваться потребитель токена
+                ValidIssuer = issuer,
                 ValidateAudience = true,
-                // установка потребителя токена
-                ValidAudience = AuthOptions.AUDIENCE,
-                // будет ли валидироваться время существования
+                ValidAudience = audience,
                 ValidateLifetime = true,
-
-                // установка ключа безопасности
-                IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
-                // валидация ключа безопасности
+                IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(key)),
                 ValidateIssuerSigningKey = true,
             };
         });

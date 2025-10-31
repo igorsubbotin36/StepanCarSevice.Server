@@ -1,4 +1,4 @@
-﻿namespace StepanCarSevice.Server.Entities
+﻿namespace StepanCarService.Server.Entities
 {
     public class Car
     {

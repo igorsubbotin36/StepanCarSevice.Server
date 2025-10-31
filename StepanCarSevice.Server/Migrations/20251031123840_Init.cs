@@ -3,10 +3,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace StepanCarSevice.Server.Migrations
+namespace StepanCarService.Server.Migrations
 {
     /// <inheritdoc />
-    public partial class Init2 : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

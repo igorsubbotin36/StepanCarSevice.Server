@@ -1,7 +1,7 @@
-﻿using StepanCarSevice.Server.Entities;
-using StepanCarSevice.Server.Models;
+﻿using StepanCarService.Server.Entities;
+using StepanCarService.Server.Models;
 
-namespace StepanCarSevice.Server.Repository.Interfaces
+namespace StepanCarService.Server.Repository.Interfaces
 {
     public interface IDetailRepository
     {

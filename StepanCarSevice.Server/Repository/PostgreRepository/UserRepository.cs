@@ -1,29 +1,31 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using StepanCarSevice.Server.Controllers;
-using StepanCarSevice.Server.DbContexts;
-using StepanCarSevice.Server.Entities;
-using StepanCarSevice.Server.Models;
-using StepanCarSevice.Server.Repository.Interfaces;
-using EditUserModel = StepanCarSevice.Server.Models.EditUserModel;
+using StepanCarService.Server.Controllers;
+using StepanCarService.Server.DbContexts;
+using StepanCarService.Server.Entities;
+using StepanCarService.Server.Models.Dto;
+using StepanCarService.Server.Repository.Interfaces;
+using StepanCarService.Server.Auth;
 
-namespace StepanCarSevice.Server.Repository.PostgreRepository
+namespace StepanCarService.Server.Repository.PostgreRepository
 {
     public class UserRepository : IUserRepository
     {
         private readonly ILogger<UserRepository> _logger;
         private readonly PostgreDbContext _dbContext;
-        public UserRepository(ILogger<UserRepository> logger, PostgreDbContext dbContext)
+        private readonly IPasswordHasher _passwordHasher;
+        public UserRepository(ILogger<UserRepository> logger, PostgreDbContext dbContext, IPasswordHasher passwordHasher)
         {
             _logger = logger;
             _dbContext = dbContext;
+            _passwordHasher = passwordHasher;
         }
-        public async Task<bool> AddUser(RegisterModel model)
+        public async Task<bool> AddUser(RegisterDto model)
         {
             try
             {
                 User newUser = new User() { Email = model.Email, 
-                    Password = model.Password, 
+                    Password = _passwordHasher.Hash(model.Password), 
                     Role = "user", 
                     FirstName = model.FirstName,
                     SecondName = model.SecondName,
@@ -69,7 +71,7 @@ namespace StepanCarSevice.Server.Repository.PostgreRepository
                 return false;
             }
         }
-        private async Task<User> EditModelToUser(EditUserModel editModel)
+        private async Task<User> EditModelToUser(EditUserDto editModel)
         {
             User user = await GetUserByPhone(editModel.OldPhone);
             user.Email = editModel.Email != null ? editModel.Email : user.Email;
@@ -78,7 +80,7 @@ namespace StepanCarSevice.Server.Repository.PostgreRepository
             user.SecondName = editModel.SecondName != null ? editModel.SecondName : user.SecondName;
             return user;
         }
-        public async Task<bool> EditUser(EditUserModel editModel)
+        public async Task<bool> EditUser(EditUserDto editModel)
         {
             try
             {
@@ -99,7 +101,7 @@ namespace StepanCarSevice.Server.Repository.PostgreRepository
             try
             {
                 User user = await GetUserByPhone(phone);
-                user.Password = password;
+                user.Password = _passwordHasher.Hash(password);
                 _dbContext.Users.Update(user);
                 await _dbContext.SaveChangesAsync();
                 _logger.LogInformation($@"Пользователь с номером телефона {phone} сменил пароль");

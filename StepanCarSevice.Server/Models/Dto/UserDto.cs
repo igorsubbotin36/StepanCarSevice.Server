@@ -1,16 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
-
-namespace StepanCarService.Server.Entities
+namespace StepanCarService.Server.Models.Dto
 {
-    public class User
+    public class UserDto
     {
         public int Id { get; set; }
         public string? FirstName { get; set; }
         public string? SecondName { get; set; }
         public string Email { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-        public string? Phone { get; set; }
+        public string Phone { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
     }
 }
+
+

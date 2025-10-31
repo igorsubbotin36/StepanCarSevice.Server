@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using StepanCarSevice.Server.Entities;
-using StepanCarSevice.Server.Models;
+﻿using StepanCarService.Server.Entities;
+using StepanCarService.Server.Models.Dto;
 
-namespace StepanCarSevice.Server.Repository.Interfaces
+namespace StepanCarService.Server.Repository.Interfaces
 {
     public interface IUserRepository
     {
@@ -10,9 +9,9 @@ namespace StepanCarSevice.Server.Repository.Interfaces
         public Task<User?> GetUserByPhone(string phone);
         public Task<List<User>> GetAllUsers();
         public Task<User?> GetUserById(int id);
-        public Task<bool> AddUser(RegisterModel model);
-        public Task<bool> EditUser(EditUserModel editModel);
-        public Task<bool> DeleteUser(string email);
-        public Task<bool> ChangePassword(string password, string email);
+        public Task<bool> AddUser(RegisterDto model);
+        public Task<bool> EditUser(EditUserDto editModel);
+        public Task<bool> DeleteUser(string phone);
+        public Task<bool> ChangePassword(string password, string phone);
     }
 }
