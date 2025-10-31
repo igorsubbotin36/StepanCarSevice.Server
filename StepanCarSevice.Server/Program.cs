@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NLog;
 using NLog.Web;
-using StepanCarService.Server.DbContexts;
+using StepanCarSevice.Infrastructure.DbContexts;
+using StepanCarSevice.Infrastructure;
 using StepanCarService.Server.Auth;
-using StepanCarService.Server.Repository.Interfaces;
-using StepanCarService.Server.Repository.PostgreRepository;
+using StepanCarSevice.Application.Repository.Interfaces;
 using Microsoft.Extensions.Options;
 using FluentValidation.AspNetCore;
 using FluentValidation;
@@ -20,14 +20,12 @@ try
 
     builder.Services.AddControllers();
     builder.Services.AddFluentValidationAutoValidation();
-    builder.Services.AddValidatorsFromAssemblyContaining<StepanCarService.Server.Models.Dto.RegisterDto>();
+    builder.Services.AddValidatorsFromAssemblyContaining<StepanCarSevice.Application.Models.Dto.RegisterDto>();
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     builder.Services.AddOpenApi();
     builder.Services.AddSwaggerGen();
     builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
-    builder.Services.AddSingleton<IPasswordHasher, PasswordHasher>();
-    string connectionString = builder.Configuration.GetConnectionString("PostgreSQL");
-    builder.Services.AddDbContext<PostgreDbContext>(options => options.UseNpgsql(connectionString));
+    builder.Services.AddInfrastructure();
     builder.Logging.ClearProviders();
     builder.Host.UseNLog();
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -38,6 +36,10 @@ try
             var issuer = jwtSection["Issuer"];
             var audience = jwtSection["Audience"];
             var key = jwtSection["Key"];
+            if (string.IsNullOrWhiteSpace(issuer) || string.IsNullOrWhiteSpace(audience) || string.IsNullOrWhiteSpace(key))
+            {
+                throw new InvalidOperationException("Jwt configuration is missing required values.");
+            }
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
@@ -50,8 +52,7 @@ try
             };
         });
 
-    builder.Services.AddScoped<IUserRepository, UserRepository>();
-    builder.Services.AddScoped<IDetailRepository, DetailRepository>();
+    // Repositories and DbContext are registered via AddInfrastructure()
 
     var app = builder.Build();
     using (var scope = app.Services.CreateScope())

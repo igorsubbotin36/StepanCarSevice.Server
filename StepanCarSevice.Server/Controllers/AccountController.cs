@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using StepanCarSevice.Application.Auth;
 using StepanCarService.Server.Auth;
-using StepanCarService.Server.Entities;
-using StepanCarService.Server.Models;
-using StepanCarService.Server.Repository.Interfaces;
+using StepanCarSevice.Domain.Entities;
+using StepanCarSevice.Application.Repository.Interfaces;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -12,7 +12,7 @@ using System.Security.Claims;
 using Microsoft.Extensions.Options;
 using System.Text;
 
-using StepanCarService.Server.Models.Dto;
+using StepanCarSevice.Application.Models.Dto;
 
 namespace StepanCarService.Server.Controllers
 {
@@ -38,7 +38,7 @@ namespace StepanCarService.Server.Controllers
             {
                 return ValidationProblem(ModelState);
             }
-            if (await _rep.GetUserByPhone(model.Phone) != null)
+            if (!string.IsNullOrEmpty(model.Phone) && await _rep.GetUserByPhone(model.Phone) != null)
             {
                 return Conflict(new { errorText = "Пользователь с таким телефоном уже существует" });
             }
@@ -57,9 +57,10 @@ namespace StepanCarService.Server.Controllers
         }
         [HttpDelete("deleteUser")]
         [Authorize(Roles = "admin, user")]
-        public async Task<IActionResult> DeleteUser([FromQuery] string phone)
+        public async Task<IActionResult> DeleteUser([FromQuery] string? phone)
         {
-            string role = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value;
+            if (string.IsNullOrWhiteSpace(phone)) return BadRequest(new { errorText = "Телефон обязателен" });
+            string? role = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value;
             if (string.IsNullOrEmpty(role)) return Unauthorized();
             if (role == "admin")
             {
@@ -79,7 +80,7 @@ namespace StepanCarService.Server.Controllers
             }
             else
             {
-                string phoneUser = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.MobilePhone)?.Value;
+                string? phoneUser = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.MobilePhone)?.Value;
                 if (string.IsNullOrEmpty(phoneUser)) return Unauthorized();
                 if (phone == phoneUser)
                 {
@@ -121,7 +122,7 @@ namespace StepanCarService.Server.Controllers
             {
                 return ValidationProblem(ModelState);
             }
-            string phoneUser = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.MobilePhone)?.Value;
+            string? phoneUser = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.MobilePhone)?.Value;
             if (string.IsNullOrEmpty(phoneUser)) return Unauthorized();
             if (passwordModel.OldPassword != null 
                 && passwordModel.NewPassword != null
@@ -153,11 +154,11 @@ namespace StepanCarService.Server.Controllers
             {
                 return ValidationProblem(ModelState);
             }
-            string role = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value;
+            string? role = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value;
             if (string.IsNullOrEmpty(role)) return Unauthorized();
             if (role == "admin")
             {
-                if (await _rep.GetUserByPhone(editModel.Phone) != null)
+                if (!string.IsNullOrEmpty(editModel.Phone) && await _rep.GetUserByPhone(editModel.Phone) != null)
                 {
                     return Conflict(new { errorText = "Пользователь с таким телефоном уже существует" });
                 }
@@ -172,11 +173,11 @@ namespace StepanCarService.Server.Controllers
             }
             else
             {
-                string phoneUser = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.MobilePhone)?.Value;
+                string? phoneUser = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.MobilePhone)?.Value;
                 if (string.IsNullOrEmpty(phoneUser)) return Unauthorized();
                 if (editModel.OldPhone == phoneUser)
                 {
-                    if (await _rep.GetUserByPhone(editModel.Phone) != null)
+                    if (!string.IsNullOrEmpty(editModel.Phone) && await _rep.GetUserByPhone(editModel.Phone) != null)
                     {
                         return Conflict(new { errorText = "Пользователь с таким телефоном уже существует" });
                     }
@@ -228,14 +229,14 @@ namespace StepanCarService.Server.Controllers
             _logger.LogInformation($@"Пользователь {model.Phone} залогинился");
             return Ok(response);
         }
-        private async Task<ClaimsIdentity> GetIdentityAsync(string phone, string password)
+        private async Task<ClaimsIdentity?> GetIdentityAsync(string phone, string password)
         {
             var person = await _rep.GetUserByPhone(phone);
             if (person != null && _passwordHasher.Verify(password, person.Password))
             {
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.MobilePhone, person.Phone),
+                    new Claim(ClaimTypes.MobilePhone, person.Phone ?? string.Empty),
                     new Claim(ClaimTypes.Role, person.Role)
                 };
                 ClaimsIdentity claimsIdentity =

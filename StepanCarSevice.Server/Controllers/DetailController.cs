@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using StepanCarSevice.Server.Entities;
-using StepanCarSevice.Server.Models;
-using StepanCarSevice.Server.Repository.Interfaces;
+using StepanCarSevice.Domain.Entities;
+using StepanCarSevice.Application.Repository.Interfaces;
 using System.Formats.Asn1;
 
 namespace StepanCarSevice.Server.Controllers
@@ -52,11 +51,11 @@ namespace StepanCarSevice.Server.Controllers
             }
         }
 
-        [HttpDelete("/addDetail")]
+        [HttpPost("/addDetail")]
         [Authorize(Roles = "admin")]
-        public async Task<IActionResult> AddDetail(DetailAddingModel model)
+        public async Task<IActionResult> AddDetail(Detail detail)
         {
-            if (await _rep.AddDetail(model))
+            if (await _rep.AddDetail(detail))
             {
                 return Ok();
             }
