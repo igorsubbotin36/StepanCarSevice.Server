@@ -3,7 +3,7 @@ using StepanCarService.Server.DbContexts;
 using StepanCarService.Server.Entities;
 using StepanCarService.Server.Repository.Interfaces;
 
-namespace StepanCarService.Server.Repository.PostgreRepository
+namespace StepanCarSevice.Server.Repository.PostgreRepository
 {
     public class DetailRepository : IDetailRepository
     {
@@ -14,11 +14,23 @@ namespace StepanCarService.Server.Repository.PostgreRepository
             _logger = logger;
             _dbContext = dbContext;
         }
-        public async Task<bool> AddDetail(Detail detail)
+        public async Task<Detail> AddingModelToDetail(DetailAddingModel model)
+        {
+            Detail detail = new Detail()
+            {
+                Code = model.Code,
+                Name = model.Name,
+                Price = model.Price,
+                CarModelId = model.CarModelId,
+                Count = model.Count
+            };
+            return detail;
+        }
+        public async Task<bool> AddDetail(DetailAddingModel detail)
         {
             try
             {
-                _dbContext.Details.Add(detail);
+                _dbContext.Details.Add(await AddingModelToDetail(detail));
                 await _dbContext.SaveChangesAsync();
                 _logger.LogInformation($@"Деталь {detail.Code} добалена на склад!");
                 return true;
@@ -30,27 +42,42 @@ namespace StepanCarService.Server.Repository.PostgreRepository
             }
         }
 
-        public async Task<bool> DeleteDetail(int id)
+        public async Task<bool> DeleteDetails(int[] ids)
         {
-            Detail? detail = await GetDetailById(id);
-            if (detail != null)
+            List<Detail> details = new List<Detail>();
+            foreach (int id in ids)
+            {
+                Detail? detail = await GetDetailById(id);
+                if (detail != null)
+                {
+                    detail.Count--;
+                    details.Add(detail);
+                    _logger.LogInformation($@"Деталь {id} подготовлена для списания");
+                }
+                else
+                {
+                    _logger.LogError($@"Ошибка подготовки для списания детали {id}");
+                    return false;
+                }
+            }
+            if (details.Count != 0)
             {
                 try
                 {
-                    _dbContext.Remove(detail);
+                    _dbContext.Update(details);
                     await _dbContext.SaveChangesAsync();
-                    _logger.LogInformation($@"Деталь с айди {id} списана");
+                    _logger.LogInformation($@"Запчасти списаны");
                     return true;
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError($@"Ошибка списания детали {id}");
+                    _logger.LogError($@"Ошибка списания деталей");
                     return false;
                 }
             }
             else
             {
-                _logger.LogWarning($@"Деталь с айди {id} не найдена для списания");
+                _logger.LogWarning($@"Детали не найдены для списания (передан пустой массив id)");
                 return false;
             }
         }

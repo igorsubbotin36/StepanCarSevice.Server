@@ -1,8 +1,9 @@
-﻿namespace StepanCarService.Server.Entities
+﻿using StepanCarSevice.Server.Entities;
+
+namespace StepanCarSevice.Server.Models
 {
-    public class Detail
+    public class DetailAddingModel
     {
-        public int Id { get; set; }
         public string Code { get; set; }
         public string Name { get; set; }
         public int CarModelId { get; set; }
