@@ -3,7 +3,7 @@
     public class Visit
     {
         public int Id { get; set; }
-        public int CarId { get; set; }
+        public required int CarId { get; set; }
         public required Car Car { get; set; }
         public string? DateFrom  { get; set; }
         public string? DateTo { get; set; }

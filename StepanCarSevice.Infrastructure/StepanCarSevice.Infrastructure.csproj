@@ -2,7 +2,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\StepanCarSevice.Domain\StepanCarSevice.Domain.csproj" />
-    <ProjectReference Include="..\StepanCarSevice.Application\StepanCarSevice.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

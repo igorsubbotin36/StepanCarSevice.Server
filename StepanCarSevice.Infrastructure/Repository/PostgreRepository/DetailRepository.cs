@@ -8,9 +8,9 @@ namespace StepanCarSevice.Infrastructure.Repository.PostgreRepository
 {
     public class DetailRepository : IDetailRepository
     {
-        private readonly Microsoft.Extensions.Logging.ILogger<DetailRepository> _logger;
+        private readonly ILogger<DetailRepository> _logger;
         private readonly PostgreDbContext _dbContext;
-        public DetailRepository(Microsoft.Extensions.Logging.ILogger<DetailRepository> logger, PostgreDbContext dbContext)
+        public DetailRepository(ILogger<DetailRepository> logger, PostgreDbContext dbContext)
         {
             _logger = logger;
             _dbContext = dbContext;
