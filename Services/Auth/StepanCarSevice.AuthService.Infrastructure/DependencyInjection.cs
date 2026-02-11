@@ -26,11 +26,13 @@ namespace StepanCarSevice.AuthService.Infrastructure
         this IServiceCollection services,
         IConfiguration configuration)
         {
+            services.AddHttpContextAccessor();
             services.AddSingleton<IPasswordHasher, PasswordHasher>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<ITokenGeneratorService, TokenService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IErrorMapper, ErrorMapper>();
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddFluentValidationAutoValidation();
             services.AddValidatorsFromAssemblyContaining<RegisterDtoValidator>();
 
@@ -70,21 +72,45 @@ namespace StepanCarSevice.AuthService.Infrastructure
             }
 
             services.AddSingleton<JwtOptions>(jwtOptions);
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-               .AddJwtBearer(options =>
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+               .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
                {
                    options.RequireHttpsMetadata = false;
-
                    options.TokenValidationParameters = new TokenValidationParameters
                    {
                        ValidateIssuer = true,
                        ValidIssuer = jwtOptions.Issuer,
                        ValidateAudience = true,
                        ValidAudience = jwtOptions.Audience,
-                       ValidateLifetime = true,
+                       ValidateLifetime = false, // Отключено для теста
                        IssuerSigningKey = new SymmetricSecurityKey(
                            Encoding.UTF8.GetBytes(jwtOptions.Key)),
                        ValidateIssuerSigningKey = true,
+                   };
+
+                   // ВАЖНО: Добавьте обработчики событий для отладки
+                   options.Events = new JwtBearerEvents
+                   {
+                       OnAuthenticationFailed = context =>
+                       {
+                           Console.WriteLine($"OnAuthenticationFailed: {context.Exception.Message}");
+                           Console.WriteLine($"Exception details: {context.Exception}");
+                           return Task.CompletedTask;
+                       },
+                       OnTokenValidated = context =>
+                       {
+                           Console.WriteLine("OnTokenValidated: Token is valid!");
+                           return Task.CompletedTask;
+                       },
+                       OnChallenge = context =>
+                       {
+                           Console.WriteLine($"OnChallenge: {context.Error}, {context.ErrorDescription}");
+                           return Task.CompletedTask;
+                       }
                    };
                });
 

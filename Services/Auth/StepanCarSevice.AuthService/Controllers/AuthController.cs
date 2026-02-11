@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StepanCarSevice.AuthService.API.Controllers;
 using StepanCarSevice.AuthService.Application.Auth;
@@ -14,7 +15,7 @@ namespace StepanCarSevice.AuthService.Controllers
     {
         private readonly IUserService _userService;
         private readonly ILogger<AuthController> _logger;
-        public AuthController(IUserService userService, IUserRepository userRepo, IPasswordHasher passwordHasher, JwtOptions jwtOptions, ILogger<AuthController> logger, IErrorMapper errorMapper) : base (errorMapper)
+        public AuthController(IUserService userService, ILogger<AuthController> logger, IErrorMapper errorMapper) : base (errorMapper)
         {
             _userService = userService;
             _logger = logger;
@@ -34,10 +35,11 @@ namespace StepanCarSevice.AuthService.Controllers
             return HandleResult(result);
         }
 
+        [Authorize]
         [HttpGet("getTokenClaims")]
-        public IActionResult GetClaimsAsync(string token)
+        public IActionResult GetClaimsAsync()
         {
-            var result = _userService.GetClaims(token);
+            var result = _userService.GetClaims();
             return HandleResult(result);
         }
     }

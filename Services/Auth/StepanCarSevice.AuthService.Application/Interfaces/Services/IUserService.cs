@@ -13,8 +13,9 @@ namespace StepanCarSevice.AuthService.Application.Interfaces.Services
     {
         Task<Result> RegisterAsync(RegisterRequestDto request);
         Task<Result<AuthResponseDto>> LoginAsync(LoginRequestDto request);
-        Task<bool> UpdateUserAsync(int userId, EditUserRequestDto request);
-        Task<bool> ChangePasswordAsync(int userId, ChangePasswordRequestDto request);
-        Result<UserDto> GetClaims(string token);
+        Task<Result> UpdateUserAsync(EditUserRequestDto request, string token);
+        Task<Result> ChangePasswordAsync(ChangePasswordRequestDto request, string token);
+        Result<UserDto> GetClaims();
+        Task<Result<UserInfoDto>> GetUserInfoByPhoneAsync(string phone);
     }
 }

@@ -11,7 +11,7 @@ using StepanCarSevice.AuthService.Infrastructure.DBContexts;
 namespace StepanCarSevice.AuthService.Infrastructure.Migrations
 {
     [DbContext(typeof(AuthDbContext))]
-    [Migration("20260129135624_Init")]
+    [Migration("20260210124837_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -54,7 +54,6 @@ namespace StepanCarSevice.AuthService.Infrastructure.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("FirstName")

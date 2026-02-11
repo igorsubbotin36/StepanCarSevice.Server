@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\StepanCarSevice.AuthService.Domain\StepanCarSevice.AuthService.Domain.csproj" />
   </ItemGroup>
 

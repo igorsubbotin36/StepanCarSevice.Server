@@ -13,17 +13,30 @@ namespace StepanCarSevice.AuthService.Application.Services
         private readonly IUserRepository _userRepository;
         private readonly IPasswordHasher _passwordHasher;
         private readonly ITokenGeneratorService _tokenGeneratorService;
+        private readonly ICurrentUserService _currentUserService;
 
-        public UserService(IUserRepository userRepository, IPasswordHasher passwordHasher, ITokenGeneratorService tokenGeneratorService)
+        public UserService(IUserRepository userRepository,
+            IPasswordHasher passwordHasher, 
+            ITokenGeneratorService tokenGeneratorService, 
+            ICurrentUserService currentUserService)
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
             _tokenGeneratorService = tokenGeneratorService;
+            _currentUserService = currentUserService;
         }
 
-        public async Task<bool> ChangePasswordAsync(int userId, ChangePasswordRequestDto request)
+        public async Task<Result> ChangePasswordAsync(ChangePasswordRequestDto request, string phone)
         {
-            throw new NotImplementedException();
+            if (phone == null)
+                return Result.Failure(AuthErrors.InvalidCredentials);
+            var user = await _userRepository.GetUserByPhoneAsync(phone);
+            if (user == null) 
+                return Result.Failure(UserErrors.InvalidPhone);
+            user.Password = _passwordHasher.Hash(request.NewPassword);
+            if (!(await _userRepository.UpdateUserAsync(user)))
+                return Result.Failure("DATABASE_ERROR");
+            return Result.Success();
         }
         public async Task<Result<AuthResponseDto>> LoginAsync(LoginRequestDto request)
         {
@@ -65,30 +78,42 @@ namespace StepanCarSevice.AuthService.Application.Services
             return Result.Success();
         }
 
-        public Result<UserDto> GetClaims(string token)
+        public Result<UserDto> GetClaims()
         {
-            var list = _tokenGeneratorService.ValidateToken(token);
-            if (list==null || list.Count == 0)
-                return Result.Failure<UserDto>(AuthErrors.TokenIsNotValid);
+            var claims = _currentUserService.GetAllClaims();
+            if (claims == null || claims.Count == 0)
+                return Result.Failure<UserDto>(AuthErrors.InvalidCredentials);
+            UserDto result = new UserDto();
+            result.Claims = new List<ClaimDto>();
             var excludedTypes = new HashSet<string>
             {
                 "nbf", "exp", "iss", "aud"
             };
-
-            UserDto result = new UserDto();
-            result.Claims = new List<ClaimDto>();
-            foreach (var claim in list)
+            foreach (var claim in claims)
             {
                 if (excludedTypes.Contains(claim.Type))
                     continue;
                 result.Claims.Add(new ClaimDto() { Type = claim.Type.Split('/').Last(), Value = claim.Value });
             }
-            return Result.Success<UserDto>(result);
+            return Result.Success(result);
         }
 
-        public async Task<bool> UpdateUserAsync(int userId, EditUserRequestDto request)
+        public async Task<Result> UpdateUserAsync(EditUserRequestDto request, string phone)
         {
-            throw new NotImplementedException();
+            if (phone == null)
+                return Result.Failure(AuthErrors.InvalidCredentials);
+            var user = await _userRepository.GetUserByPhoneAsync(phone);
+            if (user == null)
+                return Result.Failure(UserErrors.InvalidPhone);
+            user.FirstName = request.FirstName;
+            user.SecondName = request.SecondName;
+            if (request.Email != null)
+                user.Email = request.Email;
+            if (request.Phone != null)
+                user.Phone = request.Phone;
+            if (!(await _userRepository.UpdateUserAsync(user)))
+                return Result.Failure("DATABASE_ERROR");
+            return Result.Success();
         }
 
         public async Task<ClaimsIdentity?> GetIdentityAsync(string phone, string password)
@@ -101,12 +126,27 @@ namespace StepanCarSevice.AuthService.Application.Services
                     new Claim(ClaimTypes.MobilePhone, person.Phone ?? string.Empty),
                     new Claim(ClaimTypes.Role, person.Role.Name),
                     new Claim(ClaimTypes.Email, person.Email),
-                    new Claim("FirstName", person.FirstName),
-                    new Claim("SecondName", person.SecondName)
+                    new Claim(ClaimTypes.GivenName, person.FirstName),
+                    new Claim(ClaimTypes.Surname, person.SecondName)
                 };
                 return new ClaimsIdentity(claims, "Token", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
             }
             return null;
+        }
+
+        public async Task<Result<UserInfoDto>> GetUserInfoByPhoneAsync(string phone)
+        {
+            User? person = await _userRepository.GetUserByPhoneAsync(phone);
+            if (person == null)
+                return Result.Failure<UserInfoDto>(UserErrors.InvalidPhone);
+            UserInfoDto userInfoDto = new UserInfoDto() { 
+                Email = person.Email, 
+                FirstName = person.FirstName,
+                SecondName = person.SecondName,
+                Phone = person.Phone,
+                Role = person.Role.Name
+            };
+            return Result.Success(userInfoDto);
         }
     }
 }
