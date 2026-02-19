@@ -1,11 +1,5 @@
-﻿using StepanCarSevice.AuthService.Application.Models;
+﻿using StepanCarService.Core.Models;
 using StepanCarSevice.AuthService.Application.Models.Dto;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StepanCarSevice.AuthService.Application.Interfaces.Services
 {

@@ -6,4 +6,15 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Services\**" />
+    <EmbeddedResource Remove="Services\**" />
+    <None Remove="Services\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Core\StepanCarService.Core\StepanCarService.Core.csproj" />
+    <ProjectReference Include="..\StepanCarSevice.DetailService.Domain\StepanCarSevice.DetailService.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

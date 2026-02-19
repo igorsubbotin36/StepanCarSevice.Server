@@ -1,17 +1,8 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.Localization;
-using Microsoft.IdentityModel.Tokens.Experimental;
-using StepanCarSevice.AuthService.Application.Interfaces.Services;
-using StepanCarSevice.AuthService.Application.Models;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
+﻿using StepanCarService.Core.Interfaces;
+using StepanCarService.Core.Models;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace StepanCarSevice.AuthService.Infrastructure.Services
+namespace StepanCarService.Web.Mappers
 {
     public class ErrorMapper : IErrorMapper
     {
@@ -19,7 +10,6 @@ namespace StepanCarSevice.AuthService.Infrastructure.Services
 
         public ErrorMapper()
         {
-
             _errorMappings = new()
             {
                 // Auth errors

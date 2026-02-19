@@ -13,10 +13,8 @@ namespace StepanCarSevice.AuthService.Application.Interfaces.Services
     {
         AuthResponseDto GenerateToken(ClaimsIdentity identity);
 
-        // Генерация refresh токена
         string GenerateRefreshToken();
 
-        // Валидация и получение данных из токена
         List<Claim> ValidateToken(string token);
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace StepanCarSevice.AuthService.Application.Models
+﻿namespace StepanCarService.Core.Models
 {
     public static class AuthErrors
     {

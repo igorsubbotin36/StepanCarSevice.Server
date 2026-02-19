@@ -1,18 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using StepanCarSevice.AuthService.Application.Interfaces.Services;
-using StepanCarSevice.AuthService.Application.Models;
-using StepanCarSevice.AuthService.Application.Models.Dto;
+using Microsoft.Extensions.Logging;
+using StepanCarService.Core.Interfaces;
+using StepanCarService.Core.Models;
 using System.Net;
 
-namespace StepanCarSevice.AuthService.API.Controllers
+namespace StepanCarService.Web.Controllers
 {
-    public abstract class ApiControllerBase : ControllerBase
+    public abstract class ApiControllerBase<T> : ControllerBase
     {
         protected readonly IErrorMapper _errorMapper;
+        protected readonly ILogger<T> _logger;
 
-        protected ApiControllerBase(IErrorMapper errorMapper)
+        protected ApiControllerBase(IErrorMapper errorMapper, ILogger<T> logger)
         {
             _errorMapper = errorMapper;
+            _logger = logger;
         }
 
         protected IActionResult HandleResult(Result result)
@@ -48,7 +50,7 @@ namespace StepanCarSevice.AuthService.API.Controllers
 
             return statusCode switch
             {
-                HttpStatusCode.Unauthorized => Unauthorized(response),
+                HttpStatusCode.Unauthorized => StatusCode(401, response),
                 HttpStatusCode.Forbidden => StatusCode(403, response),
                 HttpStatusCode.NotFound => NotFound(response),
                 HttpStatusCode.BadRequest => BadRequest(response),

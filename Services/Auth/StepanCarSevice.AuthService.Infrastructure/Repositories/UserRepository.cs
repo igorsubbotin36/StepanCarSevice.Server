@@ -1,30 +1,19 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using StepanCarSevice.AuthService.Application.Auth;
-using StepanCarSevice.AuthService.Application.Models.Dto;
 using StepanCarSevice.AuthService.Domain.Entities;
-using StepanCarSevice.AuthService.Domain.Repository;
+using StepanCarSevice.AuthService.Domain.Repositories;
 using StepanCarSevice.AuthService.Infrastructure.DBContexts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
-namespace StepanCarSevice.AuthService.Infrastructure.Repository
+namespace StepanCarSevice.AuthService.Infrastructure.Repositories
 {
     public class UserRepository : IUserRepository
     {
         private readonly ILogger<UserRepository> _logger;
         private readonly AuthDbContext _dbContext;
-        private readonly IPasswordHasher _passwordHasher;
-        public UserRepository(ILogger<UserRepository> logger, AuthDbContext dbContext, IPasswordHasher passwordHasher)
+        public UserRepository(ILogger<UserRepository> logger, AuthDbContext dbContext)
         {
             _logger = logger;
             _dbContext = dbContext;
-            _passwordHasher = passwordHasher;
         }
         public async Task<bool> AddUserAsync(User user)
         {
@@ -94,7 +83,7 @@ namespace StepanCarSevice.AuthService.Infrastructure.Repository
                     _logger.LogWarning($"Пользователь с номером телефона {phone} не найден");
                     return false;
                 }
-                user.Password = _passwordHasher.Hash(password);
+                user.Password = password;
                 _dbContext.Users.Update(user);
                 await _dbContext.SaveChangesAsync();
                 _logger.LogInformation($"Пользователь с номером телефона {phone} сменил пароль");

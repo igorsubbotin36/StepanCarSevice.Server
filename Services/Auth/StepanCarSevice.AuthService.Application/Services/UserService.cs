@@ -1,9 +1,9 @@
-﻿using StepanCarSevice.AuthService.Application.Auth;
+﻿using StepanCarService.Core.Models;
+using StepanCarSevice.AuthService.Application.Auth;
 using StepanCarSevice.AuthService.Application.Interfaces.Services;
-using StepanCarSevice.AuthService.Application.Models;
 using StepanCarSevice.AuthService.Application.Models.Dto;
 using StepanCarSevice.AuthService.Domain.Entities;
-using StepanCarSevice.AuthService.Domain.Repository;
+using StepanCarSevice.AuthService.Domain.Repositories;
 using System.Security.Claims;
 
 namespace StepanCarSevice.AuthService.Application.Services
@@ -53,7 +53,6 @@ namespace StepanCarSevice.AuthService.Application.Services
         public async Task<Result> RegisterAsync(RegisterRequestDto request)
         {
             if (request.Password != request.ConfirmPassword)
-                //throw new ValidationException("Пароли не совпадают");
                 return Result.Failure(RegisterErrors.PasswordsDontMatch);
 
             if (await _userRepository.ExistsByPhoneAsync(request.Phone))

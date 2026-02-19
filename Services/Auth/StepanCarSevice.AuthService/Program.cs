@@ -14,8 +14,6 @@ builder.Services.AddSwaggerGen(options =>
         Title = "My API",
         Version = "v1"
     });
-
-    // Добавляем поддержку JWT авторизации в Swagger
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",

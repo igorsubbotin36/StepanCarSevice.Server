@@ -1,19 +1,20 @@
 ﻿using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using StepanCarService.Core.Interfaces;
+using StepanCarService.Web.Mappers;
 using StepanCarSevice.AuthService.Application.Auth;
 using StepanCarSevice.AuthService.Application.Interfaces.Services;
 using StepanCarSevice.AuthService.Application.Services;
-using StepanCarSevice.AuthService.Domain.Repository;
+using StepanCarSevice.AuthService.Domain.Repositories;
 using StepanCarSevice.AuthService.Infrastructure.Auth;
 using StepanCarSevice.AuthService.Infrastructure.DBContexts;
 using StepanCarSevice.AuthService.Infrastructure.DBContexts.Inits;
-using StepanCarSevice.AuthService.Infrastructure.Repository;
+using StepanCarSevice.AuthService.Infrastructure.Repositories;
 using StepanCarSevice.AuthService.Infrastructure.Services;
 using StepanCarSevice.AuthService.Infrastructure.Validation;
 using System.Text;
@@ -86,7 +87,7 @@ namespace StepanCarSevice.AuthService.Infrastructure
                        ValidIssuer = jwtOptions.Issuer,
                        ValidateAudience = true,
                        ValidAudience = jwtOptions.Audience,
-                       ValidateLifetime = false, // Отключено для теста
+                       ValidateLifetime = true,
                        IssuerSigningKey = new SymmetricSecurityKey(
                            Encoding.UTF8.GetBytes(jwtOptions.Key)),
                        ValidateIssuerSigningKey = true,
