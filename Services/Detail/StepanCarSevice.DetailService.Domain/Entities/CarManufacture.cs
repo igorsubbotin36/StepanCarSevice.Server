@@ -2,7 +2,7 @@
 
 namespace StepanCarSevice.DetailService.Domain.Entities
 {
-    public class Manufacture
+    public class CarManufacture
     {
         [Key]
         public int Id { get; set; }

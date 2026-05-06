@@ -16,8 +16,10 @@ namespace StepanCarSevice.AuthService.Infrastructure.DBContexts.Inits
 
                 var roles = new List<Role>
                 {
-                new Role{ Id = 1, Name = "Admin", Description = "Администратор" },
-                new Role{ Id = 2, Name = "User", Description = "Пользователь" }
+                new Role{ Id = 1, Name = "GodMode", Description = "GodMode" },
+                new Role{ Id = 2, Name = "User", Description = "Пользователь" },
+                new Role{ Id = 3, Name = "TenantOwner", Description = "Владелец тенанта"},
+                new Role{ Id = 4, Name = "TenantModerator", Description = "Модератор тенанта"}
                 };
                 dbContext.Roles.AddRange(roles);
                 dbContext.SaveChanges();

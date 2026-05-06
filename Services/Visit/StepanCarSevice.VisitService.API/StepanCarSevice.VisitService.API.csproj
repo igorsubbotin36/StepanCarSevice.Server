@@ -8,6 +8,13 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\StepanCarSevice.VisitService.Application\StepanCarSevice.VisitService.Application.csproj" />
+    <ProjectReference Include="..\StepanCarSevice.VisitService.Domain\StepanCarSevice.VisitService.Domain.csproj" />
+    <ProjectReference Include="..\StepanCarSevice.VisitService.Infrastructure\StepanCarSevice.VisitService.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

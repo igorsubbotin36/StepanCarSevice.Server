@@ -11,7 +11,7 @@ using StepanCarSevice.AuthService.Infrastructure.DBContexts;
 namespace StepanCarSevice.AuthService.Infrastructure.Migrations
 {
     [DbContext(typeof(AuthDbContext))]
-    [Migration("20260210124837_Init")]
+    [Migration("20260226201200_Init")]
     partial class Init
     {
         /// <inheritdoc />

@@ -1,13 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace StepanCarSevice.DetailService.Domain.Entities
+namespace StepanCarSevice.VisitService.Domain.Entities
 {
-    public class User
+    public class OwnerSnapshot
     {
         [Key]
         public int Id { get; set; }
         public required string FirstName { get; set; }
         public required string SecondName { get; set; }
         public required string Phone { get; set; }
+        public string? Email { get; set; }
     }
 }

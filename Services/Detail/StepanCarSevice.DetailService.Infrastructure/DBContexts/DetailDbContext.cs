@@ -5,11 +5,10 @@ namespace StepanCarSevice.DetailService.Infrastructure.DBContexts
 {
     public class DetailDbContext : DbContext
     {
-        public DbSet<Car> Cars { get; set; }
         public DbSet<CarModel> CarModels { get; set; }
         public DbSet<Detail> Details { get; set; }
-        public DbSet<Manufacture> Manufactures { get; set; }
-        public DbSet<User> Users { get; set; }
+        public DbSet<CarManufacture> CarManufactures { get; set; }
+        public DbSet<DetailManufacture> DetailManufactures { get; set; }
 
         public DetailDbContext(DbContextOptions<DetailDbContext> options) : base(options) { }
         public DetailDbContext() { }

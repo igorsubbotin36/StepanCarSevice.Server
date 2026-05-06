@@ -26,4 +26,25 @@
         public const string InvalidFormat = "VALIDATION_INVALID_FORMAT";
         public const string PasswordTooWeak = "VALIDATION_PASSWORD_TOO_WEAK";
     }
+    public static class ModelErrors
+    {
+        public const string ModelNotFound = "MODEL_NOT_FOUND";
+        public const string RequestedModelIsNull = "REQUESTED_MODEL_IS_NULL";
+    }
+    public static class MessageBusErrors
+    {
+        public const string MessageNotDelivered = "MESSAGE_NOT_DELIVERED";
+    }
+    public static class SystemErrors
+    {
+        public const string InternalError= "INTERNAL_ERROR";
+        public const string DatabaseError= "DATABASE_ERROR";
+        public const string ExternalServiceError= "EXTERNAL_SERVICE_ERROR";
+    }
+    
+    public static  class TenantErrors
+    {
+        public const string TenantIsNull = "TENANT_IS_NULL";
+        public const string TenantNotFound = "TENANT_NOT_FOUND";
+    }
 }

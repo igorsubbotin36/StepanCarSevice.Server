@@ -1,0 +1,49 @@
+﻿using StepanCarService.Core.Models;
+using StepanCarSevice.DetailService.Application.Interfaces;
+using StepanCarSevice.DetailService.Domain.Entities;
+using StepanCarSevice.DetailService.Domain.Repositories;
+
+namespace StepanCarSevice.DetailService.Application.Services
+{
+    public class DetailInteractionService : IDetailService
+    {
+        private readonly IDetailRepository _detailRepository;
+        public DetailInteractionService(IDetailRepository repository)
+        {
+            _detailRepository = repository;
+        }
+        public async Task<Result> EditDetailAsync(Detail detail)
+        {
+            if (detail == null)
+                return Result.Failure(ModelErrors.RequestedModelIsNull);
+            bool updateSuccess = await _detailRepository.EditDetailAsync(detail);
+            if (!updateSuccess)
+                return Result.Failure(SystemErrors.DatabaseError);
+            return Result.Success();
+        }
+
+        public async Task<Result<List<Detail>>> GetAllDetailsAsync()
+        {
+            List<Detail> list = await _detailRepository.GetAllDetailsAsync();
+            if (list == null || list.Count == 0)
+                return Result.Failure<List<Detail>>(ModelErrors.ModelNotFound);
+            return Result.Success(list);
+        }
+
+        public async Task<Result<Detail>> GetDetailByIdAsync(int id)
+        {
+            Detail? detail = await _detailRepository.GetDetailByIdAsync(id);
+            if (detail == null)
+                return Result.Failure<Detail>(ModelErrors.ModelNotFound);
+            return Result.Success(detail);
+        }
+
+        public async Task<Result<List<Detail>>> GetDetailsByCodeAsync(string code)
+        {
+            List<Detail> list = await _detailRepository.GetDetailsByCodeAsync(code);
+            if (list == null || list.Count == 0)
+                return Result.Failure<List<Detail>>(ModelErrors.ModelNotFound);
+            return Result.Success(list);
+        }
+    }
+}

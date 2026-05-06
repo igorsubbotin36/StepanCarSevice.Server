@@ -46,13 +46,29 @@ namespace StepanCarService.Web.Mappers
                 [ValidationErrors.PasswordTooWeak] = (HttpStatusCode.BadRequest,
                 "Пароль слишком слабый. Используйте буквы, цифры и специальные символы"),
 
+                // DetailErrors
+                [ModelErrors.ModelNotFound] = (HttpStatusCode.NotFound,
+                "Модель не найдена"),
+                [ModelErrors.RequestedModelIsNull] = (HttpStatusCode.BadRequest,
+                "Переданная модель для обновления пустая"),
+
+                // MessageBusErrors
+                [MessageBusErrors.MessageNotDelivered] = (HttpStatusCode.InternalServerError,
+                "Ошибка публикации сообщения"),
+
                 // System errors
-                ["INTERNAL_ERROR"] = (HttpStatusCode.InternalServerError,
+                [SystemErrors.InternalError] = (HttpStatusCode.InternalServerError,
                 "Внутренняя ошибка сервера"),
-                ["DATABASE_ERROR"] = (HttpStatusCode.InternalServerError,
+                [SystemErrors.DatabaseError] = (HttpStatusCode.InternalServerError,
                 "Ошибка базы данных"),
-                ["EXTERNAL_SERVICE_ERROR"] = (HttpStatusCode.ServiceUnavailable,
+                [SystemErrors.ExternalServiceError] = (HttpStatusCode.ServiceUnavailable,
                 "Сервис временно недоступен"),
+                
+                //Tenant errors
+                [TenantErrors.TenantIsNull] = (HttpStatusCode.BadRequest, 
+                    "Переданный тенант пустой"),
+                [TenantErrors.TenantNotFound] = (HttpStatusCode.NotFound,
+                        "Тенант не найден")
             };
         }
 

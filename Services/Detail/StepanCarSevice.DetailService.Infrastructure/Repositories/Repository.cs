@@ -7,9 +7,9 @@ namespace StepanCarSevice.DetailService.Infrastructure.Repositories
 {
     public class Repository<T> : IRepository<T> where T : class
     {
-        private readonly DetailDbContext _dbContext;
-        private readonly DbSet<T> _dbSet;
-        private readonly ILogger<Repository<T>> _logger;
+        protected readonly DetailDbContext _dbContext;
+        protected readonly DbSet<T> _dbSet;
+        protected readonly ILogger<Repository<T>> _logger;
         public Repository(DetailDbContext context, ILogger<Repository<T>> logger)
         {
             _dbContext = context;

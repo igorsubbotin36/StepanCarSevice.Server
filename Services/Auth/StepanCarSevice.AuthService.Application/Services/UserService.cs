@@ -1,5 +1,7 @@
-﻿using StepanCarService.Core.Models;
+﻿using StepanCarService.Core.Events;
+using StepanCarService.Core.Models;
 using StepanCarSevice.AuthService.Application.Auth;
+using StepanCarSevice.AuthService.Application.Interfaces;
 using StepanCarSevice.AuthService.Application.Interfaces.Services;
 using StepanCarSevice.AuthService.Application.Models.Dto;
 using StepanCarSevice.AuthService.Domain.Entities;
@@ -18,7 +20,8 @@ namespace StepanCarSevice.AuthService.Application.Services
         public UserService(IUserRepository userRepository,
             IPasswordHasher passwordHasher, 
             ITokenGeneratorService tokenGeneratorService, 
-            ICurrentUserService currentUserService)
+            ICurrentUserService currentUserService
+            )
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
@@ -35,7 +38,7 @@ namespace StepanCarSevice.AuthService.Application.Services
                 return Result.Failure(UserErrors.InvalidPhone);
             user.Password = _passwordHasher.Hash(request.NewPassword);
             if (!(await _userRepository.UpdateUserAsync(user)))
-                return Result.Failure("DATABASE_ERROR");
+                return Result.Failure(SystemErrors.DatabaseError);
             return Result.Success();
         }
         public async Task<Result<AuthResponseDto>> LoginAsync(LoginRequestDto request)
@@ -74,6 +77,14 @@ namespace StepanCarSevice.AuthService.Application.Services
 
             await _userRepository.AddUserAsync(user);
 
+            var userRegisteredEvent = new UserRegisteredEvent()
+            {
+                Phone = user.Phone,
+                FirstName = user.FirstName,
+                SecondName = user.SecondName,
+                Email = user.Email
+            };
+
             return Result.Success();
         }
 
@@ -111,7 +122,7 @@ namespace StepanCarSevice.AuthService.Application.Services
             if (request.Phone != null)
                 user.Phone = request.Phone;
             if (!(await _userRepository.UpdateUserAsync(user)))
-                return Result.Failure("DATABASE_ERROR");
+                return Result.Failure(SystemErrors.DatabaseError);
             return Result.Success();
         }
 
