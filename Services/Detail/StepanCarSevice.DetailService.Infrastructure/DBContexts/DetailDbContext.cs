@@ -1,9 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using StepanCarService.Core.Entities;
+using StepanCarService.Web.DbContexts;
 using StepanCarSevice.DetailService.Domain.Entities;
 
 namespace StepanCarSevice.DetailService.Infrastructure.DBContexts
 {
-    public class DetailDbContext : DbContext
+    public class DetailDbContext : TenantBaseDbContext
     {
         public DbSet<CarModel> CarModels { get; set; }
         public DbSet<Detail> Details { get; set; }
@@ -11,7 +13,6 @@ namespace StepanCarSevice.DetailService.Infrastructure.DBContexts
         public DbSet<DetailManufacture> DetailManufactures { get; set; }
 
         public DetailDbContext(DbContextOptions<DetailDbContext> options) : base(options) { }
-        public DetailDbContext() { }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)

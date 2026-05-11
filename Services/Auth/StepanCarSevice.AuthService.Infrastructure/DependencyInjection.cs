@@ -6,7 +6,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using StepanCarService.Core.Interfaces;
+using StepanCarService.Core.Interfaces.Repositories;
 using StepanCarService.Web.Mappers;
+using StepanCarService.Web.Repositories;
 using StepanCarSevice.AuthService.Application.Auth;
 using StepanCarSevice.AuthService.Application.Interfaces;
 using StepanCarSevice.AuthService.Application.Interfaces.Services;
@@ -36,6 +38,7 @@ namespace StepanCarSevice.AuthService.Infrastructure
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IErrorMapper, ErrorMapper>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddScoped<ITenantRepository, TenantBaseRepository<AuthDbContext>>();
             services.AddFluentValidationAutoValidation();
             services.AddValidatorsFromAssemblyContaining<RegisterDtoValidator>();
 
@@ -49,10 +52,7 @@ namespace StepanCarSevice.AuthService.Infrastructure
                 throw new InvalidOperationException("Connection string 'PostgreSQL' is not configured.");
             }
 
-            services.AddDbContext<AuthDbContext>(options =>
-            {
-                options.UseNpgsql(connectionString);
-            });
+            services.AddDbContext<AuthDbContext>(options => options.UseNpgsql(connectionString));
 
             var jwtOptions = configuration.GetSection("Jwt").Get<JwtOptions>();
             if (jwtOptions == null)

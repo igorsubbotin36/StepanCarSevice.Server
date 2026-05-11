@@ -1,9 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using StepanCarService.Core.Entities;
+using StepanCarService.Web.DbContexts;
 using StepanCarSevice.VisitService.Domain.Entities;
 
 namespace StepanCarSevice.VisitService.Infrastructure.DBContexts
 {
-    public class VisitDBContext : DbContext
+    public class VisitDBContext : TenantBaseDbContext
     {
         public DbSet<CarSnapshot> CarSnapshots { get; set; }
         public DbSet<CarModelSnapshot> CarModelSnapshots { get; set; }
@@ -15,7 +17,6 @@ namespace StepanCarSevice.VisitService.Infrastructure.DBContexts
         public DbSet<VisitDetails> VisitDetails { get; set; }
 
         public VisitDBContext(DbContextOptions<VisitDBContext> options) : base(options) { }
-        public VisitDBContext() { }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)

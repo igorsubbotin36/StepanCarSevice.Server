@@ -49,7 +49,7 @@ namespace StepanCarService.TenantService.Infrastructure.Migrations
                     b.HasIndex("Identifier")
                         .IsUnique();
 
-                    b.ToTable("TenantInfoEntity");
+                    b.ToTable("TenantInfoEntity", (string)null);
                 });
 #pragma warning restore 612, 618
         }

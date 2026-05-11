@@ -4,7 +4,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using StepanCarService.Core.Interfaces;
+using StepanCarService.Core.Interfaces.Repositories;
 using StepanCarService.Web.Mappers;
+using StepanCarService.Web.Repositories;
 using StepanCarSevice.VisitService.Application.Interfaces;
 using StepanCarSevice.VisitService.Application.Services;
 using StepanCarSevice.VisitService.Domain.Repositories;
@@ -25,6 +27,7 @@ namespace StepanCarSevice.VisitService.Infrastructure
             services.AddScoped<ICarRepository, CarRepository>();
             services.AddScoped(typeof(ITService<>), typeof(TService<>));
             services.AddScoped<ICarService, CarService>();
+            services.AddScoped<ITenantRepository, TenantBaseRepository<VisitDBContext>>();
 
             services.AddScoped<IErrorMapper, ErrorMapper>();
 

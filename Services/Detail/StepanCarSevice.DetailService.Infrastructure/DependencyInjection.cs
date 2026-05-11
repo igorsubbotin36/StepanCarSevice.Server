@@ -4,7 +4,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using StepanCarService.Core.Interfaces;
+using StepanCarService.Core.Interfaces.Repositories;
 using StepanCarService.Web.Mappers;
+using StepanCarService.Web.Repositories;
 using StepanCarSevice.DetailService.Application.Interfaces;
 using StepanCarSevice.DetailService.Application.Services;
 using StepanCarSevice.DetailService.Domain.Repositories;
@@ -27,6 +29,7 @@ namespace StepanCarSevice.DetailService.Infrastructure
             services.AddScoped(typeof(ITService<>), typeof(TService<>));
             services.AddScoped<IDetailService, DetailInteractionService>();
             services.AddScoped<IErrorMapper, ErrorMapper>();
+            services.AddScoped<ITenantRepository, TenantBaseRepository<DetailDbContext>>();
             services.AddHostedService<DetailParserService>();
 
             var connectionString = configuration.GetConnectionString("PostgreSQL");

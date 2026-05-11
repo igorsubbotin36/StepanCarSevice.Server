@@ -1,16 +1,14 @@
 ﻿using Finbuckle.MultiTenant.EntityFrameworkCore.Stores.EFCoreStore;
 using Microsoft.EntityFrameworkCore;
 using StepanCarService.Core.Entities;
+using StepanCarService.Web.DbContexts;
 
 namespace StepanCarService.TenantService.Infrastructure.DbContexts;
 
-public class TenantServiceDbContext : EFCoreStoreDbContext<TenantInfoEntity>
+public class TenantServiceDbContext : TenantBaseDbContext
 {
-    public DbSet<TenantInfoEntity> Tenants { get; set; }
-
     public TenantServiceDbContext(DbContextOptions<TenantServiceDbContext> options) : base(options) { }
 
-    
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (!optionsBuilder.IsConfigured)

@@ -12,8 +12,8 @@ using StepanCarService.TenantService.Application.Interfaces;
 using StepanCarService.TenantService.Application.Services;
 using StepanCarService.TenantService.Infrastructure.Auth;
 using StepanCarService.TenantService.Infrastructure.DbContexts;
-using StepanCarService.TenantService.Infrastructure.Repositories;
 using StepanCarService.Web.Mappers;
+using StepanCarService.Web.Repositories;
 
 namespace StepanCarService.TenantService.Infrastructure;
 
@@ -24,7 +24,7 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         services.AddScoped<IErrorMapper, ErrorMapper>();
-        services.AddScoped<ITenantRepository, TenantRepository>();
+        services.AddScoped<ITenantRepository, TenantBaseRepository<TenantServiceDbContext>>();
         services.AddScoped<ITenantService, TenantManagementService>();
         
         var connectionString = configuration.GetConnectionString("PostgreSQL");
