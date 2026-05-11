@@ -8,7 +8,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\Core\StepanCarService.Core\StepanCarService.Core.csproj" />
-      <ProjectReference Include="..\StepanCarSevice.TenantService.Core\StepanCarSevice.TenantService.Core.csproj" />
     </ItemGroup>
 
 </Project>

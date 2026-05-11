@@ -1,8 +1,8 @@
-﻿using StepanCarService.Core.Models;
+﻿using StepanCarService.Core.Entities;
+using StepanCarService.Core.Interfaces.Repositories;
+using StepanCarService.Core.Models;
 using StepanCarService.TenantService.Application.Interfaces;
 using StepanCarService.TenantService.Application.Models.DTOs;
-using StepanCarSevice.TenantService.Core.Entities;
-using StepanCarSevice.TenantService.Core.Repositories;
 
 namespace StepanCarService.TenantService.Application.Services;
 

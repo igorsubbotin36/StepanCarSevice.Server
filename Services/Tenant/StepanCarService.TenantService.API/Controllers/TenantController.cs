@@ -4,7 +4,6 @@ using StepanCarService.Core.Interfaces;
 using StepanCarService.TenantService.Application.Interfaces;
 using StepanCarService.TenantService.Application.Models.DTOs;
 using StepanCarService.Web.Controllers;
-using StepanCarSevice.TenantService.Core.Repositories;
 
 namespace StepanCarService.TenantService.API.Controllers;
 

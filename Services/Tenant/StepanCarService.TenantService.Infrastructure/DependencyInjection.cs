@@ -5,15 +5,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using StepanCarService.Core.Entities;
 using StepanCarService.Core.Interfaces;
+using StepanCarService.Core.Interfaces.Repositories;
 using StepanCarService.TenantService.Application.Interfaces;
 using StepanCarService.TenantService.Application.Services;
 using StepanCarService.TenantService.Infrastructure.Auth;
 using StepanCarService.TenantService.Infrastructure.DbContexts;
 using StepanCarService.TenantService.Infrastructure.Repositories;
 using StepanCarService.Web.Mappers;
-using StepanCarSevice.TenantService.Core.Entities;
-using StepanCarSevice.TenantService.Core.Repositories;
 
 namespace StepanCarService.TenantService.Infrastructure;
 

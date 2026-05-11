@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36202.13
+# Visual Studio Version 18
+VisualStudioVersion = 18.4.11620.152 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StepanCarSevice.AuthService.API", "Services\Auth\StepanCarSevice.AuthService\StepanCarSevice.AuthService.API.csproj", "{9725CC31-DE60-F539-6DA7-1BCF116AA361}"
 EndProject
@@ -48,8 +48,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StepanCarService.TenantService.Application", "Services\Tenant\StepanCarService.TenantService.Application\StepanCarService.TenantService.Application.csproj", "{038122DF-B803-4EA8-A4DD-B0C887D589A4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StepanCarService.TenantService.Infrastructure", "Services\Tenant\StepanCarService.TenantService.Infrastructure\StepanCarService.TenantService.Infrastructure.csproj", "{3C8BF8CB-447E-4FA8-A64C-198091C8D2D9}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StepanCarSevice.TenantService.Core", "Services\Tenant\StepanCarSevice.TenantService.Core\StepanCarSevice.TenantService.Core.csproj", "{908CF32D-CCCC-4014-AE56-6B4A98697893}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -265,18 +263,6 @@ Global
 		{3C8BF8CB-447E-4FA8-A64C-198091C8D2D9}.Release|x64.Build.0 = Release|Any CPU
 		{3C8BF8CB-447E-4FA8-A64C-198091C8D2D9}.Release|x86.ActiveCfg = Release|Any CPU
 		{3C8BF8CB-447E-4FA8-A64C-198091C8D2D9}.Release|x86.Build.0 = Release|Any CPU
-		{908CF32D-CCCC-4014-AE56-6B4A98697893}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{908CF32D-CCCC-4014-AE56-6B4A98697893}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{908CF32D-CCCC-4014-AE56-6B4A98697893}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{908CF32D-CCCC-4014-AE56-6B4A98697893}.Debug|x64.Build.0 = Debug|Any CPU
-		{908CF32D-CCCC-4014-AE56-6B4A98697893}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{908CF32D-CCCC-4014-AE56-6B4A98697893}.Debug|x86.Build.0 = Debug|Any CPU
-		{908CF32D-CCCC-4014-AE56-6B4A98697893}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{908CF32D-CCCC-4014-AE56-6B4A98697893}.Release|Any CPU.Build.0 = Release|Any CPU
-		{908CF32D-CCCC-4014-AE56-6B4A98697893}.Release|x64.ActiveCfg = Release|Any CPU
-		{908CF32D-CCCC-4014-AE56-6B4A98697893}.Release|x64.Build.0 = Release|Any CPU
-		{908CF32D-CCCC-4014-AE56-6B4A98697893}.Release|x86.ActiveCfg = Release|Any CPU
-		{908CF32D-CCCC-4014-AE56-6B4A98697893}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -303,7 +289,6 @@ Global
 		{D1F10E98-2AF7-49B3-AD89-400B156C9E6B} = {DD80A110-ABCC-4C4D-A361-06630A581EB8}
 		{038122DF-B803-4EA8-A4DD-B0C887D589A4} = {DD80A110-ABCC-4C4D-A361-06630A581EB8}
 		{3C8BF8CB-447E-4FA8-A64C-198091C8D2D9} = {DD80A110-ABCC-4C4D-A361-06630A581EB8}
-		{908CF32D-CCCC-4014-AE56-6B4A98697893} = {DD80A110-ABCC-4C4D-A361-06630A581EB8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B255A178-271E-4146-9A12-844CC3DAB9B0}

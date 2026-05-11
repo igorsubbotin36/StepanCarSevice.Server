@@ -1,4 +1,5 @@
-﻿using StepanCarSevice.TenantService.Core.Entities;
+﻿
+using StepanCarService.Core.Entities;
 
 namespace StepanCarService.TenantService.Application.Models.DTOs;
 

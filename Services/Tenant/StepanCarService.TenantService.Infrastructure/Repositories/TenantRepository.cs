@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using StepanCarService.Core.Entities;
+using StepanCarService.Core.Interfaces.Repositories;
 using StepanCarService.TenantService.Infrastructure.DbContexts;
-using StepanCarSevice.TenantService.Core.Entities;
-using StepanCarSevice.TenantService.Core.Repositories;
 
 namespace StepanCarService.TenantService.Infrastructure.Repositories;
 

@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Finbuckle.MultiTenant" Version="9.4.8" />
+  </ItemGroup>
+
 </Project>
