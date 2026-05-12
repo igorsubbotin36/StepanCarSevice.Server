@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Finbuckle.MultiTenant;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using StepanCarService.Core.Entities;
 using StepanCarService.Core.Interfaces;
 using StepanCarService.Core.Interfaces.Repositories;
 using StepanCarService.Web.Mappers;
@@ -42,6 +44,11 @@ namespace StepanCarSevice.DetailService.Infrastructure
             {
                 options.UseNpgsql(connectionString);
             });
+
+            services.AddMultiTenant<TenantInfoEntity>()
+                .WithHostStrategy()
+                .WithEFCoreStore<DetailDbContext, TenantInfoEntity>();
+
             var jwtOptions = configuration.GetSection("Jwt").Get<JwtOptions>();
             if (jwtOptions == null)
             {
