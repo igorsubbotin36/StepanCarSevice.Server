@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using StepanCarService.Core.Entities;
+using System.ComponentModel.DataAnnotations;
 namespace StepanCarSevice.DetailService.Domain.Entities
 {
     public class CarModel
@@ -11,6 +12,7 @@ namespace StepanCarSevice.DetailService.Domain.Entities
         public required string NameRU { get; set; }
         public int YearFrom { get; set; }
         public int YearTo { get; set; }
-
+        public string TenantId { get; set; }
+        public TenantInfoEntity Tenant { get; set; }
     }
 }

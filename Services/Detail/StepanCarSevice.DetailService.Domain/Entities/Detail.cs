@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using StepanCarService.Core.Entities;
+using System.ComponentModel.DataAnnotations;
 
 namespace StepanCarSevice.DetailService.Domain.Entities
 {
@@ -15,5 +16,7 @@ namespace StepanCarSevice.DetailService.Domain.Entities
         public required CarModel CarModel { get; set; }
         public decimal Price { get; set; }
         public int Count { get; set; }
+        public string TenantId { get; set; }
+        public TenantInfoEntity Tenant { get; set; }
     }
 }

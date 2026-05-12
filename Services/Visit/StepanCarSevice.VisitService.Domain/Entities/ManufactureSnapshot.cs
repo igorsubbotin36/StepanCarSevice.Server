@@ -1,4 +1,5 @@
-﻿using System;
+﻿using StepanCarService.Core.Entities;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -14,5 +15,7 @@ namespace StepanCarSevice.VisitService.Domain.Entities
         public required string NameEN { get; set; }
         public required string NameRU { get; set; }
         public required string Country { get; set; }
+        public string TenantId { get; set; }
+        public TenantInfoEntity Tenant { get; set; }
     }
 }

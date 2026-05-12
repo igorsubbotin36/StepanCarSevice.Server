@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using StepanCarService.Core.Entities;
+using System.ComponentModel.DataAnnotations;
 
 namespace StepanCarSevice.AuthService.Domain.Entities
 {
@@ -14,5 +15,6 @@ namespace StepanCarSevice.AuthService.Domain.Entities
         public int RoleId { get; set; }
         public Role Role { get; set; }
         public string? TenantId  { get; set; }
+        public TenantInfoEntity? Tenant {  get; set; }
     }
 }
