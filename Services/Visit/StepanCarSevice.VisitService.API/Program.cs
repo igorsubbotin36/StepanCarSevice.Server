@@ -48,6 +48,7 @@ namespace StepanCarSevice.VisitService.API
             ;
 
             var app = builder.Build();
+            var hostedServices = app.Services.GetServices<IHostedService>();
             if (app.Environment.IsDevelopment())
             {
                 Environment.SetEnvironmentVariable("DB_CONNECTION_STRING",

@@ -94,9 +94,6 @@ namespace StepanCarSevice.DetailService.Infrastructure.Migrations
                     b.Property<int>("ManufactureId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("ManufacturerId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("NameEN")
                         .IsRequired()
                         .HasColumnType("text");
@@ -142,11 +139,7 @@ namespace StepanCarSevice.DetailService.Infrastructure.Migrations
                     b.Property<int>("Count")
                         .HasColumnType("integer");
 
-                    b.Property<string>("DetailManufactureId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("DetailManufactureId1")
+                    b.Property<int>("DetailManufactureId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Name")
@@ -168,7 +161,7 @@ namespace StepanCarSevice.DetailService.Infrastructure.Migrations
 
                     b.HasIndex("CarModelId");
 
-                    b.HasIndex("DetailManufactureId1");
+                    b.HasIndex("DetailManufactureId");
 
                     b.HasIndex("TenantId");
 
@@ -238,7 +231,7 @@ namespace StepanCarSevice.DetailService.Infrastructure.Migrations
 
                     b.HasOne("StepanCarSevice.DetailService.Domain.Entities.DetailManufacture", "DetailManufacture")
                         .WithMany()
-                        .HasForeignKey("DetailManufactureId1")
+                        .HasForeignKey("DetailManufactureId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

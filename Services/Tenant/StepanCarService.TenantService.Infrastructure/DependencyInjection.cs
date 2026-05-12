@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Finbuckle.MultiTenant;
+﻿using Finbuckle.MultiTenant;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -12,8 +11,10 @@ using StepanCarService.TenantService.Application.Interfaces;
 using StepanCarService.TenantService.Application.Services;
 using StepanCarService.TenantService.Infrastructure.Auth;
 using StepanCarService.TenantService.Infrastructure.DbContexts;
+using StepanCarService.TenantService.Infrastructure.Messaging;
 using StepanCarService.Web.Mappers;
 using StepanCarService.Web.Repositories;
+using System.Text;
 
 namespace StepanCarService.TenantService.Infrastructure;
 
@@ -37,7 +38,11 @@ public static class DependencyInjection
                 .WithEFCoreStore<TenantServiceDbContext, TenantInfoEntity>()
                 .WithStaticStrategy("management");
 
-            var jwtOptions = configuration.GetSection("Jwt").Get<JwtOptions>();
+        services.Configure<RabbitMQProducerSettings>(
+                configuration.GetSection("RabbitMQ"));
+        services.AddSingleton<IMessageBus, RabbitMQBus>();
+
+        var jwtOptions = configuration.GetSection("Jwt").Get<JwtOptions>();
             if (jwtOptions == null)
             {
                 throw new InvalidOperationException("JWT configuration section is missing.");

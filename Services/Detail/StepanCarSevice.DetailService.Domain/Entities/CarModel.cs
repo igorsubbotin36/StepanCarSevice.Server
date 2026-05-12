@@ -6,7 +6,7 @@ namespace StepanCarSevice.DetailService.Domain.Entities
     {
         [Key]
         public int Id { get; set; }
-        public int ManufacturerId { get; set; }
+        public int ManufactureId { get; set; }
         public required CarManufacture Manufacture { get; set; }
         public required string NameEN { get; set; }
         public required string NameRU { get; set; }

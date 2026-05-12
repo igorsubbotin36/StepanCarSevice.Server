@@ -1,4 +1,5 @@
-﻿namespace StepanCarSevice.AuthService.Infrastructure.Messaging.RabbitMQ
+﻿
+namespace StepanCarService.TenantService.Infrastructure.Messaging
 {
     public class RabbitMQProducerSettings
     {
@@ -8,6 +9,6 @@
         public string Password { get; set; } = "guest";
         public string VirtualHost { get; set; } = "/";
         public string ExchangeName { get; set; } = "default";
-        public string QueueName { get; set; } = "user.registered";
+        public string QueueName { get; set; } = "tenant.registered";
     }
 }

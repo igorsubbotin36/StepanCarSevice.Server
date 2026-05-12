@@ -9,7 +9,9 @@ using Microsoft.IdentityModel.Tokens;
 using StepanCarService.Core.Entities;
 using StepanCarService.Core.Interfaces;
 using StepanCarService.Core.Interfaces.Repositories;
+using StepanCarService.Web.Handlers;
 using StepanCarService.Web.Mappers;
+using StepanCarService.Web.Messaging;
 using StepanCarService.Web.Repositories;
 using StepanCarSevice.AuthService.Application.Auth;
 using StepanCarSevice.AuthService.Application.Interfaces;
@@ -19,7 +21,6 @@ using StepanCarSevice.AuthService.Domain.Repositories;
 using StepanCarSevice.AuthService.Infrastructure.Auth;
 using StepanCarSevice.AuthService.Infrastructure.DBContexts;
 using StepanCarSevice.AuthService.Infrastructure.DBContexts.Inits;
-using StepanCarSevice.AuthService.Infrastructure.Messaging.RabbitMQ;
 using StepanCarSevice.AuthService.Infrastructure.Repositories;
 using StepanCarSevice.AuthService.Infrastructure.Services;
 using StepanCarSevice.AuthService.Infrastructure.Validation;
@@ -43,10 +44,12 @@ namespace StepanCarSevice.AuthService.Infrastructure
             services.AddScoped<ITenantRepository, TenantBaseRepository<AuthDbContext>>();
             services.AddFluentValidationAutoValidation();
             services.AddValidatorsFromAssemblyContaining<RegisterDtoValidator>();
-
-            /*services.Configure<RabbitMQProducerSettings>(
+            services.Configure<RabbitMQConsumerSetting>(
                 configuration.GetSection("RabbitMQ"));
-            services.AddSingleton<IMessageBus, RabbitMQBus>();*/
+            services.AddScoped<TenantBaseRepository<AuthDbContext>>();
+            services.AddScoped<ITenantRegisteredHandler, TenantRegisteredHandler<TenantBaseRepository<AuthDbContext>>>();
+            services.AddHostedService<TenantRegisteredConsumer>();
+
 
             var connectionString = configuration.GetConnectionString("PostgreSQL");
             if (string.IsNullOrEmpty(connectionString))

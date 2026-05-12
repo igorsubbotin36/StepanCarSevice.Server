@@ -7,15 +7,17 @@ using Microsoft.IdentityModel.Tokens;
 using StepanCarService.Core.Entities;
 using StepanCarService.Core.Interfaces;
 using StepanCarService.Core.Interfaces.Repositories;
+using StepanCarService.Web.Handlers;
 using StepanCarService.Web.Mappers;
+using StepanCarService.Web.Messaging;
 using StepanCarService.Web.Repositories;
+using StepanCarSevice.AuthService.Application.Interfaces;
 using StepanCarSevice.DetailService.Application.Interfaces;
 using StepanCarSevice.DetailService.Application.Services;
 using StepanCarSevice.DetailService.Domain.Repositories;
 using StepanCarSevice.DetailService.Infrastructure.Auth;
 using StepanCarSevice.DetailService.Infrastructure.DBContexts;
 using StepanCarSevice.DetailService.Infrastructure.Repositories;
-using StepanCarSevice.DetailService.Infrastructure.Services;
 using System.Text;
 
 namespace StepanCarSevice.DetailService.Infrastructure
@@ -32,7 +34,13 @@ namespace StepanCarSevice.DetailService.Infrastructure
             services.AddScoped<IDetailService, DetailInteractionService>();
             services.AddScoped<IErrorMapper, ErrorMapper>();
             services.AddScoped<ITenantRepository, TenantBaseRepository<DetailDbContext>>();
-            services.AddHostedService<DetailParserService>();
+            services.AddHostedService<TenantRegisteredConsumer>();
+
+            services.Configure<RabbitMQConsumerSetting>(
+                configuration.GetSection("RabbitMQ"));
+            services.AddScoped<TenantBaseRepository<DetailDbContext>>();
+            services.AddScoped<ITenantRegisteredHandler, TenantRegisteredHandler<TenantBaseRepository<DetailDbContext>>>();
+            services.AddHostedService<TenantRegisteredConsumer>();
 
             var connectionString = configuration.GetConnectionString("PostgreSQL");
             if (string.IsNullOrEmpty(connectionString))

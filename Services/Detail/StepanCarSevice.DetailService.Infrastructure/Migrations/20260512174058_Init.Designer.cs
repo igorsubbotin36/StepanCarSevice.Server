@@ -11,18 +11,49 @@ using StepanCarSevice.DetailService.Infrastructure.DBContexts;
 namespace StepanCarSevice.DetailService.Infrastructure.Migrations
 {
     [DbContext(typeof(DetailDbContext))]
-    [Migration("20260305130619_Init1")]
-    partial class Init1
+    [Migration("20260512174058_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.10")
+                .HasAnnotation("ProductVersion", "9.0.15")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("StepanCarService.Core.Entities.TenantInfoEntity", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("ApiKey")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ConnectionString")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Identifier")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Identifier")
+                        .IsUnique();
+
+                    b.ToTable("TenantInfoEntity");
+                });
 
             modelBuilder.Entity("StepanCarSevice.DetailService.Domain.Entities.CarManufacture", b =>
                 {
@@ -44,7 +75,13 @@ namespace StepanCarSevice.DetailService.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("TenantId")
+                        .IsRequired()
+                        .HasColumnType("character varying(64)");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
 
                     b.ToTable("CarManufactures");
                 });
@@ -60,9 +97,6 @@ namespace StepanCarSevice.DetailService.Infrastructure.Migrations
                     b.Property<int>("ManufactureId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("ManufacturerId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("NameEN")
                         .IsRequired()
                         .HasColumnType("text");
@@ -70,6 +104,10 @@ namespace StepanCarSevice.DetailService.Infrastructure.Migrations
                     b.Property<string>("NameRU")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<string>("TenantId")
+                        .IsRequired()
+                        .HasColumnType("character varying(64)");
 
                     b.Property<int>("YearFrom")
                         .HasColumnType("integer");
@@ -80,6 +118,8 @@ namespace StepanCarSevice.DetailService.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ManufactureId");
+
+                    b.HasIndex("TenantId");
 
                     b.ToTable("CarModels");
                 });
@@ -102,11 +142,7 @@ namespace StepanCarSevice.DetailService.Infrastructure.Migrations
                     b.Property<int>("Count")
                         .HasColumnType("integer");
 
-                    b.Property<string>("DetailManufactureId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("DetailManufactureId1")
+                    b.Property<int>("DetailManufactureId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Name")
@@ -120,11 +156,17 @@ namespace StepanCarSevice.DetailService.Infrastructure.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
 
+                    b.Property<string>("TenantId")
+                        .IsRequired()
+                        .HasColumnType("character varying(64)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CarModelId");
 
-                    b.HasIndex("DetailManufactureId1");
+                    b.HasIndex("DetailManufactureId");
+
+                    b.HasIndex("TenantId");
 
                     b.ToTable("Details");
                 });
@@ -141,9 +183,26 @@ namespace StepanCarSevice.DetailService.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("TenantId")
+                        .IsRequired()
+                        .HasColumnType("character varying(64)");
+
                     b.HasKey("Id");
 
+                    b.HasIndex("TenantId");
+
                     b.ToTable("DetailManufactures");
+                });
+
+            modelBuilder.Entity("StepanCarSevice.DetailService.Domain.Entities.CarManufacture", b =>
+                {
+                    b.HasOne("StepanCarService.Core.Entities.TenantInfoEntity", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("StepanCarSevice.DetailService.Domain.Entities.CarModel", b =>
@@ -154,7 +213,15 @@ namespace StepanCarSevice.DetailService.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("StepanCarService.Core.Entities.TenantInfoEntity", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Manufacture");
+
+                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("StepanCarSevice.DetailService.Domain.Entities.Detail", b =>
@@ -167,13 +234,32 @@ namespace StepanCarSevice.DetailService.Infrastructure.Migrations
 
                     b.HasOne("StepanCarSevice.DetailService.Domain.Entities.DetailManufacture", "DetailManufacture")
                         .WithMany()
-                        .HasForeignKey("DetailManufactureId1")
+                        .HasForeignKey("DetailManufactureId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("StepanCarService.Core.Entities.TenantInfoEntity", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("CarModel");
 
                     b.Navigation("DetailManufacture");
+
+                    b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("StepanCarSevice.DetailService.Domain.Entities.DetailManufacture", b =>
+                {
+                    b.HasOne("StepanCarService.Core.Entities.TenantInfoEntity", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
                 });
 #pragma warning restore 612, 618
         }

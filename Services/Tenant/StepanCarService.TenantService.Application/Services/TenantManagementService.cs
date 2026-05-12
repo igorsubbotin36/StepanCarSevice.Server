@@ -9,9 +9,11 @@ namespace StepanCarService.TenantService.Application.Services;
 public class TenantManagementService : ITenantService
 {
     private readonly ITenantRepository _tenantRepository;
-    public TenantManagementService(ITenantRepository tenantRepository)
+    private readonly IMessageBus _messageBus;
+    public TenantManagementService(ITenantRepository tenantRepository, IMessageBus messageBus)
     {
         _tenantRepository = tenantRepository;
+        _messageBus = messageBus;
     }
     
     public async Task<Result> AddAsync(TenantDto tenant)
@@ -26,6 +28,15 @@ public class TenantManagementService : ITenantService
             IsActive = tenant.IsActive,
             ApiKey = tenant.ApiKey
         };
+        try
+        {
+            await _messageBus.PublishAsync(newTenant);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return Result.Failure(MessageBusErrors.MessageNotDelivered);
+        }
         try
         {
             await _tenantRepository.AddAsync(newTenant);
@@ -49,6 +60,7 @@ public class TenantManagementService : ITenantService
         tempTenant.IsActive = tenant.IsActive;
         tempTenant.ApiKey = tenant.ApiKey;
         tempTenant.Name = tenant.Name;
+
         try
         {
             await _tenantRepository.UpdateAsync(tempTenant);

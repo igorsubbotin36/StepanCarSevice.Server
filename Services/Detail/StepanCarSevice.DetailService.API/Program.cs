@@ -41,8 +41,8 @@ namespace StepanCarSevice.DetailService.API
                 }
             },
             new string[] {}
-        }
-    });
+                    }
+                });
             });
             ;
 

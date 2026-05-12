@@ -7,8 +7,11 @@ using Microsoft.IdentityModel.Tokens;
 using StepanCarService.Core.Entities;
 using StepanCarService.Core.Interfaces;
 using StepanCarService.Core.Interfaces.Repositories;
+using StepanCarService.Web.Handlers;
 using StepanCarService.Web.Mappers;
+using StepanCarService.Web.Messaging;
 using StepanCarService.Web.Repositories;
+using StepanCarSevice.AuthService.Application.Interfaces;
 using StepanCarSevice.VisitService.Application.Interfaces;
 using StepanCarSevice.VisitService.Application.Services;
 using StepanCarSevice.VisitService.Domain.Repositories;
@@ -30,6 +33,12 @@ namespace StepanCarSevice.VisitService.Infrastructure
             services.AddScoped(typeof(ITService<>), typeof(TService<>));
             services.AddScoped<ICarService, CarService>();
             services.AddScoped<ITenantRepository, TenantBaseRepository<VisitDBContext>>();
+
+            services.Configure<RabbitMQConsumerSetting>(
+                configuration.GetSection("RabbitMQ"));
+            services.AddScoped<TenantBaseRepository<VisitDBContext>>();
+            services.AddScoped<ITenantRegisteredHandler, TenantRegisteredHandler<TenantBaseRepository<VisitDBContext>>>();
+            services.AddHostedService<TenantRegisteredConsumer>();
 
             services.AddScoped<IErrorMapper, ErrorMapper>();
 

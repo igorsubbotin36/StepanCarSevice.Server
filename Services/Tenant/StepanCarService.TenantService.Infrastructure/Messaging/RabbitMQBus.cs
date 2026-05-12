@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using StepanCarService.Core.Models;
-using StepanCarSevice.AuthService.Application.Interfaces;
+using StepanCarService.TenantService.Application.Interfaces;
 using System.Text;
 using System.Text.Json;
 
-namespace StepanCarSevice.AuthService.Infrastructure.Messaging.RabbitMQ
+namespace StepanCarService.TenantService.Infrastructure.Messaging
 {
     public class RabbitMQBus : IMessageBus, IAsyncDisposable
     {
@@ -49,7 +49,7 @@ namespace StepanCarSevice.AuthService.Infrastructure.Messaging.RabbitMQ
                     durable: true,
                     autoDelete: false,
                     arguments: null);
-                await _channel.QueueDeclareAsync(
+                /*await _channel.QueueDeclareAsync(
                    queue: _settings.QueueName,
                    durable: true,
                    exclusive: false,
@@ -58,7 +58,7 @@ namespace StepanCarSevice.AuthService.Infrastructure.Messaging.RabbitMQ
                     _settings.QueueName,
                     _settings.ExchangeName,
                     routingKey: null
-                    );
+                    );*/
                 var json = JsonSerializer.Serialize(message, new JsonSerializerOptions
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
