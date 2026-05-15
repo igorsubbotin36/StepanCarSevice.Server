@@ -40,10 +40,7 @@ namespace StepanCarSevice.AuthService.Infrastructure.Services
                     new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key)),
                     SecurityAlgorithms.HmacSha256));
             var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
-            var response = new AuthResponseDto
-            {
-                AccessToken = encodedJwt
-            };
+            var response = new AuthResponseDto(encodedJwt);
             return response;
         }
 
