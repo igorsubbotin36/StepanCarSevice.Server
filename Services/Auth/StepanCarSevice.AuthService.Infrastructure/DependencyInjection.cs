@@ -48,7 +48,7 @@ namespace StepanCarSevice.AuthService.Infrastructure
                 configuration.GetSection("RabbitMQ"));
             services.AddScoped<TenantBaseRepository<AuthDbContext>>();
             services.AddScoped<ITenantRegisteredHandler, TenantRegisteredHandler<TenantBaseRepository<AuthDbContext>>>();
-            services.AddHostedService<TenantRegisteredConsumer>();
+            services.AddHostedService<TenantEventsConsumer>();
 
 
             var connectionString = configuration.GetConnectionString("PostgreSQL");

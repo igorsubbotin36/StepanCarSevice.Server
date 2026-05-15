@@ -9,6 +9,5 @@ namespace StepanCarService.TenantService.Infrastructure.Messaging
         public string Password { get; set; } = "guest";
         public string VirtualHost { get; set; } = "/";
         public string ExchangeName { get; set; } = "default";
-        public string QueueName { get; set; } = "tenant.registered";
     }
 }

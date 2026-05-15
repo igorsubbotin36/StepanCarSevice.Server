@@ -34,13 +34,13 @@ namespace StepanCarSevice.DetailService.Infrastructure
             services.AddScoped<IDetailService, DetailInteractionService>();
             services.AddScoped<IErrorMapper, ErrorMapper>();
             services.AddScoped<ITenantRepository, TenantBaseRepository<DetailDbContext>>();
-            services.AddHostedService<TenantRegisteredConsumer>();
+            services.AddHostedService<TenantEventsConsumer>();
 
             services.Configure<RabbitMQConsumerSetting>(
                 configuration.GetSection("RabbitMQ"));
             services.AddScoped<TenantBaseRepository<DetailDbContext>>();
             services.AddScoped<ITenantRegisteredHandler, TenantRegisteredHandler<TenantBaseRepository<DetailDbContext>>>();
-            services.AddHostedService<TenantRegisteredConsumer>();
+            services.AddHostedService<TenantEventsConsumer>();
 
             var connectionString = configuration.GetConnectionString("PostgreSQL");
             if (string.IsNullOrEmpty(connectionString))

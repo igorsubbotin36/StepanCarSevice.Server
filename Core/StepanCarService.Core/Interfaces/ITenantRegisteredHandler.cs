@@ -10,6 +10,6 @@ namespace StepanCarSevice.AuthService.Application.Interfaces
 {
     public interface ITenantRegisteredHandler
     {
-        Task<Result> HandleAsync(TenantRegisteredEvent tenantRegisteredEvent);
+        Task<Result> HandleAsync(TenantEvent tenantEvent);
     }
 }

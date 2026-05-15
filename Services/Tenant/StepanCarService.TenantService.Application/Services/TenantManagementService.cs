@@ -1,8 +1,10 @@
 ﻿using StepanCarService.Core.Entities;
+using StepanCarService.Core.Events;
 using StepanCarService.Core.Interfaces.Repositories;
 using StepanCarService.Core.Models;
 using StepanCarService.TenantService.Application.Interfaces;
 using StepanCarService.TenantService.Application.Models.DTOs;
+using System.Xml.Linq;
 
 namespace StepanCarService.TenantService.Application.Services;
 
@@ -30,22 +32,28 @@ public class TenantManagementService : ITenantService
         };
         try
         {
-            await _messageBus.PublishAsync(newTenant);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            return Result.Failure(MessageBusErrors.MessageNotDelivered);
-        }
-        try
-        {
             await _tenantRepository.AddAsync(newTenant);
-            return Result.Success();
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
             return Result.Failure(SystemErrors.DatabaseError);
+        }
+        var tenantEvent = new TenantRegisteredEvent();
+        tenantEvent.Id = tenant.Id;
+        tenantEvent.Name = tenant.Name;
+        tenantEvent.ConnectionString = tenant.ConnectionString;
+        tenantEvent.IsActive = tenant.IsActive;
+        tenantEvent.ApiKey = tenant.ApiKey;
+        try
+        {
+            await _messageBus.PublishAsync(tenantEvent);
+            return Result.Success();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return Result.Failure(MessageBusErrors.MessageNotDelivered);
         }
     }
 
@@ -64,12 +72,27 @@ public class TenantManagementService : ITenantService
         try
         {
             await _tenantRepository.UpdateAsync(tempTenant);
-            return Result.Success();
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
             return Result.Failure(SystemErrors.DatabaseError);
+        }
+        var tenantEvent = new TenantUpdatedEvent();
+        tenantEvent.Id = tenant.Id;
+        tenantEvent.Name = tenant.Name;
+        tenantEvent.ConnectionString = tenant.ConnectionString;
+        tenantEvent.IsActive = tenant.IsActive;
+        tenantEvent.ApiKey = tenant.ApiKey;
+        try
+        {
+            await _messageBus.PublishAsync(tenantEvent);
+            return Result.Success();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return Result.Failure(MessageBusErrors.MessageNotDelivered);
         }
     }
 
@@ -83,12 +106,27 @@ public class TenantManagementService : ITenantService
         try
         {
             await _tenantRepository.DeleteAsync(tempTenant);
-            return Result.Success();
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
             return Result.Failure(SystemErrors.DatabaseError);
+        }
+        var tenantEvent = new TenantDeletedEvent();
+        tenantEvent.Id = tempTenant.Id;
+        tenantEvent.Name = tempTenant.Name;
+        tenantEvent.ConnectionString = tempTenant.ConnectionString;
+        tenantEvent.IsActive = tempTenant.IsActive;
+        tenantEvent.ApiKey = tempTenant.ApiKey;
+        try
+        {
+            await _messageBus.PublishAsync(tenantEvent);
+            return Result.Success();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return Result.Failure(MessageBusErrors.MessageNotDelivered);
         }
     }
 

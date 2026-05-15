@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace StepanCarService.Web.Messaging
+﻿namespace StepanCarService.Web.Messaging
 {
     public class RabbitMQConsumerSetting
     {
@@ -12,7 +6,7 @@ namespace StepanCarService.Web.Messaging
         public int Port { get; set; } = 5672;
         public string UserName { get; set; } = "guest";
         public string Password { get; set; } = "guest";
-        public string ExchangeName { get; set; }
-        public string QueueName { get; set; }
+        public string ExchangeName { get; set; } = "default";
+        public string QueueName { get; set; } = "default.queue";
     }
 }

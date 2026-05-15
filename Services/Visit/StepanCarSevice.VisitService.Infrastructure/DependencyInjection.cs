@@ -38,7 +38,7 @@ namespace StepanCarSevice.VisitService.Infrastructure
                 configuration.GetSection("RabbitMQ"));
             services.AddScoped<TenantBaseRepository<VisitDBContext>>();
             services.AddScoped<ITenantRegisteredHandler, TenantRegisteredHandler<TenantBaseRepository<VisitDBContext>>>();
-            services.AddHostedService<TenantRegisteredConsumer>();
+            services.AddHostedService<TenantEventsConsumer>();
 
             services.AddScoped<IErrorMapper, ErrorMapper>();
 

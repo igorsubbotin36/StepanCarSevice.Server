@@ -77,14 +77,6 @@ namespace StepanCarSevice.AuthService.Application.Services
 
             await _userRepository.AddUserAsync(user);
 
-            var userRegisteredEvent = new UserRegisteredEvent()
-            {
-                Phone = user.Phone,
-                FirstName = user.FirstName,
-                SecondName = user.SecondName,
-                Email = user.Email
-            };
-
             return Result.Success();
         }
 

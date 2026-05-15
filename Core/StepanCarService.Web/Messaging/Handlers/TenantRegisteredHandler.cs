@@ -3,11 +3,6 @@ using StepanCarService.Core.Events;
 using StepanCarService.Core.Interfaces.Repositories;
 using StepanCarService.Core.Models;
 using StepanCarSevice.AuthService.Application.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StepanCarService.Web.Messaging.Handlers
 {
@@ -19,32 +14,90 @@ namespace StepanCarService.Web.Messaging.Handlers
             _tenantRepository = tenantRepository;
         }
 
-        public async Task<Result> HandleAsync(TenantRegisteredEvent tenantRegisteredEvent)
+        public async Task<Result> HandleAsync(TenantEvent tenantEvent)
         {
-            TenantInfoEntity newTenant = new TenantInfoEntity();
-            if (tenantRegisteredEvent != null)
+            if (tenantEvent != null)
             {
-                newTenant.Id = tenantRegisteredEvent.Id;
-                newTenant.Name = tenantRegisteredEvent.Name;
-                newTenant.IsActive = tenantRegisteredEvent.IsActive;
-                newTenant.ApiKey = tenantRegisteredEvent.ApiKey;
-                newTenant.ConnectionString = tenantRegisteredEvent.ConnectionString;
-                newTenant.Identifier = tenantRegisteredEvent.Identifier;
+                switch (tenantEvent.EventType)
+                {
+                    case TenantEventType.Registered:
+                        {
+                            TenantInfoEntity newTenant = new TenantInfoEntity();
+                            newTenant.Id = tenantEvent.Id;
+                            newTenant.Name = tenantEvent.Name;
+                            newTenant.IsActive = tenantEvent.IsActive;
+                            newTenant.ApiKey = tenantEvent.ApiKey;
+                            newTenant.ConnectionString = tenantEvent.ConnectionString;
+                            newTenant.Identifier = tenantEvent.Identifier;
+                            try
+                            {
+                                await _tenantRepository.AddAsync(newTenant);
+                                return Result.Success();
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine(e);
+                                return Result.Failure(SystemErrors.DatabaseError);
+                            }
+                        }
+                    case TenantEventType.Updated:
+                        {
+                            var tenant = await _tenantRepository.GetByIdAsync(tenantEvent.Id);
+                            if (tenant != null)
+                            {
+                                tenant.Id = tenantEvent.Id;
+                                tenant.Name = tenantEvent.Name;
+                                tenant.IsActive = tenantEvent.IsActive;
+                                tenant.ApiKey = tenantEvent.ApiKey;
+                                tenant.ConnectionString = tenantEvent.ConnectionString;
+                                tenant.Identifier = tenantEvent.Identifier;
+                            }
+                            else
+                            {
+                                Console.WriteLine("Не найден тенант для обновления");
+                                return Result.Failure(ModelErrors.RequestedModelIsNull);
+                            }
+                            try
+                            {
+                                await _tenantRepository.UpdateAsync(tenant);
+                                return Result.Success();
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine(e);
+                                return Result.Failure(SystemErrors.DatabaseError);
+                            }
+                        }
+                    case TenantEventType.Deleted:
+                        {
+                            var tenant = await _tenantRepository.GetByIdAsync(tenantEvent.Id);
+                            if (tenant == null)
+                            {
+                                Console.WriteLine("Не найден тенант для удаления");
+                                return Result.Failure(ModelErrors.RequestedModelIsNull);
+                            }
+                            try
+                            {
+                                await _tenantRepository.DeleteAsync(tenant);
+                                return Result.Success();
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine(e);
+                                return Result.Failure(SystemErrors.DatabaseError);
+                            }
+                        }
+                    default:
+                        {
+                            Console.WriteLine("Внутренняя ошибка");
+                            return Result.Failure(SystemErrors.InternalError);
+                        }
+                }
             }
             else
             {
-                Console.WriteLine("Пустая модель тенанта для регистрации");
+                Console.WriteLine("Пустая модель тенанта для действия");
                 return Result.Failure(ModelErrors.RequestedModelIsNull);
-            }
-            try
-            {
-                await _tenantRepository.AddAsync(newTenant);
-                return Result.Success();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                return Result.Failure(SystemErrors.DatabaseError);
             }
         }
     }

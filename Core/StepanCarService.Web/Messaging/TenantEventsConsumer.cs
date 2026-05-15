@@ -10,13 +10,13 @@ using System.Text.Json;
 
 namespace StepanCarService.Web.Messaging
 {
-    public class TenantRegisteredConsumer : BackgroundService
+    public class TenantEventsConsumer : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly IConnection _connection;
         private readonly IChannel _channel;
         private readonly RabbitMQConsumerSetting _settings;
-        public TenantRegisteredConsumer(IOptions<RabbitMQConsumerSetting> options, IServiceScopeFactory scopeFactory)
+        public TenantEventsConsumer(IOptions<RabbitMQConsumerSetting> options, IServiceScopeFactory scopeFactory)
         {
             _settings = options.Value;
             _scopeFactory = scopeFactory;
@@ -76,7 +76,7 @@ namespace StepanCarService.Web.Messaging
                     {
                         PropertyNameCaseInsensitive = true
                     };
-                    var tenantEvent = JsonSerializer.Deserialize<TenantRegisteredEvent>(message, options);
+                    var tenantEvent = JsonSerializer.Deserialize<TenantEvent>(message, options);
                     await handler.HandleAsync(tenantEvent);
                     await _channel.BasicAckAsync(ea.DeliveryTag, false);
                 }
