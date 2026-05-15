@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StepanCarService.Web.Handlers
+namespace StepanCarService.Web.Messaging.Handlers
 {
     public class TenantRegisteredHandler<T> : ITenantRegisteredHandler where T : ITenantRepository
     {
