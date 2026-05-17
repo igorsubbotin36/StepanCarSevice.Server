@@ -9,28 +9,16 @@ namespace StepanCarSevice.DetailService.Infrastructure.Repositories
     {
         protected readonly DetailDbContext _dbContext;
         protected readonly DbSet<T> _dbSet;
-        protected readonly ILogger<Repository<T>> _logger;
-        public Repository(DetailDbContext context, ILogger<Repository<T>> logger)
+        public Repository(DetailDbContext context)
         {
             _dbContext = context;
             _dbSet = context.Set<T>();
-            _logger = logger;
         }
 
-        public async Task<bool> AddAsync(T entity)
+        public async Task AddAsync(T entity)
         {
-            try
-            {
-                _dbSet.Add(entity);
-                await _dbContext.SaveChangesAsync();
-                _logger.LogInformation($"{entity.ToString()} добавлено!");
-                return true;
-            }
-            catch (Exception e)
-            {
-                _logger.LogError($"Ошибка при добавлении {entity.ToString()} в БД", e);
-                return false;
-            }
+            _dbSet.Add(entity);
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

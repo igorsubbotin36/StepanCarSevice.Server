@@ -8,9 +8,9 @@ namespace StepanCarSevice.AuthService.Domain.Repositories
         Task<User?> GetUserByPhoneAsync(string phone);
         Task<User?> GetUserByIdAsync(int id);
         Task<List<User>> GetAllUsersAsync();
-        Task<bool> AddUserAsync(User user);
-        Task<bool> UpdateUserAsync(User user);
-        Task<bool> DeleteUserAsync(User user);
+        Task AddUserAsync(User user);
+        Task UpdateUserAsync(User user);
+        Task DeleteUserAsync(User user);
         Task<bool> ExistsByEmailAsync(string email);
         Task<bool> ExistsByPhoneAsync(string phone);
         Task<int?> GetRoleIdAsync(string name);

@@ -8,7 +8,7 @@ namespace StepanCarSevice.VisitService.Infrastructure.Repositories
 {
     public class CarRepository : Repository<CarSnapshot>, ICarRepository
     {
-        public CarRepository(VisitDBContext context, ILogger<CarRepository> logger) : base(context, logger) { }
+        public CarRepository(VisitDBContext context) : base(context) { }
         public async Task<CarSnapshot?> GetCarByVinAsync(string win)
         {
             return await _dbSet
@@ -26,20 +26,10 @@ namespace StepanCarSevice.VisitService.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<bool> UpdateCarAsync(CarSnapshot car)
+        public async Task UpdateCarAsync(CarSnapshot car)
         {
-            try
-            {
-                _dbSet.Update(car);
-                await _dbContext.SaveChangesAsync();
-                _logger.LogInformation($"Изменение информации у {car.VIN}");
-                return true;
-            }
-            catch (Exception e)
-            {
-                _logger.LogError($"Ошибка изменения информации у {car.VIN}", e);
-                return false;
-            }
+            _dbSet.Update(car);
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

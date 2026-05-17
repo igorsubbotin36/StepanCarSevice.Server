@@ -7,7 +7,7 @@ namespace StepanCarSevice.DetailService.Domain.Repositories
         Task<List<Detail>> GetDetailsByCodeAsync(string code);
         Task<List<Detail>> GetAllDetailsAsync();
         Task<Detail?> GetDetailByIdAsync(int id);
-        Task<bool> EditDetailAsync(Detail detail);
-        Task<bool> DecrementDetailsAsync(int[] id);
+        Task EditDetailAsync(Detail detail);
+        Task DecrementDetailsAsync(int[] id);
     }
 }

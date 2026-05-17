@@ -35,10 +35,18 @@ namespace StepanCarSevice.VisitService.Application.Services
         {
             if (car == null)
                 return Result.Failure(ModelErrors.ModelNotFound);
-            bool updateSuccess = await _carRepository.UpdateCarAsync(car);
-            if (!updateSuccess)
+            try
+            {
+                await _carRepository.UpdateCarAsync(car);
+                _logger.LogInformation($"{car.Id} информация обновлена");
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{car.Id} ошибка при обновлении информации о автомобиле");
                 return Result.Failure(SystemErrors.DatabaseError);
-            return Result.Success();
+            }
+            
         }
     }
 }

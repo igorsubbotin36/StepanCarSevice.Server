@@ -41,9 +41,18 @@ namespace StepanCarSevice.AuthService.Application.Services
             if (user == null) 
                 return Result.Failure(UserErrors.InvalidPhone);
             user.Password = _passwordHasher.Hash(request.NewPassword);
-            if (!(await _userRepository.UpdateUserAsync(user)))
+            try
+            {
+                await _userRepository.UpdateUserAsync(user);
+                _logger.LogInformation($"{user.Id} пароль сменен");
+                return Result.Success();
+            }
+            catch (Exception e) 
+            {
+                _logger.LogError($"{user.Id} ошибка при попытке смены пароля\n{e}");
                 return Result.Failure(SystemErrors.DatabaseError);
-            return Result.Success();
+            }
+            
         }
         public async Task<Result<AuthResponseDto>> LoginAsync(LoginRequestDto request)
         {
@@ -78,10 +87,17 @@ namespace StepanCarSevice.AuthService.Application.Services
                 Password = passwordHash,
                 RoleId = (int)userRoleId
             };
-
-            await _userRepository.AddUserAsync(user);
-
-            return Result.Success();
+            try
+            {
+                await _userRepository.AddUserAsync(user);
+                _logger.LogInformation($"{user.Phone} зарегистрирован");
+                return Result.Success();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Ошибка БД при регистрации пользователя {user.Phone}\n{e}");
+                return Result.Failure(SystemErrors.DatabaseError);
+            }
         }
 
         public Result<UserDto> GetClaims()
@@ -117,12 +133,20 @@ namespace StepanCarSevice.AuthService.Application.Services
                 user.Email = request.Email;
             if (request.Phone != null)
                 user.Phone = request.Phone;
-            if (!(await _userRepository.UpdateUserAsync(user)))
+            try
+            {
+                await _userRepository.UpdateUserAsync(user);
+                _logger.LogInformation($"{user.Id} информация обновлена");
+                return Result.Success();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"{user.Id} ошибка при попытке обновления информации о пользователе\n{e}");
                 return Result.Failure(SystemErrors.DatabaseError);
-            return Result.Success();
+            }
         }
 
-        public async Task<ClaimsIdentity?> GetIdentityAsync(string phone, string password)
+        private async Task<ClaimsIdentity?> GetIdentityAsync(string phone, string password)
         {
             User? person = await _userRepository.GetUserByPhoneAsync(phone);
             if (person != null && _passwordHasher.Verify(password, person.Password))

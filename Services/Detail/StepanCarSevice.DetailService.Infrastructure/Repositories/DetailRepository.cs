@@ -7,27 +7,17 @@ namespace StepanCarSevice.DetailService.Infrastructure.Repositories
 {
     public class DetailRepository : Repository<Detail>, IDetailRepository
     {
-        public DetailRepository(DetailDbContext context, ILogger<DetailRepository> logger) : base(context, logger) { }
+        public DetailRepository(DetailDbContext context) : base(context) { }
 
-        public async Task<bool> DecrementDetailsAsync(int[] id)
+        public async Task DecrementDetailsAsync(int[] id)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<bool> EditDetailAsync(Detail detail)
+        public async Task EditDetailAsync(Detail detail)
         {
-            try
-            {
-                _dbSet.Update(detail);
-                await _dbContext.SaveChangesAsync();
-                _logger.LogInformation($"Изменение информации у {detail.Name}");
-                return true;
-            }
-            catch (Exception e)
-            {
-                _logger.LogError($"Ошибка изменения информации у {detail.Name}", e);
-                return false;
-            }
+            _dbSet.Update(detail);
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task<List<Detail>> GetAllDetailsAsync()

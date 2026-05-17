@@ -20,10 +20,17 @@ namespace StepanCarSevice.DetailService.Application.Services
         {
             if (detail == null)
                 return Result.Failure(ModelErrors.RequestedModelIsNull);
-            bool updateSuccess = await _detailRepository.EditDetailAsync(detail);
-            if (!updateSuccess)
+            try
+            {
+                await _detailRepository.EditDetailAsync(detail);
+                _logger.LogInformation($"{detail.Id} обновлена информация в БД");
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{detail.Id} ошибка БД при попытке обновления информации о детали\n{ex}");
                 return Result.Failure(SystemErrors.DatabaseError);
-            return Result.Success();
+            }
         }
 
         public async Task<Result<List<Detail>>> GetAllDetailsAsync()

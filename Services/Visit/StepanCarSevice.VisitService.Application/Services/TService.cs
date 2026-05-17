@@ -24,10 +24,19 @@ namespace StepanCarSevice.VisitService.Application.Services
         {
             if (model == null)
                 return Result.Failure<T>(ModelErrors.ModelNotFound);
-            bool addSuccess = await _repository.AddAsync(model);
-            if (!addSuccess)
+            try
+            {
+                await _repository.AddAsync(model);
+                _logger.LogInformation($"{model.ToString} добавлена в БД");
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{model.ToString} ошибка при добавлении в БД");
                 return Result.Failure(SystemErrors.DatabaseError);
-            return Result.Success();
+            }
+                
+            
         }
     }
 }
