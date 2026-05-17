@@ -8,9 +8,9 @@ namespace StepanCarSevice.DetailService.Application.Services
     public class TService<T> : ITService<T> where T : class
     {
         private readonly IRepository<T> _repository;
-        private readonly ILogger<T> _logger;
+        private readonly ILogger<TService<T>> _logger;
         public TService(IRepository<T> repository,
-            ILogger<T> logger)
+            ILogger<TService<T>> logger)
         {
             _repository = repository;
             _logger = logger;

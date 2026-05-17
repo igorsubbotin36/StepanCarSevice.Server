@@ -1,4 +1,5 @@
-﻿using StepanCarService.Core.Entities;
+﻿using Microsoft.Extensions.Logging;
+using StepanCarService.Core.Entities;
 using StepanCarService.Core.Events;
 using StepanCarService.Core.Interfaces.Repositories;
 using StepanCarService.Core.Models;
@@ -9,9 +10,12 @@ namespace StepanCarService.Web.Messaging.Handlers
     public class TenantRegisteredHandler<T> : ITenantRegisteredHandler where T : ITenantRepository
     {
         private readonly T _tenantRepository;
-        public TenantRegisteredHandler(T tenantRepository)
+        private readonly ILogger<TenantRegisteredHandler<T>> _logger;
+        public TenantRegisteredHandler(T tenantRepository,
+            ILogger<TenantRegisteredHandler<T>> logger)
         {
             _tenantRepository = tenantRepository;
+            _logger = logger;
         }
 
         public async Task<Result> HandleAsync(TenantEvent tenantEvent)
@@ -32,11 +36,12 @@ namespace StepanCarService.Web.Messaging.Handlers
                             try
                             {
                                 await _tenantRepository.AddAsync(newTenant);
+                                _logger.LogInformation($"{newTenant.Id} добавлен в сервис");
                                 return Result.Success();
                             }
                             catch (Exception e)
                             {
-                                Console.WriteLine(e);
+                                _logger.LogError($"{newTenant.Id} ошибка добавления в сервис\n{e}");
                                 return Result.Failure(SystemErrors.DatabaseError);
                             }
                         }
@@ -54,17 +59,18 @@ namespace StepanCarService.Web.Messaging.Handlers
                             }
                             else
                             {
-                                Console.WriteLine("Не найден тенант для обновления");
+                                _logger.LogError($"{tenantEvent.Id} не найден для обновления!");
                                 return Result.Failure(ModelErrors.RequestedModelIsNull);
                             }
                             try
                             {
                                 await _tenantRepository.UpdateAsync(tenant);
+                                _logger.LogInformation($"{tenant.Id} обновлен в сервисе");
                                 return Result.Success();
                             }
                             catch (Exception e)
                             {
-                                Console.WriteLine(e);
+                                _logger.LogError($"{tenant.Id} ошибка обновления в сервисе\n{e}");
                                 return Result.Failure(SystemErrors.DatabaseError);
                             }
                         }
@@ -73,30 +79,31 @@ namespace StepanCarService.Web.Messaging.Handlers
                             var tenant = await _tenantRepository.GetByIdAsync(tenantEvent.Id);
                             if (tenant == null)
                             {
-                                Console.WriteLine("Не найден тенант для удаления");
+                                _logger.LogWarning($"{tenantEvent.Id} не найден для удаления!");
                                 return Result.Failure(ModelErrors.RequestedModelIsNull);
                             }
                             try
                             {
                                 await _tenantRepository.DeleteAsync(tenant);
+                                _logger.LogInformation($"{tenant.Id} удален в сервисе");
                                 return Result.Success();
                             }
                             catch (Exception e)
                             {
-                                Console.WriteLine(e);
+                                _logger.LogError($"{tenant.Id} ошибка удаления в сервисе\n{e}");
                                 return Result.Failure(SystemErrors.DatabaseError);
                             }
                         }
                     default:
                         {
-                            Console.WriteLine("Внутренняя ошибка");
+                            _logger.LogWarning($"Не был понят тип события {tenantEvent.EventType}");
                             return Result.Failure(SystemErrors.InternalError);
                         }
                 }
             }
             else
             {
-                Console.WriteLine("Пустая модель тенанта для действия");
+                _logger.LogError("Пришло пустое событие");
                 return Result.Failure(ModelErrors.RequestedModelIsNull);
             }
         }

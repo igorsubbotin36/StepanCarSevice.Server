@@ -44,7 +44,6 @@ namespace StepanCarService.Web.Messaging
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            Console.WriteLine($"Exchange: '{_settings.ExchangeName}', Queue: '{_settings.QueueName}'");
             await _channel.ExchangeDeclareAsync(
                     exchange: _settings.ExchangeName,
                     type: ExchangeType.Fanout,
