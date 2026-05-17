@@ -49,16 +49,6 @@ namespace StepanCarService.TenantService.Infrastructure.Messaging
                     durable: true,
                     autoDelete: false,
                     arguments: null);
-                /*await _channel.QueueDeclareAsync(
-                   queue: _settings.QueueName,
-                   durable: true,
-                   exclusive: false,
-                   autoDelete: false);
-                await _channel.QueueBindAsync(
-                    _settings.QueueName,
-                    _settings.ExchangeName,
-                    routingKey: null
-                    );*/
                 var json = JsonSerializer.Serialize(message, new JsonSerializerOptions
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase

@@ -1,4 +1,5 @@
 using Microsoft.OpenApi.Models;
+using NLog.Web;
 using StepanCarSevice.VisitService.Infrastructure;
 
 namespace StepanCarSevice.VisitService.API
@@ -7,9 +8,13 @@ namespace StepanCarSevice.VisitService.API
     {
         public static void Main(string[] args)
         {
+            Console.Title = "Visit";
             var builder = WebApplication.CreateBuilder(args);
 
             var configuration = builder.Configuration;
+
+            builder.Logging.ClearProviders();
+            builder.Host.UseNLog();
             builder.Services.AddControllers();
             builder.Services.AddInfrastructure(configuration);
 
@@ -48,7 +53,6 @@ namespace StepanCarSevice.VisitService.API
             ;
 
             var app = builder.Build();
-            var hostedServices = app.Services.GetServices<IHostedService>();
             if (app.Environment.IsDevelopment())
             {
                 Environment.SetEnvironmentVariable("DB_CONNECTION_STRING",

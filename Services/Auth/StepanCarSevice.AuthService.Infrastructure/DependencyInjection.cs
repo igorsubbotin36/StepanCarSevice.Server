@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using NLog;
 using StepanCarService.Core.Entities;
 using StepanCarService.Core.Interfaces;
 using StepanCarService.Core.Interfaces.Repositories;
@@ -34,6 +35,7 @@ namespace StepanCarSevice.AuthService.Infrastructure
         this IServiceCollection services,
         IConfiguration configuration)
         {
+            var logger = LogManager.GetCurrentClassLogger();
             services.AddHttpContextAccessor();
             services.AddSingleton<IPasswordHasher, PasswordHasher>();
             services.AddScoped<IUserRepository, UserRepository>();
@@ -113,18 +115,17 @@ namespace StepanCarSevice.AuthService.Infrastructure
                    {
                        OnAuthenticationFailed = context =>
                        {
-                           Console.WriteLine($"OnAuthenticationFailed: {context.Exception.Message}");
-                           Console.WriteLine($"Exception details: {context.Exception}");
+                           logger.Error($"OnAuthenticationFailed: {context.Exception.Message}\nException details: {context.Exception}");
                            return Task.CompletedTask;
                        },
                        OnTokenValidated = context =>
                        {
-                           Console.WriteLine("OnTokenValidated: Token is valid!");
+                           logger.Info("OnTokenValidated: Token is valid!");
                            return Task.CompletedTask;
                        },
                        OnChallenge = context =>
                        {
-                           Console.WriteLine($"OnChallenge: {context.Error}, {context.ErrorDescription}");
+                           logger.Error($"OnChallenge: {context.Error}, {context.ErrorDescription}");
                            return Task.CompletedTask;
                        }
                    };

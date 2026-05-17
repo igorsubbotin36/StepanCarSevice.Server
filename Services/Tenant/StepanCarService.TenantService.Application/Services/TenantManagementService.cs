@@ -1,4 +1,5 @@
-﻿using StepanCarService.Core.Entities;
+﻿using Microsoft.Extensions.Logging;
+using StepanCarService.Core.Entities;
 using StepanCarService.Core.Events;
 using StepanCarService.Core.Interfaces.Repositories;
 using StepanCarService.Core.Models;
@@ -12,10 +13,14 @@ public class TenantManagementService : ITenantService
 {
     private readonly ITenantRepository _tenantRepository;
     private readonly IMessageBus _messageBus;
-    public TenantManagementService(ITenantRepository tenantRepository, IMessageBus messageBus)
+    private readonly ILogger<TenantManagementService> _logger;
+    public TenantManagementService(ITenantRepository tenantRepository, 
+        IMessageBus messageBus,
+        ILogger<TenantManagementService> logger)
     {
         _tenantRepository = tenantRepository;
         _messageBus = messageBus;
+        _logger = logger;
     }
     
     public async Task<Result> AddAsync(TenantDto tenant)
@@ -33,10 +38,11 @@ public class TenantManagementService : ITenantService
         try
         {
             await _tenantRepository.AddAsync(newTenant);
+            _logger.LogInformation($"{newTenant.Id} зарегистрирован!");
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            _logger.LogError($"Ошибка БД при регистрации тенанта\n{e}");
             return Result.Failure(SystemErrors.DatabaseError);
         }
         var tenantEvent = new TenantRegisteredEvent();
@@ -48,11 +54,12 @@ public class TenantManagementService : ITenantService
         try
         {
             await _messageBus.PublishAsync(tenantEvent);
+            _logger.LogInformation($"{tenantEvent.EventType} сообщение другим сервисам отправлено");
             return Result.Success();
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            _logger.LogError($"{tenantEvent.EventType} {tenantEvent.Id} сообщение не отправлено\n{e}");
             return Result.Failure(MessageBusErrors.MessageNotDelivered);
         }
     }
@@ -72,10 +79,11 @@ public class TenantManagementService : ITenantService
         try
         {
             await _tenantRepository.UpdateAsync(tempTenant);
+            _logger.LogInformation($"{tempTenant.Id} данные обновлены!");
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            _logger.LogError($"Ошибка БД при обновлении данных тенанта\n{e}");
             return Result.Failure(SystemErrors.DatabaseError);
         }
         var tenantEvent = new TenantUpdatedEvent();
@@ -87,11 +95,12 @@ public class TenantManagementService : ITenantService
         try
         {
             await _messageBus.PublishAsync(tenantEvent);
+            _logger.LogInformation($"{tenantEvent.EventType} сообщение другим сервисам отправлено");
             return Result.Success();
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            _logger.LogError($"{tenantEvent.EventType} {tenantEvent.Id} сообщение не отправлено\n{e}");
             return Result.Failure(MessageBusErrors.MessageNotDelivered);
         }
     }
@@ -106,10 +115,11 @@ public class TenantManagementService : ITenantService
         try
         {
             await _tenantRepository.DeleteAsync(tempTenant);
+            _logger.LogInformation($"{tempTenant.Id} тенант удален!");
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            _logger.LogError($"Ошибка БД при удалении тенанта\n{e}");
             return Result.Failure(SystemErrors.DatabaseError);
         }
         var tenantEvent = new TenantDeletedEvent();
@@ -121,11 +131,12 @@ public class TenantManagementService : ITenantService
         try
         {
             await _messageBus.PublishAsync(tenantEvent);
+            _logger.LogInformation($"{tenantEvent.EventType} сообщение другим сервисам отправлено");
             return Result.Success();
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            _logger.LogError($"{tenantEvent.EventType} {tenantEvent.Id} сообщение не отправлено\n{e}");
             return Result.Failure(MessageBusErrors.MessageNotDelivered);
         }
     }
@@ -141,7 +152,7 @@ public class TenantManagementService : ITenantService
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            _logger.LogError($"Ошибка БД при получении тенанта по Id {tenantId}\n{e}");
             return Result.Failure<TenantDto>(SystemErrors.DatabaseError);
         }
     }
@@ -157,7 +168,7 @@ public class TenantManagementService : ITenantService
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            _logger.LogError($"Ошибка БД при получении тенанта по Name {tenantName}\n{e}");
             return Result.Failure<TenantDto>(SystemErrors.DatabaseError);
         }
     }
@@ -176,7 +187,7 @@ public class TenantManagementService : ITenantService
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            _logger.LogError($"Ошибка БД при получении всех тенантов\n{e}");
             return Result.Failure<List<TenantDto>>(SystemErrors.DatabaseError);
         }
     }

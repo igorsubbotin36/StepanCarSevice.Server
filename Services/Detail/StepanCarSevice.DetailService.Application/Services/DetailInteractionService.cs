@@ -1,4 +1,5 @@
-﻿using StepanCarService.Core.Models;
+﻿using Microsoft.Extensions.Logging;
+using StepanCarService.Core.Models;
 using StepanCarSevice.DetailService.Application.Interfaces;
 using StepanCarSevice.DetailService.Domain.Entities;
 using StepanCarSevice.DetailService.Domain.Repositories;
@@ -8,9 +9,12 @@ namespace StepanCarSevice.DetailService.Application.Services
     public class DetailInteractionService : IDetailService
     {
         private readonly IDetailRepository _detailRepository;
-        public DetailInteractionService(IDetailRepository repository)
+        private readonly ILogger<DetailInteractionService> _logger;
+        public DetailInteractionService(IDetailRepository repository,
+            ILogger<DetailInteractionService> logger)
         {
             _detailRepository = repository;
+            _logger = logger;
         }
         public async Task<Result> EditDetailAsync(Detail detail)
         {

@@ -7,21 +7,7 @@ using System.Threading.Tasks;
 
 namespace StepanCarSevice.AuthService.Application.Models.Dto
 {
-    public class UserDto
-    {
-        public List<ClaimDto> Claims { get; set; }
-    }
-    public class ClaimDto
-    {
-        public string Type { get; set; }
-        public string Value { get; set; }
-    }
-    public class UserInfoDto
-    {
-        public string? FirstName { get; set; }
-        public string? SecondName { get; set; }
-        public string? Email { get; set; }
-        public string? Phone { get; set; }
-        public string Role { get; set; }
-    }
+    public record UserDto(List<ClaimDto> Claims);
+    public record ClaimDto(string Type, string Value);
+    public record UserInfoDto(string FirstName, string SecondName, string Email, string? Phone, string Role);
 }

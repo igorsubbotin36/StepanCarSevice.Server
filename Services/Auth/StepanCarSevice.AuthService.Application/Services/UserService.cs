@@ -1,4 +1,5 @@
-﻿using StepanCarService.Core.Events;
+﻿using Microsoft.Extensions.Logging;
+using StepanCarService.Core.Events;
 using StepanCarService.Core.Models;
 using StepanCarSevice.AuthService.Application.Auth;
 using StepanCarSevice.AuthService.Application.Interfaces;
@@ -16,17 +17,20 @@ namespace StepanCarSevice.AuthService.Application.Services
         private readonly IPasswordHasher _passwordHasher;
         private readonly ITokenGeneratorService _tokenGeneratorService;
         private readonly ICurrentUserService _currentUserService;
+        private readonly ILogger<UserService> _logger;
 
         public UserService(IUserRepository userRepository,
             IPasswordHasher passwordHasher, 
             ITokenGeneratorService tokenGeneratorService, 
-            ICurrentUserService currentUserService
+            ICurrentUserService currentUserService,
+            ILogger<UserService> logger
             )
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
             _tokenGeneratorService = tokenGeneratorService;
             _currentUserService = currentUserService;
+            _logger = logger;
         }
 
         public async Task<Result> ChangePasswordAsync(ChangePasswordRequestDto request, string phone)
@@ -85,8 +89,7 @@ namespace StepanCarSevice.AuthService.Application.Services
             var claims = _currentUserService.GetAllClaims();
             if (claims == null || claims.Count == 0)
                 return Result.Failure<UserDto>(AuthErrors.InvalidCredentials);
-            UserDto result = new UserDto();
-            result.Claims = new List<ClaimDto>();
+            List<ClaimDto> list = new List<ClaimDto>();
             var excludedTypes = new HashSet<string>
             {
                 "nbf", "exp", "iss", "aud"
@@ -95,8 +98,9 @@ namespace StepanCarSevice.AuthService.Application.Services
             {
                 if (excludedTypes.Contains(claim.Type))
                     continue;
-                result.Claims.Add(new ClaimDto() { Type = claim.Type.Split('/').Last(), Value = claim.Value });
+                list.Add(new ClaimDto(claim.Type.Split('/').Last(), claim.Value));
             }
+            UserDto result = new UserDto(list);
             return Result.Success(result);
         }
 
@@ -141,13 +145,7 @@ namespace StepanCarSevice.AuthService.Application.Services
             User? person = await _userRepository.GetUserByPhoneAsync(phone);
             if (person == null)
                 return Result.Failure<UserInfoDto>(UserErrors.InvalidPhone);
-            UserInfoDto userInfoDto = new UserInfoDto() { 
-                Email = person.Email, 
-                FirstName = person.FirstName,
-                SecondName = person.SecondName,
-                Phone = person.Phone,
-                Role = person.Role.Name
-            };
+            UserInfoDto userInfoDto = new UserInfoDto(person.FirstName, person.SecondName, person.Email, person.Phone, person.Role.Name);
             return Result.Success(userInfoDto);
         }
     }

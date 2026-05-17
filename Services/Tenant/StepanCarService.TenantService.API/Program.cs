@@ -1,8 +1,13 @@
 using Microsoft.OpenApi.Models;
+using NLog.Web;
 using StepanCarService.TenantService.Infrastructure;
 
+Console.Title = "Tenant";
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
+
+builder.Logging.ClearProviders();
+builder.Host.UseNLog();
 builder.Services.AddControllers();
 builder.Services.AddInfrastructure(configuration);
 

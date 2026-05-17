@@ -1,4 +1,5 @@
 using Microsoft.OpenApi.Models;
+using NLog.Web;
 using StepanCarSevice.DetailService.Infrastructure;
 namespace StepanCarSevice.DetailService.API
 {
@@ -6,9 +7,14 @@ namespace StepanCarSevice.DetailService.API
     {
         public static void Main(string[] args)
         {
+            Console.Title = "Detail";
             var builder = WebApplication.CreateBuilder(args);
 
             var configuration = builder.Configuration;
+
+            builder.Logging.ClearProviders();
+            builder.Host.UseNLog();
+
             builder.Services.AddControllers();
             builder.Services.AddInfrastructure(configuration);
 

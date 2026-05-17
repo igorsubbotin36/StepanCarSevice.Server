@@ -1,4 +1,5 @@
-﻿using StepanCarService.Core.Models;
+﻿using Microsoft.Extensions.Logging;
+using StepanCarService.Core.Models;
 using StepanCarSevice.VisitService.Application.Interfaces;
 using StepanCarSevice.VisitService.Domain.Entities;
 using StepanCarSevice.VisitService.Domain.Repositories;
@@ -7,9 +8,12 @@ namespace StepanCarSevice.VisitService.Application.Services
     public class CarService : ICarService
     {
         private readonly ICarRepository _carRepository;
-        public CarService(ICarRepository carRepository)
+        private readonly ILogger<CarService> _logger;
+        public CarService(ICarRepository carRepository,
+            ILogger<CarService> logger)
         {
             _carRepository = carRepository;
+            _logger = logger;
         }
         public async Task<Result<CarSnapshot>> GetCarByVinAsync(string win)
         {

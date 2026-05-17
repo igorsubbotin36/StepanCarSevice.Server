@@ -1,8 +1,12 @@
 using Microsoft.OpenApi.Models;
+using NLog.Web;
 using StepanCarSevice.AuthService.Infrastructure;
 
+Console.Title = "Auth";
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
+builder.Logging.ClearProviders();
+builder.Host.UseNLog();
 builder.Services.AddControllers();
 builder.Services.AddInfrastructure(configuration);
 

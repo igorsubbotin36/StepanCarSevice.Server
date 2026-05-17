@@ -1,4 +1,5 @@
-﻿using StepanCarService.Core.Models;
+﻿using Microsoft.Extensions.Logging;
+using StepanCarService.Core.Models;
 using StepanCarSevice.VisitService.Application.Interfaces;
 using StepanCarSevice.VisitService.Domain.Repositories;
 using System;
@@ -12,9 +13,12 @@ namespace StepanCarSevice.VisitService.Application.Services
     public class TService<T> : ITService<T> where T : class
     {
         private readonly IRepository<T> _repository;
-        public TService(IRepository<T> repository)
+        private readonly ILogger<T> _logger;
+        public TService(IRepository<T> repository,
+            ILogger<T> logger)
         {
             _repository = repository;
+            _logger = logger;
         }
         public async Task<Result> AddASync(T model)
         {
