@@ -30,6 +30,7 @@ public class TenantManagementService : ITenantService
         TenantInfoEntity newTenant = new TenantInfoEntity()
         {
             Id = tenant.Id,
+            Identifier = tenant.Identifier,
             Name = tenant.Name,
             ConnectionString = tenant.ConnectionString,
             IsActive = tenant.IsActive,
@@ -46,6 +47,7 @@ public class TenantManagementService : ITenantService
             return Result.Failure(SystemErrors.DatabaseError);
         }
         var tenantEvent = new TenantRegisteredEvent();
+        tenantEvent.Identifier = tenant.Identifier;
         tenantEvent.Id = tenant.Id;
         tenantEvent.Name = tenant.Name;
         tenantEvent.ConnectionString = tenant.ConnectionString;

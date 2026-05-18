@@ -1,5 +1,8 @@
+using Finbuckle.MultiTenant;
+using Finbuckle.MultiTenant.Abstractions;
 using Microsoft.OpenApi.Models;
 using NLog.Web;
+using StepanCarService.Core.Entities;
 using StepanCarSevice.AuthService.Infrastructure;
 
 Console.Title = "Auth";
@@ -63,11 +66,23 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseRouting();
+
+app.UseMultiTenant();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
+using (var scope = app.Services.CreateScope())
+{
+    var store = scope.ServiceProvider.GetRequiredService<IMultiTenantStore<TenantInfoEntity>>();
+    var tenant = await store.TryGetAsync("string1"); // тот самый идентификатор из поддомена
+    if (tenant != null)
+        Console.WriteLine($"Найден арендатор: {tenant.Identifier}");
+    else
+        Console.WriteLine("Арендатор НЕ найден в хранилище по ключу 'string1'");
+}
 using (var scope = app.Services.CreateScope())
 {
     var serviceProvider = scope.ServiceProvider;

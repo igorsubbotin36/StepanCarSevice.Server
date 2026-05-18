@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Finbuckle.MultiTenant.Abstractions;
+using Microsoft.Extensions.Logging;
+using StepanCarService.Core.Entities;
 using StepanCarService.Core.Events;
 using StepanCarService.Core.Models;
 using StepanCarSevice.AuthService.Application.Auth;
@@ -18,12 +20,15 @@ namespace StepanCarSevice.AuthService.Application.Services
         private readonly ITokenGeneratorService _tokenGeneratorService;
         private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<UserService> _logger;
+        private readonly IMultiTenantContextAccessor<TenantInfoEntity> _accessor;
+        private TenantInfoEntity? CurrentTenant => _accessor.MultiTenantContext?.TenantInfo;
 
         public UserService(IUserRepository userRepository,
             IPasswordHasher passwordHasher, 
             ITokenGeneratorService tokenGeneratorService, 
             ICurrentUserService currentUserService,
-            ILogger<UserService> logger
+            ILogger<UserService> logger,
+            IMultiTenantContextAccessor<TenantInfoEntity> accessor
             )
         {
             _userRepository = userRepository;
@@ -31,6 +36,7 @@ namespace StepanCarSevice.AuthService.Application.Services
             _tokenGeneratorService = tokenGeneratorService;
             _currentUserService = currentUserService;
             _logger = logger;
+            _accessor = accessor;
         }
 
         public async Task<Result> ChangePasswordAsync(ChangePasswordRequestDto request, string phone)
@@ -74,19 +80,33 @@ namespace StepanCarSevice.AuthService.Application.Services
             if (await _userRepository.ExistsByPhoneAsync(request.Phone))
                 return Result.Failure(RegisterErrors.UserAlreadyExists);
 
-            int? userRoleId = await _userRepository.GetRoleIdAsync("User");
-            if (userRoleId == null)
-                return Result.Failure(RegisterErrors.RoleIdNotFound);
-
             var passwordHash = _passwordHasher.Hash(request.Password);
-            var user = new User() { 
+            var user = new User()
+            {
                 Email = request.Email,
                 Phone = request.Phone,
                 FirstName = request.FirstName,
                 SecondName = request.SecondName,
-                Password = passwordHash,
-                RoleId = (int)userRoleId
+                Password = passwordHash
             };
+
+            var tenant = CurrentTenant;
+            int? userRoleId;
+            if (tenant == null)
+            {
+                userRoleId = await _userRepository.GetRoleIdAsync("TenantOwner");
+                if (userRoleId == null)
+                    return Result.Failure(RegisterErrors.RoleIdNotFound);
+                user.TenantId = null;
+            }
+            else
+            {
+                userRoleId = await _userRepository.GetRoleIdAsync("User");
+                if (userRoleId == null)
+                    return Result.Failure(RegisterErrors.RoleIdNotFound);
+                user.TenantId = tenant.Id;
+            }
+            user.RoleId = (int)userRoleId;
             try
             {
                 await _userRepository.AddUserAsync(user);

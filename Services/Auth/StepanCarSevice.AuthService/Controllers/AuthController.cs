@@ -1,5 +1,8 @@
+using Finbuckle.MultiTenant;
+using Finbuckle.MultiTenant.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using StepanCarService.Core.Entities;
 using StepanCarService.Core.Interfaces;
 using StepanCarService.Web.Controllers;
 using StepanCarSevice.AuthService.Application.Interfaces.Services;
@@ -12,8 +15,13 @@ namespace StepanCarSevice.AuthService.Controllers
     public class AuthController : ApiControllerBase<AuthController>
     {
         private readonly IUserService _userService;
-        public AuthController(IUserService userService, ILogger<AuthController> logger, IErrorMapper errorMapper) : base (errorMapper, logger)
+        private readonly IMultiTenantContextAccessor<TenantInfoEntity> _accessor;
+        public AuthController(IUserService userService,
+            IMultiTenantContextAccessor<TenantInfoEntity> accessor,
+            ILogger<AuthController> logger, 
+            IErrorMapper errorMapper) : base (errorMapper, logger)
         {
+            _accessor = accessor;
             _userService = userService;
         }
 
