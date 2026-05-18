@@ -60,85 +60,6 @@ namespace StepanCarSevice.AuthService.Application.Services
             }
             
         }
-        public async Task<Result<AuthResponseDto>> LoginAsync(LoginRequestDto request)
-        {
-            var identity = await GetIdentityAsync(request.Phone, request.Password);
-
-            if (identity == null)
-            {
-                return Result.Failure<AuthResponseDto>(AuthErrors.InvalidCredentials);
-            }
-            var token = _tokenGeneratorService.GenerateToken(identity);
-            return Result.Success(token);
-        }
-
-        public async Task<Result> RegisterAsync(RegisterRequestDto request)
-        {
-            if (request.Password != request.ConfirmPassword)
-                return Result.Failure(RegisterErrors.PasswordsDontMatch);
-
-            if (await _userRepository.ExistsByPhoneAsync(request.Phone, GetTenantId()))
-                return Result.Failure(RegisterErrors.UserAlreadyExists);
-
-            var passwordHash = _passwordHasher.Hash(request.Password);
-            var user = new User()
-            {
-                Email = request.Email,
-                Phone = request.Phone,
-                FirstName = request.FirstName,
-                SecondName = request.SecondName,
-                Password = passwordHash
-            };
-
-            var tenantId = GetTenantId();
-            int? userRoleId;
-            if (tenantId == null)
-            {
-                userRoleId = await _userRepository.GetRoleIdAsync("TenantOwner");
-                if (userRoleId == null)
-                    return Result.Failure(RegisterErrors.RoleIdNotFound);
-                user.TenantId = null;
-            }
-            else
-            {
-                userRoleId = await _userRepository.GetRoleIdAsync("User");
-                if (userRoleId == null)
-                    return Result.Failure(RegisterErrors.RoleIdNotFound);
-                user.TenantId = tenantId;
-            }
-            user.RoleId = (int)userRoleId;
-            try
-            {
-                await _userRepository.AddUserAsync(user);
-                _logger.LogInformation($"{user.Phone} зарегистрирован");
-                return Result.Success();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError($"Ошибка БД при регистрации пользователя {user.Phone}\n{e}");
-                return Result.Failure(SystemErrors.DatabaseError);
-            }
-        }
-
-        public Result<UserDto> GetClaims()
-        {
-            var claims = _currentUserService.GetAllClaims();
-            if (claims == null || claims.Count == 0)
-                return Result.Failure<UserDto>(AuthErrors.InvalidCredentials);
-            List<ClaimDto> list = new List<ClaimDto>();
-            var excludedTypes = new HashSet<string>
-            {
-                "nbf", "exp", "iss", "aud"
-            };
-            foreach (var claim in claims)
-            {
-                if (excludedTypes.Contains(claim.Type))
-                    continue;
-                list.Add(new ClaimDto(claim.Type.Split('/').Last(), claim.Value));
-            }
-            UserDto result = new UserDto(list);
-            return Result.Success(result);
-        }
 
         public async Task<Result> UpdateUserAsync(EditUserRequestDto request, string phone)
         {
@@ -147,12 +68,16 @@ namespace StepanCarSevice.AuthService.Application.Services
             var user = await _userRepository.GetUserByPhoneAsync(phone, GetTenantId());
             if (user == null)
                 return Result.Failure(UserErrors.InvalidPhone);
-            user.FirstName = request.FirstName;
+            if (request.FirstName != null)
+                user.FirstName = request.FirstName;
+            if (request.SecondName != null)
             user.SecondName = request.SecondName;
             if (request.Email != null)
                 user.Email = request.Email;
             if (request.Phone != null)
                 user.Phone = request.Phone;
+            if (request.TenantId != null)
+                user.TenantId = request.TenantId;
             try
             {
                 await _userRepository.UpdateUserAsync(user);
@@ -171,23 +96,6 @@ namespace StepanCarSevice.AuthService.Application.Services
             if (tenant == null)
                 return null;
             return tenant.Id;
-        }
-        private async Task<ClaimsIdentity?> GetIdentityAsync(string phone, string password)
-        {
-            User? person = await _userRepository.GetUserByPhoneAsync(phone, GetTenantId());
-            if (person != null && _passwordHasher.Verify(password, person.Password))
-            {
-                var claims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.MobilePhone, person.Phone ?? string.Empty),
-                    new Claim(ClaimTypes.Role, person.Role.Name),
-                    new Claim(ClaimTypes.Email, person.Email),
-                    new Claim(ClaimTypes.GivenName, person.FirstName),
-                    new Claim(ClaimTypes.Surname, person.SecondName)
-                };
-                return new ClaimsIdentity(claims, "Token", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
-            }
-            return null;
         }
 
         public async Task<Result<UserInfoDto>> GetUserInfoByPhoneAsync(string phone)

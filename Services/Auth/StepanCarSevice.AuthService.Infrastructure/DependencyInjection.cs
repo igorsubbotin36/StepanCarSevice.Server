@@ -1,4 +1,5 @@
 ﻿using Finbuckle.MultiTenant;
+using Finbuckle.MultiTenant.Abstractions;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -25,6 +26,7 @@ using StepanCarSevice.AuthService.Infrastructure.DBContexts.Inits;
 using StepanCarSevice.AuthService.Infrastructure.Repositories;
 using StepanCarSevice.AuthService.Infrastructure.Services;
 using StepanCarSevice.AuthService.Infrastructure.Validation;
+using System.Security.Claims;
 using System.Text;
 
 namespace StepanCarSevice.AuthService.Infrastructure
@@ -41,6 +43,7 @@ namespace StepanCarSevice.AuthService.Infrastructure
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<ITokenGeneratorService, TokenService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IAuthService, AuthorizationService>();
             services.AddScoped<IErrorMapper, ErrorMapper>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<ITenantRepository, TenantBaseRepository<AuthDbContext>>();
@@ -118,10 +121,54 @@ namespace StepanCarSevice.AuthService.Infrastructure
                            logger.Error($"OnAuthenticationFailed: {context.Exception.Message}\nException details: {context.Exception}");
                            return Task.CompletedTask;
                        },
-                       OnTokenValidated = context =>
+                       OnTokenValidated = async context =>
                        {
-                           logger.Info("OnTokenValidated: Token is valid!");
-                           return Task.CompletedTask;
+                           var principal = context.Principal;
+                           if (principal == null)
+                           {
+                               context.Fail("No principal.");
+                               return;
+                           }
+
+                           // 1. Текущий тенант из Finbuckle
+                           var accessor = context.HttpContext.RequestServices
+                               .GetRequiredService<IMultiTenantContextAccessor<TenantInfoEntity>>();
+                           var requestTenantId = accessor.MultiTenantContext?.TenantInfo?.Id;
+
+                           // 2. tenant_id из токена (может отсутствовать у GodMode)
+                           var tokenTenantId = principal.FindFirst("tenant_id")?.Value;
+
+                           if (!string.IsNullOrWhiteSpace(tokenTenantId))
+                           {
+                               // Обычный пользователь: строгое соответствие
+                               if (string.IsNullOrWhiteSpace(requestTenantId) ||
+                                   !tokenTenantId.Equals(requestTenantId, StringComparison.OrdinalIgnoreCase))
+                               {
+                                   context.Fail("Tenant mismatch: token tenant does not match request tenant.");
+                                   return;
+                               }
+                           }
+                           else
+                           {
+                               // Токен без tenant_id – должен быть GodMode
+                               var role = principal.FindFirst(ClaimTypes.Role)?.Value;
+                               if (role != "GodMode")
+                               {
+                                   context.Fail("Token is missing tenant_id and user is not GodMode.");
+                                   return;
+                               }
+
+                               // Подставляем текущий tenant_id в claims для downstream-логики
+                               if (!string.IsNullOrWhiteSpace(requestTenantId))
+                               {
+                                   var identity = (ClaimsIdentity)principal.Identity!;
+                                   identity.AddClaim(new Claim("tenant_id", requestTenantId));
+                               }
+                               // если requestTenantId == null (например, запрос без поддомена), GodMode всё равно может работать без tenant_id?
+                               // Решайте по бизнес-требованиям: можно пропустить или Fail.
+                           }
+
+                           logger.Info($"Tenant check OK. User: {principal.Identity?.Name}, Tenant: {requestTenantId ?? "none"}");
                        },
                        OnChallenge = context =>
                        {

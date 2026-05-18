@@ -14,28 +14,28 @@ namespace StepanCarSevice.AuthService.Controllers
     [Route("api/[controller]")]
     public class AuthController : ApiControllerBase<AuthController>
     {
-        private readonly IUserService _userService;
+        private readonly IAuthService _authService;
         private readonly IMultiTenantContextAccessor<TenantInfoEntity> _accessor;
-        public AuthController(IUserService userService,
+        public AuthController(IAuthService authService,
             IMultiTenantContextAccessor<TenantInfoEntity> accessor,
             ILogger<AuthController> logger, 
             IErrorMapper errorMapper) : base (errorMapper, logger)
         {
             _accessor = accessor;
-            _userService = userService;
+            _authService = authService;
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> RegisterAsync([FromBody] RegisterRequestDto model)
         {
-            var result = await _userService.RegisterAsync(model);
+            var result = await _authService.RegisterAsync(model);
             return HandleResult(result);
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync([FromBody] LoginRequestDto model)
         {
-            var result = await _userService.LoginAsync(model);
+            var result = await _authService.LoginAsync(model);
             return HandleResult(result);
         }
 
@@ -43,7 +43,7 @@ namespace StepanCarSevice.AuthService.Controllers
         [HttpGet("getTokenClaims")]
         public IActionResult GetClaimsAsync()
         {
-            var result = _userService.GetClaims();
+            var result = _authService.GetClaims();
             return HandleResult(result);
         }
     }
