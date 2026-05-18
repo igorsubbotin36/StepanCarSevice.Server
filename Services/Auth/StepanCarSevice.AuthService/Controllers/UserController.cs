@@ -24,6 +24,13 @@ namespace StepanCarSevice.AuthService.API.Controllers
             var result = await _userService.GetUserInfoByPhoneAsync(phone);
             return HandleResult(result);
         }
+        [HttpGet("getAllUsers")]
+        [Authorize(Roles = "GodMode")]
+        public async Task<IActionResult> GetAllUsersAsync()
+        {
+            var result = await _userService.GetAllUsersAsync();
+            return HandleResult(result);
+        }
         [HttpPut("changePassword")]
         [Authorize]
         public async Task<IActionResult> ChangePasswordAsync([FromBody] ChangePasswordRequestDto request)

@@ -18,9 +18,9 @@ namespace StepanCarSevice.AuthService.Infrastructure.Repositories
             _dbContext.Users.Add(user);
             await _dbContext.SaveChangesAsync();
         }
-        public async Task<User?> GetUserByIdAsync(int id)
+        public async Task<User?> GetUserByIdAsync(int id, string? tenantId)
         {
-            User? user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
+            User? user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
             return user;
         }
         public async Task DeleteUserAsync(User user)
@@ -33,38 +33,39 @@ namespace StepanCarSevice.AuthService.Infrastructure.Repositories
             _dbContext.Users.Update(user);
             await _dbContext.SaveChangesAsync();
         }
-        public async Task<List<User>> GetAllUsersAsync()
+        public async Task<List<User>> GetAllUsersAsync(string? tenantId)
         {
             List<User> users = await _dbContext.Users
+                .Where(x => x.TenantId == tenantId)
                 .Include(x => x.Role)
                 .ToListAsync();
             return users;
         }
-        public async Task<User?> GetUserByEmailAsync(string email)
+        public async Task<User?> GetUserByEmailAsync(string email, string? tenantId)
         {
             User? user = await _dbContext.Users
                 .Include(x => x.Role)
-                .FirstOrDefaultAsync(x => x.Email == email);
+                .FirstOrDefaultAsync(x => x.Email == email && x.TenantId == tenantId);
             return user;
         }
-        public async Task<User?> GetUserByPhoneAsync(string phone)
+        public async Task<User?> GetUserByPhoneAsync(string phone, string? tenantId)
         {
             User? user = await _dbContext.Users
                 .Include(x => x.Role)
-                .FirstOrDefaultAsync(x => x.Phone == phone);
+                .FirstOrDefaultAsync(x => x.Phone == phone && x.TenantId == tenantId);
             return user;
         }
 
-        public async Task<bool> ExistsByEmailAsync(string email)
+        public async Task<bool> ExistsByEmailAsync(string email, string? tenantId)
         {
-            User? user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == email);
+            User? user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == email && x.TenantId == tenantId);
             if (user == null) return false;
             return true;
         }
 
-        public async Task<bool> ExistsByPhoneAsync(string phone)
+        public async Task<bool> ExistsByPhoneAsync(string phone, string? tenantId)
         {
-            User? user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Phone == phone);
+            User? user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Phone == phone && x.TenantId == tenantId);
             if (user == null) return false;
             return true;
         }

@@ -43,7 +43,7 @@ namespace StepanCarSevice.AuthService.Application.Services
         {
             if (phone == null)
                 return Result.Failure(AuthErrors.InvalidCredentials);
-            var user = await _userRepository.GetUserByPhoneAsync(phone);
+            var user = await _userRepository.GetUserByPhoneAsync(phone, GetTenantId());
             if (user == null) 
                 return Result.Failure(UserErrors.InvalidPhone);
             user.Password = _passwordHasher.Hash(request.NewPassword);
@@ -77,7 +77,7 @@ namespace StepanCarSevice.AuthService.Application.Services
             if (request.Password != request.ConfirmPassword)
                 return Result.Failure(RegisterErrors.PasswordsDontMatch);
 
-            if (await _userRepository.ExistsByPhoneAsync(request.Phone))
+            if (await _userRepository.ExistsByPhoneAsync(request.Phone, GetTenantId()))
                 return Result.Failure(RegisterErrors.UserAlreadyExists);
 
             var passwordHash = _passwordHasher.Hash(request.Password);
@@ -90,9 +90,9 @@ namespace StepanCarSevice.AuthService.Application.Services
                 Password = passwordHash
             };
 
-            var tenant = CurrentTenant;
+            var tenantId = GetTenantId();
             int? userRoleId;
-            if (tenant == null)
+            if (tenantId == null)
             {
                 userRoleId = await _userRepository.GetRoleIdAsync("TenantOwner");
                 if (userRoleId == null)
@@ -104,7 +104,7 @@ namespace StepanCarSevice.AuthService.Application.Services
                 userRoleId = await _userRepository.GetRoleIdAsync("User");
                 if (userRoleId == null)
                     return Result.Failure(RegisterErrors.RoleIdNotFound);
-                user.TenantId = tenant.Id;
+                user.TenantId = tenantId;
             }
             user.RoleId = (int)userRoleId;
             try
@@ -144,7 +144,7 @@ namespace StepanCarSevice.AuthService.Application.Services
         {
             if (phone == null)
                 return Result.Failure(AuthErrors.InvalidCredentials);
-            var user = await _userRepository.GetUserByPhoneAsync(phone);
+            var user = await _userRepository.GetUserByPhoneAsync(phone, GetTenantId());
             if (user == null)
                 return Result.Failure(UserErrors.InvalidPhone);
             user.FirstName = request.FirstName;
@@ -165,10 +165,16 @@ namespace StepanCarSevice.AuthService.Application.Services
                 return Result.Failure(SystemErrors.DatabaseError);
             }
         }
-
+        private string? GetTenantId()
+        {
+            var tenant = CurrentTenant;
+            if (tenant == null)
+                return null;
+            return tenant.Id;
+        }
         private async Task<ClaimsIdentity?> GetIdentityAsync(string phone, string password)
         {
-            User? person = await _userRepository.GetUserByPhoneAsync(phone);
+            User? person = await _userRepository.GetUserByPhoneAsync(phone, GetTenantId());
             if (person != null && _passwordHasher.Verify(password, person.Password))
             {
                 var claims = new List<Claim>
@@ -186,11 +192,23 @@ namespace StepanCarSevice.AuthService.Application.Services
 
         public async Task<Result<UserInfoDto>> GetUserInfoByPhoneAsync(string phone)
         {
-            User? person = await _userRepository.GetUserByPhoneAsync(phone);
+            User? person = await _userRepository.GetUserByPhoneAsync(phone, GetTenantId());
             if (person == null)
                 return Result.Failure<UserInfoDto>(UserErrors.InvalidPhone);
             UserInfoDto userInfoDto = new UserInfoDto(person.FirstName, person.SecondName, person.Email, person.Phone, person.Role.Name);
             return Result.Success(userInfoDto);
+        }
+
+        public async Task<Result<List<UserInfoDto>>> GetAllUsersAsync()
+        {
+            var list = await _userRepository.GetAllUsersAsync(GetTenantId());
+            List<UserInfoDto> result = new List<UserInfoDto>();
+            foreach (var person in list)
+            {
+                UserInfoDto userInfoDto = new UserInfoDto(person.FirstName, person.SecondName, person.Email, person.Phone, person.Role.Name);
+                result.Add(userInfoDto);
+            }
+            return Result.Success(result);
         }
     }
 }

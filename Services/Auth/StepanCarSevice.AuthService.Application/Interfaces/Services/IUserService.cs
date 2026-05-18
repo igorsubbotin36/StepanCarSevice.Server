@@ -11,5 +11,6 @@ namespace StepanCarSevice.AuthService.Application.Interfaces.Services
         Task<Result> ChangePasswordAsync(ChangePasswordRequestDto request, string token);
         Result<UserDto> GetClaims();
         Task<Result<UserInfoDto>> GetUserInfoByPhoneAsync(string phone);
+        Task<Result<List<UserInfoDto>>> GetAllUsersAsync();
     }
 }
