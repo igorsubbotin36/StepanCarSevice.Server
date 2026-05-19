@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace StepanCarSevice.VisitService.Infrastructure.Auth
+﻿namespace StepanCarService.Web.Auth
 {
     public class JwtOptions
     {
