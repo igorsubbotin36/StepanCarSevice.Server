@@ -1,4 +1,4 @@
-﻿using StepanCarService.Core.Models;
+﻿using StepanCarService.Common.Application.Models;
 
 namespace StepanCarSevice.VisitService.Application.Interfaces
 {

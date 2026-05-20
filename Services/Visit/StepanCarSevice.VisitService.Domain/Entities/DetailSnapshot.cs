@@ -1,4 +1,4 @@
-﻿using StepanCarService.Core.Entities;
+﻿using StepanCarService.Common.Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;

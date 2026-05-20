@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -12,8 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\StepanCarSevice.VisitService.Application\StepanCarSevice.VisitService.Application.csproj" />
-    <ProjectReference Include="..\StepanCarSevice.VisitService.Domain\StepanCarSevice.VisitService.Domain.csproj" />
+    <ProjectReference Include="..\..\..\Core\StepanCarService.Common.API\StepanCarService.Common.API.csproj" />
     <ProjectReference Include="..\StepanCarSevice.VisitService.Infrastructure\StepanCarSevice.VisitService.Infrastructure.csproj" />
   </ItemGroup>
 
