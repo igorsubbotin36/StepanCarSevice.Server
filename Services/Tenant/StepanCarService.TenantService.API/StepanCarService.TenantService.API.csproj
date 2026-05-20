@@ -12,7 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\Core\StepanCarService.Web\StepanCarService.Common.Infastructure.csproj" />
+        <ProjectReference Include="..\..\..\Core\StepanCarService.Common.API\StepanCarService.Common.API.csproj" />
       <ProjectReference Include="..\StepanCarService.TenantService.Infrastructure\StepanCarService.TenantService.Infrastructure.csproj" />
     </ItemGroup>
 

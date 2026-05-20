@@ -1,7 +1,6 @@
 ﻿using Finbuckle.MultiTenant.EntityFrameworkCore.Stores.EFCoreStore;
 using Microsoft.EntityFrameworkCore;
-using StepanCarService.Core.Entities;
-using StepanCarService.Web.DbContexts;
+using StepanCarService.Common.Infastructure.DbContexts;
 
 namespace StepanCarService.TenantService.Infrastructure.DbContexts;
 

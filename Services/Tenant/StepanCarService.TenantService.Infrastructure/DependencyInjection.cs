@@ -5,17 +5,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using NLog;
-using StepanCarService.Core.Entities;
-using StepanCarService.Core.Interfaces;
-using StepanCarService.Core.Interfaces.Repositories;
+using StepanCarService.Common.Core.Entities;
+using StepanCarService.Common.Core.Repositories;
+using StepanCarService.Common.Infastructure.DependencyInjection;
+using StepanCarService.Common.Infastructure.Repositories;
 using StepanCarService.TenantService.Application.Interfaces;
 using StepanCarService.TenantService.Application.Services;
 using StepanCarService.TenantService.Infrastructure.DbContexts;
 using StepanCarService.TenantService.Infrastructure.Messaging;
-using StepanCarService.Web.DependencyInjection;
-using StepanCarService.Web.Mappers;
-using StepanCarService.Web.Repositories;
-using System.Text;
 
 namespace StepanCarService.TenantService.Infrastructure;
 

@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using StepanCarService.Core.Interfaces;
+using StepanCarService.Common.API.Controllers;
+using StepanCarService.Common.Application.Interfaces;
 using StepanCarService.TenantService.Application.Interfaces;
 using StepanCarService.TenantService.Application.Models.DTOs;
-using StepanCarService.Web.Controllers;
 
 namespace StepanCarService.TenantService.API.Controllers;
 

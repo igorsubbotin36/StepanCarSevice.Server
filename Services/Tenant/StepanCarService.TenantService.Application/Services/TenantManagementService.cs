@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
-using StepanCarService.Core.Entities;
-using StepanCarService.Core.Events;
-using StepanCarService.Core.Interfaces.Repositories;
-using StepanCarService.Core.Models;
+using StepanCarService.Common.Application.Events;
+using StepanCarService.Common.Application.Models;
+using StepanCarService.Common.Core.Entities;
+using StepanCarService.Common.Core.Repositories;
 using StepanCarService.TenantService.Application.Interfaces;
 using StepanCarService.TenantService.Application.Models.DTOs;
 using System.Xml.Linq;

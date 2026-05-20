@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
-using StepanCarService.Core.Models;
+using StepanCarService.Common.Application.Models;
 using StepanCarService.TenantService.Application.Interfaces;
 using System.Text;
 using System.Text.Json;

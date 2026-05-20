@@ -1,4 +1,4 @@
-﻿using StepanCarService.Core.Models;
+﻿using StepanCarService.Common.Application.Models;
 using StepanCarService.TenantService.Application.Models.DTOs;
 
 namespace StepanCarService.TenantService.Application.Interfaces;
