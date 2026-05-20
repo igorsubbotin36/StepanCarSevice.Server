@@ -1,8 +1,7 @@
 ﻿using Finbuckle.MultiTenant.Abstractions;
 using Microsoft.Extensions.Logging;
-using StepanCarService.Core.Entities;
-using StepanCarService.Core.Events;
-using StepanCarService.Core.Models;
+using StepanCarService.Common.Application.Models;
+using StepanCarService.Common.Core.Entities;
 using StepanCarSevice.AuthService.Application.Auth;
 using StepanCarSevice.AuthService.Application.Interfaces;
 using StepanCarSevice.AuthService.Application.Interfaces.Services;

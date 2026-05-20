@@ -1,4 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using StepanCarService.Common.Infastructure.Auth;
 using StepanCarSevice.AuthService.Application.Interfaces.Services;
 using StepanCarSevice.AuthService.Application.Models.Dto;
 using StepanCarSevice.AuthService.Domain.Entities;

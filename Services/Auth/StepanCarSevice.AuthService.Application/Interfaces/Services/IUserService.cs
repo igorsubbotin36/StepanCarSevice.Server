@@ -1,4 +1,4 @@
-﻿using StepanCarService.Core.Models;
+﻿using StepanCarService.Common.Application.Models;
 using StepanCarSevice.AuthService.Application.Models.Dto;
 
 namespace StepanCarSevice.AuthService.Application.Interfaces.Services

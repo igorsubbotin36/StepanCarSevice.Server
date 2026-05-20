@@ -29,7 +29,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Core\StepanCarService.Web\StepanCarService.Web.csproj" />
+    <ProjectReference Include="..\..\..\Core\StepanCarService.Common.Core\StepanCarService.Common.Core.csproj" />
+    <ProjectReference Include="..\..\..\Core\StepanCarService.Common.Infrastructure\StepanCarService.Common.Infastructure.csproj" />
     <ProjectReference Include="..\StepanCarSevice.AuthService.Application\StepanCarSevice.AuthService.Application.csproj" />
   </ItemGroup>
 

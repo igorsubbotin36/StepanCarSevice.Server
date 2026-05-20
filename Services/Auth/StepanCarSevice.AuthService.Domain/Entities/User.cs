@@ -1,4 +1,4 @@
-﻿using StepanCarService.Core.Entities;
+﻿using StepanCarService.Common.Core.Entities;
 using System.ComponentModel.DataAnnotations;
 
 namespace StepanCarSevice.AuthService.Domain.Entities
