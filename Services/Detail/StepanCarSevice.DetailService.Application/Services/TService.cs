@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using StepanCarService.Core.Models;
+using StepanCarService.Common.Application.Models;
 using StepanCarSevice.DetailService.Application.Interfaces;
 using StepanCarSevice.DetailService.Domain.Repositories;
 

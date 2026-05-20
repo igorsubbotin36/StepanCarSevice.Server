@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Core\StepanCarService.Core\StepanCarService.Common.Core.csproj" />
+    <ProjectReference Include="..\..\..\Core\StepanCarService.Common.Application\StepanCarService.Common.Application.csproj" />
     <ProjectReference Include="..\StepanCarSevice.DetailService.Domain\StepanCarSevice.DetailService.Domain.csproj" />
   </ItemGroup>
 

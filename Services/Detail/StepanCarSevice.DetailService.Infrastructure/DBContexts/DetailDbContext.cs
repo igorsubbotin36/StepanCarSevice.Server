@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StepanCarService.Core.Entities;
-using StepanCarService.Web.DbContexts;
+using StepanCarService.Common.Infastructure.DbContexts;
 using StepanCarSevice.DetailService.Domain.Entities;
 
 namespace StepanCarSevice.DetailService.Infrastructure.DBContexts

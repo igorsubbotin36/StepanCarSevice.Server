@@ -1,4 +1,4 @@
-﻿using StepanCarService.Core.Models;
+﻿using StepanCarService.Common.Application.Models;
 using StepanCarSevice.DetailService.Domain.Entities;
 
 namespace StepanCarSevice.DetailService.Application.Interfaces

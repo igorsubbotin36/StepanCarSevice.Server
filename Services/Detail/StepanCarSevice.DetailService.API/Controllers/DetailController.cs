@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata;
-using StepanCarService.Core.Interfaces;
-using StepanCarService.Web.Controllers;
+using StepanCarService.Common.API.Controllers;
+using StepanCarService.Common.Application.Interfaces;
 using StepanCarSevice.DetailService.Application.Interfaces;
 using StepanCarSevice.DetailService.Domain.Entities;
 

@@ -1,4 +1,5 @@
-﻿using StepanCarService.Core.Models;
+﻿
+using StepanCarService.Common.Application.Models;
 
 namespace StepanCarSevice.DetailService.Application.Interfaces
 {
