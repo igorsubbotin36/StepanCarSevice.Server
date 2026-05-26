@@ -12,15 +12,26 @@ namespace StepanCarSevice.DetailService.API.Controllers
     public class DetailController : ApiControllerBase<DetailController>
     {
         private readonly IDetailService _detailService;
+        private readonly ITService<Detail> _detailTService;
         public DetailController(IDetailService detailService, 
             IErrorMapper errorMapper, 
-            ILogger<DetailController> logger) : base(errorMapper, logger)
+            ILogger<DetailController> logger,
+            ITService<Detail> detailTService) : base(errorMapper, logger)
         {
             _detailService = detailService;
+            _detailTService = detailTService;
+        }
+
+        [HttpPost("addDetail")]
+        [Authorize(Policy = "TenantModeratorInTenant")]
+        public async Task<IActionResult> AddDetail(Detail detail)
+        {
+            var result = await _detailTService.AddASync(detail);
+            return HandleResult(result);
         }
 
         [HttpGet("getAllDetails")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Policy = "TenantModeratorInTenant")]
         public async Task<IActionResult> GetAllDetailsAsync()
         {
             var result = await _detailService.GetAllDetailsAsync();
@@ -28,7 +39,7 @@ namespace StepanCarSevice.DetailService.API.Controllers
         }
 
         [HttpGet("getDetailById")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "TenantModeratorInTenant")]
         public async Task<IActionResult> GetDetailByIdAsync([FromBody] int id)
         {
             var result = await _detailService.GetDetailByIdAsync(id);
@@ -36,7 +47,7 @@ namespace StepanCarSevice.DetailService.API.Controllers
         }
 
         [HttpGet("getDetailsByCode")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "TenantModeratorInTenant")]
         public async Task<IActionResult> GetDetailsByCodeAsync([FromBody] string code)
         {
             var result = await _detailService.GetDetailsByCodeAsync(code);
@@ -44,7 +55,7 @@ namespace StepanCarSevice.DetailService.API.Controllers
         }
 
         [HttpPatch("editDetail")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "TenantModeratorInTenant")]
         public async Task<IActionResult> EditDetailAsync([FromBody] Detail detail)
         {
             var result = await _detailService.EditDetailAsync(detail);
