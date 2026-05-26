@@ -1,5 +1,6 @@
 ﻿using Finbuckle.MultiTenant.Abstractions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -128,6 +129,23 @@ namespace StepanCarService.Common.Infastructure.DependencyInjection
                    };
                });
 
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("GodModeOnly", policy =>
+                    policy.RequireRole("GodMode"));
+
+
+                options.AddPolicy("TenantOwnerInTenant", policy =>
+                    policy.AddRequirements(new TenantRoleRequirement("GodMode", "TenantOwner")));
+
+                options.AddPolicy("TenantModeratorInTenant", policy =>
+                    policy.AddRequirements(new TenantRoleRequirement("GodMode", "TenantOwner", "TenantModerator")));
+
+                options.AddPolicy("UserInTenant", policy =>
+                    policy.AddRequirements(new TenantRoleRequirement("GodMode", "TenantOwner", "TenantModerator", "User")));
+            });
+
+            services.AddSingleton<IAuthorizationHandler, TenantRoleHandler>();
             return services;
         }
     }

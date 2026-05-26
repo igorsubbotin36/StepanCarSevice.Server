@@ -18,14 +18,14 @@ namespace StepanCarSevice.AuthService.API.Controllers
             _userService = userService;
         }
         [HttpGet("getUserInfo")]
-        [Authorize(Roles = "GodMode")]
+        [Authorize(Policy = "GodModeOnly")]
         public async Task<IActionResult> GetUserInfoAsync(string phone)
         {
             var result = await _userService.GetUserInfoByPhoneAsync(phone);
             return HandleResult(result);
         }
         [HttpGet("getAllUsers")]
-        [Authorize(Roles = "GodMode")]
+        [Authorize(Policy = "TenantModeratorInTenant")]
         public async Task<IActionResult> GetAllUsersAsync()
         {
             var result = await _userService.GetAllUsersAsync();
