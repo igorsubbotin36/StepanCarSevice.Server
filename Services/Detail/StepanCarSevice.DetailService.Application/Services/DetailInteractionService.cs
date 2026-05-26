@@ -8,14 +8,14 @@ using StepanCarSevice.DetailService.Domain.Repositories;
 
 namespace StepanCarSevice.DetailService.Application.Services
 {
-    public class DetailInteractionService : IDetailService
+    public class DetailInteractionService : TService<Detail>, IDetailService
     {
         private readonly IDetailRepository _detailRepository;
         private readonly ILogger<DetailInteractionService> _logger;
         private readonly IMultiTenantContextAccessor<TenantInfoEntity> _accessor;
         public DetailInteractionService(IDetailRepository repository,
             ILogger<DetailInteractionService> logger,
-            IMultiTenantContextAccessor<TenantInfoEntity> accessor)
+            IMultiTenantContextAccessor<TenantInfoEntity> accessor) : base(repository, logger)
         {
             _detailRepository = repository;
             _logger = logger;

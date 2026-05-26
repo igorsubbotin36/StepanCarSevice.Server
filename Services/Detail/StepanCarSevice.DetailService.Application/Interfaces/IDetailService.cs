@@ -3,7 +3,7 @@ using StepanCarSevice.DetailService.Domain.Entities;
 
 namespace StepanCarSevice.DetailService.Application.Interfaces
 {
-    public interface IDetailService
+    public interface IDetailService : ITService<Detail>
     {
         Task<Result> EditDetailAsync(Detail detail);
         Task<Result<List<Detail>>> GetAllDetailsAsync();

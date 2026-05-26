@@ -12,21 +12,18 @@ namespace StepanCarSevice.DetailService.API.Controllers
     public class DetailController : ApiControllerBase<DetailController>
     {
         private readonly IDetailService _detailService;
-        private readonly ITService<Detail> _detailTService;
         public DetailController(IDetailService detailService, 
             IErrorMapper errorMapper, 
-            ILogger<DetailController> logger,
-            ITService<Detail> detailTService) : base(errorMapper, logger)
+            ILogger<DetailController> logger) : base(errorMapper, logger)
         {
             _detailService = detailService;
-            _detailTService = detailTService;
         }
 
         [HttpPost("addDetail")]
         [Authorize(Policy = "TenantModeratorInTenant")]
         public async Task<IActionResult> AddDetail(Detail detail)
         {
-            var result = await _detailTService.AddASync(detail);
+            var result = await _detailService.AddASync(detail);
             return HandleResult(result);
         }
 
