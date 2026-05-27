@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using StepanCarService.Common.API.Controllers;
 using StepanCarService.Common.Application.Interfaces;
 using StepanCarSevice.DetailService.Application.Interfaces;
+using StepanCarSevice.DetailService.Application.Models.DTO;
 using StepanCarSevice.DetailService.Domain.Entities;
 
 namespace StepanCarSevice.DetailService.API.Controllers
@@ -21,7 +22,7 @@ namespace StepanCarSevice.DetailService.API.Controllers
 
         [HttpPost("addDetail")]
         [Authorize(Policy = "TenantModeratorInTenant")]
-        public async Task<IActionResult> AddDetail(Detail detail)
+        public async Task<IActionResult> AddDetail(DetailCreateDto detail)
         {
             var result = await _detailService.AddASync(detail);
             return HandleResult(result);
@@ -53,7 +54,7 @@ namespace StepanCarSevice.DetailService.API.Controllers
 
         [HttpPatch("editDetail")]
         [Authorize(Roles = "TenantModeratorInTenant")]
-        public async Task<IActionResult> EditDetailAsync([FromBody] Detail detail)
+        public async Task<IActionResult> EditDetailAsync([FromBody] DetailUpdateDto detail)
         {
             var result = await _detailService.EditDetailAsync(detail);
             return HandleResult(result);

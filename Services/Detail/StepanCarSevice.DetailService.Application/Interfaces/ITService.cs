@@ -3,8 +3,8 @@ using StepanCarService.Common.Application.Models;
 
 namespace StepanCarSevice.DetailService.Application.Interfaces
 {
-    public interface ITService<T> where T : class
+    public interface ITService<T, D> where T : class
     {
-        Task<Result> AddASync(T model);
+        Task<Result<D>> AddASync(T model);
     }
 }

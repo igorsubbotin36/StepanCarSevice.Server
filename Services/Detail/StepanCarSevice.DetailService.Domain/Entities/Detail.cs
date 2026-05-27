@@ -10,10 +10,10 @@ namespace StepanCarSevice.DetailService.Domain.Entities
         public required string Code { get; set; }
         public required string OriginalCode { get; set; }
         public required int DetailManufactureId { get; set; }
-        public required DetailManufacture DetailManufacture { get; set; }
+        public DetailManufacture? DetailManufacture { get; set; }
         public required string Name { get; set; }
         public required int CarModelId { get; set; }
-        public required CarModel CarModel { get; set; }
+        public CarModel? CarModel { get; set; }
         public decimal Price { get; set; }
         public int Count { get; set; }
         public string TenantId { get; set; }

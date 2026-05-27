@@ -51,6 +51,8 @@ namespace StepanCarService.Common.Infastructure.Mappers
                 "Модель не найдена"),
                 [ModelErrors.RequestedModelIsNull] = (HttpStatusCode.BadRequest,
                 "Переданная модель для обновления пустая"),
+                [ModelErrors.ModelAlreadyExists] = (HttpStatusCode.Conflict,
+                "Модель уже существует в БД"),
 
                 // MessageBusErrors
                 [MessageBusErrors.MessageNotDelivered] = (HttpStatusCode.InternalServerError,

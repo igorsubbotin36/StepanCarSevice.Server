@@ -36,6 +36,7 @@ namespace StepanCarService.Common.Application.Models
     {
         public const string ModelNotFound = "MODEL_NOT_FOUND";
         public const string RequestedModelIsNull = "REQUESTED_MODEL_IS_NULL";
+        public const string ModelAlreadyExists = "MODEL_ALREADY_EXISTS";
     }
     public static class MessageBusErrors
     {

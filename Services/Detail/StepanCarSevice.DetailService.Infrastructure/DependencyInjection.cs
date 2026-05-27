@@ -30,7 +30,6 @@ namespace StepanCarSevice.DetailService.Infrastructure
             var logger = LogManager.GetCurrentClassLogger();
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IDetailRepository, DetailRepository>();
-            services.AddScoped(typeof(ITService<>), typeof(TService<>));
             services.AddScoped<IDetailService, DetailInteractionService>();
             services.AddSharedServices();
             services.AddScoped<ITenantRepository, TenantBaseRepository<DetailDbContext>>();
