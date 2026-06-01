@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using StepanCarService.Common.Application.Models;
 using StepanCarService.Common.Core.Entities;
+using StepanCarService.Common.Core.Repositories;
 using StepanCarSevice.AuthService.Application.Auth;
 using StepanCarSevice.AuthService.Application.Interfaces.Services;
 using StepanCarSevice.AuthService.Application.Models.Dto;
@@ -19,12 +20,14 @@ namespace StepanCarSevice.AuthService.Application.Services
         private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<AuthorizationService> _logger;
         private readonly IMultiTenantContextAccessor<TenantInfoEntity> _accessor;
+        private readonly IUnitOfWork _unitOfWork;
         public AuthorizationService(IUserRepository userRepository,
             IPasswordHasher passwordHasher,
             ITokenGeneratorService tokenGeneratorService,
             ICurrentUserService currentUserService,
             ILogger<AuthorizationService> logger,
-            IMultiTenantContextAccessor<TenantInfoEntity> accessor
+            IMultiTenantContextAccessor<TenantInfoEntity> accessor,
+            IUnitOfWork unitOfWork
             )
         {
             _userRepository = userRepository;
@@ -33,6 +36,7 @@ namespace StepanCarSevice.AuthService.Application.Services
             _currentUserService = currentUserService;
             _logger = logger;
             _accessor = accessor;
+            _unitOfWork = unitOfWork;
         }
         private TenantInfoEntity? CurrentTenant => _accessor.MultiTenantContext?.TenantInfo;
         public async Task<Result<AuthResponseDto>> LoginAsync(LoginRequestDto request)
@@ -84,6 +88,7 @@ namespace StepanCarSevice.AuthService.Application.Services
             try
             {
                 await _userRepository.AddUserAsync(user);
+                await _unitOfWork.SaveChangesAsync();
                 _logger.LogInformation($"{user.Phone} зарегистрирован");
                 return Result.Success();
             }

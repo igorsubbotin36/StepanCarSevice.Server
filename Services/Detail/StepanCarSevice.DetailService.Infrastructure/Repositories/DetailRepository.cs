@@ -17,7 +17,6 @@ namespace StepanCarSevice.DetailService.Infrastructure.Repositories
         public async Task EditDetailAsync(Detail detail)
         {
             _dbSet.Update(detail);
-            await _dbContext.SaveChangesAsync();
         }
 
         public async Task<List<Detail>> GetAllDetailsAsync(string? tenantId)

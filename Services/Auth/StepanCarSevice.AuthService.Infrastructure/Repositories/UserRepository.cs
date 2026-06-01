@@ -16,7 +16,7 @@ namespace StepanCarSevice.AuthService.Infrastructure.Repositories
         public async Task AddUserAsync(User user)
         {
             _dbContext.Users.Add(user);
-            await _dbContext.SaveChangesAsync();
+            //await _dbContext.SaveChangesAsync();
         }
         public async Task<User?> GetUserByIdAsync(int id, string? tenantId)
         {
@@ -26,12 +26,12 @@ namespace StepanCarSevice.AuthService.Infrastructure.Repositories
         public async Task DeleteUserAsync(User user)
         {
             _dbContext.Users.Remove(user);
-            await _dbContext.SaveChangesAsync();
+            //await _dbContext.SaveChangesAsync();
         }
         public async Task UpdateUserAsync(User user)
         {
             _dbContext.Users.Update(user);
-            await _dbContext.SaveChangesAsync();
+            //await _dbContext.SaveChangesAsync();
         }
         public async Task<List<User>> GetAllUsersAsync(string? tenantId)
         {

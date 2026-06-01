@@ -23,11 +23,9 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         var logger = LogManager.GetCurrentClassLogger();
-        services.AddSharedServices();
+        services.AddSharedServices<TenantServiceDbContext>(configuration);
         services.AddScoped<ITenantRepository, TenantBaseRepository<TenantServiceDbContext>>();
         services.AddScoped<ITenantService, TenantManagementService>();
-
-        services.AddSharedPostgreSQL<TenantServiceDbContext>(configuration);
 
         services.AddMultiTenant<TenantInfoEntity>()
                 .WithEFCoreStore<TenantServiceDbContext, TenantInfoEntity>()
@@ -37,7 +35,6 @@ public static class DependencyInjection
                 configuration.GetSection("RabbitMQ"));
         services.AddSingleton<IMessageBus, RabbitMQBus>();
 
-        services.AddSharedJwtAuthentication(configuration);
         return services;
     }
     

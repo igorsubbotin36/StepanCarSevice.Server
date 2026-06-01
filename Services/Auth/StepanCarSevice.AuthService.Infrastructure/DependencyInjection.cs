@@ -39,30 +39,18 @@ namespace StepanCarSevice.AuthService.Infrastructure
         {
             var logger = LogManager.GetCurrentClassLogger();
             services.AddHttpContextAccessor();
-            services.AddSharedServices();
+            services.AddSharedServices<AuthDbContext>(configuration);
+            services.AddRabbitMQConsumer<AuthDbContext>(configuration);
+            services.AddSharedMultitenantHostStrategy<AuthDbContext>();
+
             services.AddSingleton<IPasswordHasher, PasswordHasher>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<ITokenGeneratorService, TokenService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAuthService, AuthorizationService>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
-            services.AddScoped<ITenantRepository, TenantBaseRepository<AuthDbContext>>();
             services.AddFluentValidationAutoValidation();
             services.AddValidatorsFromAssemblyContaining<RegisterDtoValidator>();
-            services.Configure<RabbitMQConsumerSetting>(
-                configuration.GetSection("RabbitMQ"));
-            services.AddScoped<TenantBaseRepository<AuthDbContext>>();
-            services.AddScoped<ITenantRegisteredHandler, TenantRegisteredHandler<TenantBaseRepository<AuthDbContext>>>();
-            services.AddHostedService<TenantEventsConsumer>();
-
-
-            services.AddSharedPostgreSQL<AuthDbContext>(configuration);
-
-            services.AddMultiTenant<TenantInfoEntity>()
-                .WithHostStrategy()
-                .WithEFCoreStore<AuthDbContext, TenantInfoEntity>();
-
-            services.AddSharedJwtAuthentication(configuration);
 
             return services;
         }

@@ -14,13 +14,16 @@ public class TenantManagementService : ITenantService
     private readonly ITenantRepository _tenantRepository;
     private readonly IMessageBus _messageBus;
     private readonly ILogger<TenantManagementService> _logger;
+    private readonly IUnitOfWork _unitOfWork;
     public TenantManagementService(ITenantRepository tenantRepository, 
         IMessageBus messageBus,
-        ILogger<TenantManagementService> logger)
+        ILogger<TenantManagementService> logger,
+        IUnitOfWork unitOfWork)
     {
         _tenantRepository = tenantRepository;
         _messageBus = messageBus;
         _logger = logger;
+        _unitOfWork = unitOfWork;
     }
     
     public async Task<Result> AddAsync(TenantDto tenant)
@@ -39,6 +42,7 @@ public class TenantManagementService : ITenantService
         try
         {
             await _tenantRepository.AddAsync(newTenant);
+            await _unitOfWork.SaveChangesAsync();
             _logger.LogInformation($"{newTenant.Id} зарегистрирован!");
         }
         catch (Exception e)
@@ -81,6 +85,7 @@ public class TenantManagementService : ITenantService
         try
         {
             await _tenantRepository.UpdateAsync(tempTenant);
+            await _unitOfWork.SaveChangesAsync();
             _logger.LogInformation($"{tempTenant.Id} данные обновлены!");
         }
         catch (Exception e)
@@ -117,6 +122,7 @@ public class TenantManagementService : ITenantService
         try
         {
             await _tenantRepository.DeleteAsync(tempTenant);
+            await _unitOfWork.SaveChangesAsync();
             _logger.LogInformation($"{tempTenant.Id} тенант удален!");
         }
         catch (Exception e)

@@ -17,7 +17,6 @@ namespace StepanCarSevice.VisitService.Infrastructure.Repositories
         public async Task AddAsync(T entity)
         {
             _dbSet.Add(entity);
-            await _dbContext.SaveChangesAsync();
         }
     }
 }

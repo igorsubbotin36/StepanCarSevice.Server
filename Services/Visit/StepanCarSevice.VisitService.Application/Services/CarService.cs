@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using StepanCarService.Common.Application.Models;
+using StepanCarService.Common.Core.Repositories;
 using StepanCarSevice.VisitService.Application.Interfaces;
 using StepanCarSevice.VisitService.Domain.Entities;
 using StepanCarSevice.VisitService.Domain.Repositories;
@@ -9,11 +10,14 @@ namespace StepanCarSevice.VisitService.Application.Services
     {
         private readonly ICarRepository _carRepository;
         private readonly ILogger<CarService> _logger;
+        private readonly IUnitOfWork _unitOfWork;
         public CarService(ICarRepository carRepository,
-            ILogger<CarService> logger)
+            ILogger<CarService> logger,
+            IUnitOfWork unitOfWork)
         {
             _carRepository = carRepository;
             _logger = logger;
+            _unitOfWork = unitOfWork;
         }
         public async Task<Result<CarSnapshot>> GetCarByVinAsync(string win)
         {
@@ -38,6 +42,7 @@ namespace StepanCarSevice.VisitService.Application.Services
             try
             {
                 await _carRepository.UpdateCarAsync(car);
+                await _unitOfWork.SaveChangesAsync();
                 _logger.LogInformation($"{car.Id} информация обновлена");
                 return Result.Success();
             }

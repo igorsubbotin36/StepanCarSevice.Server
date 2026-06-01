@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using StepanCarService.Common.Application.Models;
 using StepanCarService.Common.Core.Entities;
+using StepanCarService.Common.Core.Repositories;
 using StepanCarSevice.AuthService.Application.Auth;
 using StepanCarSevice.AuthService.Application.Interfaces;
 using StepanCarSevice.AuthService.Application.Interfaces.Services;
@@ -20,6 +21,7 @@ namespace StepanCarSevice.AuthService.Application.Services
         private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<UserService> _logger;
         private readonly IMultiTenantContextAccessor<TenantInfoEntity> _accessor;
+        private readonly IUnitOfWork _unitOfWork;
         private TenantInfoEntity? CurrentTenant => _accessor.MultiTenantContext?.TenantInfo;
 
         public UserService(IUserRepository userRepository,
@@ -27,7 +29,8 @@ namespace StepanCarSevice.AuthService.Application.Services
             ITokenGeneratorService tokenGeneratorService, 
             ICurrentUserService currentUserService,
             ILogger<UserService> logger,
-            IMultiTenantContextAccessor<TenantInfoEntity> accessor
+            IMultiTenantContextAccessor<TenantInfoEntity> accessor,
+            IUnitOfWork unitOfWork
             )
         {
             _userRepository = userRepository;
@@ -36,6 +39,7 @@ namespace StepanCarSevice.AuthService.Application.Services
             _currentUserService = currentUserService;
             _logger = logger;
             _accessor = accessor;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Result> ChangePasswordAsync(ChangePasswordRequestDto request, string phone)
@@ -49,6 +53,7 @@ namespace StepanCarSevice.AuthService.Application.Services
             try
             {
                 await _userRepository.UpdateUserAsync(user);
+                await _unitOfWork.SaveChangesAsync();
                 _logger.LogInformation($"{user.Id} пароль сменен");
                 return Result.Success();
             }
@@ -80,6 +85,7 @@ namespace StepanCarSevice.AuthService.Application.Services
             try
             {
                 await _userRepository.UpdateUserAsync(user);
+                await _unitOfWork.SaveChangesAsync();
                 _logger.LogInformation($"{user.Id} информация обновлена");
                 return Result.Success();
             }

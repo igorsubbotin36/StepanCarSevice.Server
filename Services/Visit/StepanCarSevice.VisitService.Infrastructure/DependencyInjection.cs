@@ -29,26 +29,14 @@ namespace StepanCarSevice.VisitService.Infrastructure
         {
             var logger = LogManager.GetCurrentClassLogger();
 
-            services.AddSharedServices();
+            services.AddSharedServices<VisitDBContext>(configuration);
+            services.AddRabbitMQConsumer<VisitDBContext>(configuration);
+            services.AddSharedMultitenantHostStrategy<VisitDBContext>();
+
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<ICarRepository, CarRepository>();
             services.AddScoped(typeof(ITService<>), typeof(TService<>));
             services.AddScoped<ICarService, CarService>();
-            services.AddScoped<ITenantRepository, TenantBaseRepository<VisitDBContext>>();
-
-            services.Configure<RabbitMQConsumerSetting>(
-                configuration.GetSection("RabbitMQ"));
-            services.AddScoped<TenantBaseRepository<VisitDBContext>>();
-            services.AddScoped<ITenantRegisteredHandler, TenantRegisteredHandler<TenantBaseRepository<VisitDBContext>>>();
-            services.AddHostedService<TenantEventsConsumer>();
-
-            services.AddSharedPostgreSQL<VisitDBContext>(configuration);
-
-            services.AddMultiTenant<TenantInfoEntity>()
-                .WithHostStrategy()
-                .WithEFCoreStore<VisitDBContext, TenantInfoEntity>();
-
-            services.AddSharedJwtAuthentication(configuration);
 
             return services;
         }

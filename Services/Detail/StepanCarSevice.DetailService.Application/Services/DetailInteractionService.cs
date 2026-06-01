@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using StepanCarService.Common.Application.Models;
 using StepanCarService.Common.Core.Entities;
+using StepanCarService.Common.Core.Repositories;
 using StepanCarSevice.DetailService.Application.Interfaces;
 using StepanCarSevice.DetailService.Application.Models.DTO;
 using StepanCarSevice.DetailService.Domain.Entities;
@@ -14,13 +15,16 @@ namespace StepanCarSevice.DetailService.Application.Services
         private readonly IDetailRepository _detailRepository;
         private readonly ILogger<DetailInteractionService> _logger;
         private readonly IMultiTenantContextAccessor<TenantInfoEntity> _accessor;
+        private readonly IUnitOfWork _unitOfWork;
         public DetailInteractionService(IDetailRepository repository,
             ILogger<DetailInteractionService> logger,
-            IMultiTenantContextAccessor<TenantInfoEntity> accessor)
+            IMultiTenantContextAccessor<TenantInfoEntity> accessor,
+            IUnitOfWork unitOfWork)
         {
             _detailRepository = repository;
             _logger = logger;
             _accessor = accessor;
+            _unitOfWork = unitOfWork;
         }
         private TenantInfoEntity? CurrentTenant => _accessor.MultiTenantContext?.TenantInfo;
         private string? GetTenantId()
@@ -54,6 +58,7 @@ namespace StepanCarSevice.DetailService.Application.Services
             try
             {
                 await _detailRepository.EditDetailAsync(detail);
+                await _unitOfWork.SaveChangesAsync();
                 _logger.LogInformation($"{detail.Id} обновлена информация в БД");
                 return Result.Success();
             }
@@ -155,6 +160,7 @@ namespace StepanCarSevice.DetailService.Application.Services
             try
             {
                 await _detailRepository.AddAsync(detail);
+                await _unitOfWork.SaveChangesAsync();
                 return Result.Success(MapDetailToReadDto(detail));
             }
             catch (Exception ex)

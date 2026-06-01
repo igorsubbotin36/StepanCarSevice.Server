@@ -29,7 +29,6 @@ namespace StepanCarSevice.VisitService.Infrastructure.Repositories
         public async Task UpdateCarAsync(CarSnapshot car)
         {
             _dbSet.Update(car);
-            await _dbContext.SaveChangesAsync();
         }
     }
 }
