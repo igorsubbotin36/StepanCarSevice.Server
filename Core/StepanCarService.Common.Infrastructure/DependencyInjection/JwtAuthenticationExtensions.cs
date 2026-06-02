@@ -101,22 +101,28 @@ namespace StepanCarService.Common.Infastructure.DependencyInjection
                            }
                            else
                            {
-                               // Токен без tenant_id – должен быть GodMode
                                var role = principal.FindFirst(ClaimTypes.Role)?.Value;
-                               if (role != "GodMode")
+                               if (role == "GodMode")
                                {
-                                   context.Fail("Token is missing tenant_id and user is not GodMode.");
+                                   if (!string.IsNullOrWhiteSpace(requestTenantId))
+                                   {
+                                       var identity = (ClaimsIdentity)principal.Identity!;
+                                       identity.AddClaim(new Claim("tenant_id", requestTenantId));
+                                   }
+                               }
+                               else if (role == "TenantOwner")
+                               {
+                                   if (requestTenantId != null)
+                                   {
+                                       context.Fail("TenantOwner without tenant cannot access a tenant subdomain");
+                                       return;
+                                   }
+                               }
+                               else
+                               {
+                                   context.Fail("Token missing tenant_id");
                                    return;
                                }
-
-                               // Подставляем текущий tenant_id в claims для downstream-логики
-                               if (!string.IsNullOrWhiteSpace(requestTenantId))
-                               {
-                                   var identity = (ClaimsIdentity)principal.Identity!;
-                                   identity.AddClaim(new Claim("tenant_id", requestTenantId));
-                               }
-                               // если requestTenantId == null (например, запрос без поддомена), GodMode всё равно может работать без tenant_id?
-                               // Решайте по бизнес-требованиям: можно пропустить или Fail.
                            }
 
                            logger.Info($"Tenant check OK. User: {principal.Identity?.Name}, Tenant: {requestTenantId ?? "none"}");
