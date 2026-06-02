@@ -19,17 +19,17 @@ namespace StepanCarSevice.DetailService.Infrastructure.Repositories
             _dbSet = context.Set<T>();
         }
 
-        public void AddAsync(T entity)
+        public void Add(T entity)
         {
             _dbSet.Add(entity);
         }
 
-        public void DeleteAsync(T entity)
+        public void Delete(T entity)
         {
             _dbSet.Remove(entity);
         }
 
-        public void UpdateAsync(T entity)
+        public void Update(T entity)
         {
             _dbSet.Update(entity);
         }
