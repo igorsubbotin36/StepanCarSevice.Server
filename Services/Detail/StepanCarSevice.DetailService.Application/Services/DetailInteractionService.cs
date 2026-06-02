@@ -12,6 +12,9 @@ namespace StepanCarSevice.DetailService.Application.Services
 {
     public class DetailInteractionService : IDetailService
     {
+        private readonly ICarManufactureRepository _carManufactureRepository;
+        private readonly ICarModelRepository _carModelRepository;
+        private readonly IDetailManufactureRepository _detailManufactureRepository;
         private readonly IDetailRepository _detailRepository;
         private readonly ILogger<DetailInteractionService> _logger;
         private readonly IMultiTenantContextAccessor<TenantInfoEntity> _accessor;
@@ -19,12 +22,18 @@ namespace StepanCarSevice.DetailService.Application.Services
         public DetailInteractionService(IDetailRepository repository,
             ILogger<DetailInteractionService> logger,
             IMultiTenantContextAccessor<TenantInfoEntity> accessor,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            ICarModelRepository carModelRepository,
+            IDetailManufactureRepository detailManufactureRepository,
+            ICarManufactureRepository carManufactureRepository)
         {
             _detailRepository = repository;
             _logger = logger;
             _accessor = accessor;
             _unitOfWork = unitOfWork;
+            _carModelRepository = carModelRepository;
+            _detailManufactureRepository = detailManufactureRepository;
+            _carManufactureRepository = carManufactureRepository;
         }
         private TenantInfoEntity? CurrentTenant => _accessor.MultiTenantContext?.TenantInfo;
         private string? GetTenantId()
@@ -38,13 +47,13 @@ namespace StepanCarSevice.DetailService.Application.Services
         {
             if (detailDto == null)
                 return Result.Failure(ModelErrors.RequestedModelIsNull);
-            var detail = await _detailRepository.GetDetailByIdAsync(detailDto.Id, GetTenantId());
+            var detail = await _detailRepository.GetByIdAsync(detailDto.Id, GetTenantId());
             if (detail == null)
                 return Result.Failure(ModelErrors.ModelNotFound);
             if (detailDto.Count != null)
                 detail.Count = (int)detailDto.Count;
-            if (detailDto.DetailManufactureId != null)
-                detail.DetailManufactureId = (int)detailDto.DetailManufactureId;
+            if (detailDto.DetailManufacture != null)
+                detail.DetailManufacture = detailDto.DetailManufacture;
             if (detailDto.Code != null)
                 detail.Code = detailDto.Code;
             if (detailDto.OriginalCode != null)
@@ -53,8 +62,8 @@ namespace StepanCarSevice.DetailService.Application.Services
                 detail.Name = detailDto.Name;
             if (detailDto.Price != null)
                 detail.Price = (decimal)detailDto.Price;
-            if (detailDto.CarModelId != null) // ToDo: List<CarMocelId>
-                detail.CarModelId = (int)detailDto.CarModelId;
+            if (detailDto.CarModel != null) // ToDo: List<CarMocelId>
+                detail.CarModel = detailDto.CarModel;
             try
             {
                 await _detailRepository.EditDetailAsync(detail);
@@ -146,12 +155,15 @@ namespace StepanCarSevice.DetailService.Application.Services
             var temp = await _detailRepository.GetDetailsByCodeAsync(model.Code, GetTenantId());
             if (temp.Count != 0)
                 return Result.Failure<DetailReadDto>(ModelErrors.ModelAlreadyExists);
+
+            
+
             Detail detail = new Detail()
             {
                 Code = model.Code,
                 OriginalCode = model.OriginalCode,
-                DetailManufactureId = model.DetailManufactureId,
-                CarModelId = model.CarModelId,
+                DetailManufacture = model.DetailManufacture,
+                CarModel = model.CarModel,
                 Price = model.Price,
                 Name = model.Name,
                 Count = model.Count,

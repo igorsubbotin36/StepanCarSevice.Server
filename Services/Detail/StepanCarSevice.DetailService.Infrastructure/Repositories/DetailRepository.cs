@@ -9,17 +9,7 @@ namespace StepanCarSevice.DetailService.Infrastructure.Repositories
     {
         public DetailRepository(DetailDbContext context) : base(context) { }
 
-        public async Task DecrementDetailsAsync(int[] id, string? tenantId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task EditDetailAsync(Detail detail)
-        {
-            _dbSet.Update(detail);
-        }
-
-        public async Task<List<Detail>> GetAllDetailsAsync(string? tenantId)
+        public async Task<List<Detail>> GetAllAsync(string? tenantId)
         {
             return await _dbSet
                 .Where(x => x.TenantId == tenantId)
@@ -35,9 +25,15 @@ namespace StepanCarSevice.DetailService.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Detail?> GetDetailByIdAsync(int id, string? tenantId)
+        public async Task<Detail?> GetByIdAsync(int id, string? tenantId)
         {
             return await _dbSet.SingleOrDefaultAsync(x => x.TenantId == tenantId && x.Id == id);
+        }
+
+        public async Task<List<Detail>?> GetByNameAsync(string name, string tenantId)
+        {
+            return await _dbSet.Where(x => x.TenantId == tenantId && x.Name.Contains(name))
+                .ToListAsync();
         }
     }
 }

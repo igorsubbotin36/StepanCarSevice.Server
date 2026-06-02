@@ -33,7 +33,10 @@ namespace StepanCarSevice.DetailService.Infrastructure
             services.AddRabbitMQConsumer<DetailDbContext>(configuration);
             services.AddSharedMultitenantHostStrategy<DetailDbContext>();
 
-            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            //services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped<ICarManufactureRepository, CarManufactureRepository>();
+            services.AddScoped<ICarModelRepository, CarModelRepository>();
+            services.AddScoped<IDetailManufactureRepository, DetailManufactureRepository>();
             services.AddScoped<IDetailRepository, DetailRepository>();
             services.AddScoped<IDetailService, DetailInteractionService>();
 
