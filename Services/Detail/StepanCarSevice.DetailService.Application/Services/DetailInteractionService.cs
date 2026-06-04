@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using StepanCarService.Common.Application.Models;
 using StepanCarService.Common.Core.Entities;
 using StepanCarService.Common.Core.Repositories;
-using StepanCarSevice.DetailService.Application.Interfaces;
+using StepanCarSevice.DetailService.Application.Interfaces.Services;
 using StepanCarSevice.DetailService.Application.Models.DTO;
 using StepanCarSevice.DetailService.Domain.Entities;
 using StepanCarSevice.DetailService.Domain.Repositories;
@@ -44,14 +44,14 @@ namespace StepanCarSevice.DetailService.Application.Services
                 return null;
             return tenant.Id;
         }
-        public async Task<Result> EditDetailAsync(DetailUpdateDto detailDto)
+        public async Task<Result<DetailReadDto>> UpdateAsync(DetailUpdateDto detailDto)
         {
             if (detailDto == null)
-                return Result.Failure(ModelErrors.RequestedModelIsNull);
+                return Result.Failure<DetailReadDto>(ModelErrors.RequestedModelIsNull);
             var tenantId = GetTenantId();
             var detail = await _detailRepository.GetByIdAsync(detailDto.Id, tenantId);
             if (detail == null)
-                return Result.Failure(ModelErrors.ModelNotFound);
+                return Result.Failure<DetailReadDto>(ModelErrors.ModelNotFound);
             if (detailDto.Count != null)
                 detail.Count = (int)detailDto.Count;
             if (detailDto.DetailManufacture != null)
@@ -61,7 +61,7 @@ namespace StepanCarSevice.DetailService.Application.Services
                 if (detailManufacturesList == null || detailManufacturesList.Count == 0)
                 {
                     detailManufacture = new DetailManufacture() { Name = detailDto.DetailManufacture.Name, TenantId = tenantId };
-                    _detailManufactureRepository.Add(detailManufacture);
+                    await _detailManufactureRepository.AddAsync(detailManufacture);
                 }
                 else
                 {
@@ -90,7 +90,7 @@ namespace StepanCarSevice.DetailService.Application.Services
                         NameRU = detailDto.CarModel.Manufacture.NameEng,
                         Country = "default" // ToDo: remove country
                     };
-                    _carManufactureRepository.Add(carManufacture);
+                    await _carManufactureRepository.AddAsync(carManufacture);
                 }
                 else
                 {
@@ -126,7 +126,7 @@ namespace StepanCarSevice.DetailService.Application.Services
             }
         }
 
-        public async Task<Result<List<DetailReadDto>>> GetAllDetailsAsync()
+        public async Task<Result<List<DetailReadDto>>> GetAllAsync()
         {
             try
             {
@@ -147,7 +147,7 @@ namespace StepanCarSevice.DetailService.Application.Services
             }
         }
 
-        public async Task<Result<DetailReadDto>> GetDetailByIdAsync(int id)
+        public async Task<Result<DetailReadDto>> GetByIdAsync(int id)
         {
             try
             {
@@ -163,7 +163,7 @@ namespace StepanCarSevice.DetailService.Application.Services
             }
         }
 
-        public async Task<Result<List<DetailReadDto>>> GetDetailsByCodeAsync(string code)
+        public async Task<Result<List<DetailReadDto>>> GetByCodeAsync(string code)
         {
             try
             {
@@ -196,7 +196,7 @@ namespace StepanCarSevice.DetailService.Application.Services
                 detail.Count);
             return readDto;
         }
-        public async Task<Result<DetailReadDto>> AddASync(DetailCreateDto model)
+        public async Task<Result<DetailReadDto>> AddAsync(DetailCreateDto model)
         {
             if (model == null)
                 return Result.Failure<DetailReadDto>(ModelErrors.RequestedModelIsNull);
@@ -210,7 +210,7 @@ namespace StepanCarSevice.DetailService.Application.Services
             if (detailManufacturesList == null || detailManufacturesList.Count == 0)
             {
                 detailManufacture = new DetailManufacture() { Name = model.DetailManufacture.Name, TenantId = tenantId };
-                _detailManufactureRepository.Add(detailManufacture);
+                await _detailManufactureRepository.AddAsync(detailManufacture);
             }
             else
             {
@@ -227,7 +227,7 @@ namespace StepanCarSevice.DetailService.Application.Services
                     NameRU = model.CarModel.Manufacture.NameEng,
                     Country = "default" // ToDo: remove country
                 };
-                _carManufactureRepository.Add(carManufacture);
+                await _carManufactureRepository.AddAsync(carManufacture);
             }
             else
             {
@@ -265,7 +265,7 @@ namespace StepanCarSevice.DetailService.Application.Services
             };
             try
             {
-                _detailRepository.Add(detail);
+                await _detailRepository.AddAsync(detail);
                 await _unitOfWork.SaveChangesAsync();
                 return Result.Success(MapDetailToReadDto(detail));
             }
@@ -274,6 +274,11 @@ namespace StepanCarSevice.DetailService.Application.Services
                 _logger.LogError($"Ошибка при добавлении детали в базую\n{ex}");
                 return Result.Failure<DetailReadDto>(SystemErrors.DatabaseError);
             }
+        }
+
+        public Task<Result> DeleteByIdAsync(int Id)
+        {
+            throw new NotImplementedException();
         }
     }
 }

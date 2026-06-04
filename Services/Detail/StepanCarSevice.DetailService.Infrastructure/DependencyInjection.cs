@@ -12,7 +12,7 @@ using StepanCarService.Common.Infastructure.DependencyInjection;
 using StepanCarService.Common.Infastructure.Messaging;
 using StepanCarService.Common.Infastructure.Messaging.Handlers;
 using StepanCarService.Common.Infastructure.Repositories;
-using StepanCarSevice.DetailService.Application.Interfaces;
+using StepanCarSevice.DetailService.Application.Interfaces.Services;
 using StepanCarSevice.DetailService.Application.Services;
 using StepanCarSevice.DetailService.Domain.Repositories;
 using StepanCarSevice.DetailService.Infrastructure.DBContexts;
