@@ -65,6 +65,7 @@ namespace StepanCarSevice.AuthService.Application.Services
                 Phone = request.Phone,
                 FirstName = request.FirstName,
                 SecondName = request.SecondName,
+                Name = $"{request.FirstName} {request.SecondName}",
                 Password = passwordHash
             };
 

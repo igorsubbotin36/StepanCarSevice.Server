@@ -15,7 +15,7 @@ namespace StepanCarSevice.AuthService.Infrastructure.DBContexts.Factories
         {
             var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
 
-            var basePath = Path.Combine(Directory.GetCurrentDirectory(), "../StepanCarSevice.AuthService");
+            var basePath = Path.Combine(Directory.GetCurrentDirectory(), "../StepanCarSevice.AuthService.API");
 
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(basePath)

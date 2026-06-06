@@ -1,4 +1,4 @@
-﻿using StepanCarSevice.DetailService.Domain.Entities;
+﻿using StepanCarService.Common.Core.Entities;
 
 namespace StepanCarSevice.DetailService.Domain.Repositories
 {
