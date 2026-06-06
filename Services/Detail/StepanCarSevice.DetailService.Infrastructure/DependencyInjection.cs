@@ -12,7 +12,9 @@ using StepanCarService.Common.Infastructure.DependencyInjection;
 using StepanCarService.Common.Infastructure.Messaging;
 using StepanCarService.Common.Infastructure.Messaging.Handlers;
 using StepanCarService.Common.Infastructure.Repositories;
+using StepanCarSevice.DetailService.Application.Interfaces.Mappers;
 using StepanCarSevice.DetailService.Application.Interfaces.Services;
+using StepanCarSevice.DetailService.Application.Models.Mappers;
 using StepanCarSevice.DetailService.Application.Services;
 using StepanCarSevice.DetailService.Domain.Repositories;
 using StepanCarSevice.DetailService.Infrastructure.DBContexts;
@@ -33,12 +35,11 @@ namespace StepanCarSevice.DetailService.Infrastructure
             services.AddRabbitMQConsumer<DetailDbContext>(configuration);
             services.AddSharedMultitenantHostStrategy<DetailDbContext>();
 
-            //services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-            services.AddScoped<ICarManufactureRepository, CarManufactureRepository>();
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<ICarModelRepository, CarModelRepository>();
-            services.AddScoped<IDetailManufactureRepository, DetailManufactureRepository>();
             services.AddScoped<IDetailRepository, DetailRepository>();
             services.AddScoped<IDetailService, DetailInteractionService>();
+            services.AddScoped<IDetailMappers, DetailMappers>();
 
             return services;
         }

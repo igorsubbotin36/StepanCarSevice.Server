@@ -3,12 +3,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace StepanCarSevice.DetailService.Domain.Entities
 {
-    public class DetailManufacture
+    public class DetailManufacture : AppBaseEntity
     {
-        [Key]
-        public int Id { get; set; }
-        public required string Name { get; set; }
-        public string TenantId { get; set; }
-        public TenantInfoEntity Tenant { get; set; }
+        public List<Detail> Details { get; set; } = new List<Detail>();
     }
 }

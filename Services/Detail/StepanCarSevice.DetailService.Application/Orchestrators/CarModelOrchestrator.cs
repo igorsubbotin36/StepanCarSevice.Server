@@ -33,7 +33,7 @@ namespace StepanCarSevice.DetailService.Application.Orchestrators
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                var carManufactureResult = await _carManufactureService.GetByNameOrCreateAsync(model.Manufacture.NameEng);
+                var carManufactureResult = await _carManufactureService.GetByNameOrCreateAsync(model.Manufacture);
                 if (!carManufactureResult.IsSuccess)
                     return Result.Failure<CarModelReadDto>(carManufactureResult.ErrorCode);
                 var carModelResult = await _carModelService.AddAsync(model, carManufactureResult.Value.Id);

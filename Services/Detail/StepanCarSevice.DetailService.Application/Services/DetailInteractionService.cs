@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using StepanCarService.Common.Application.Models;
 using StepanCarService.Common.Core.Entities;
 using StepanCarService.Common.Core.Repositories;
+using StepanCarSevice.DetailService.Application.Interfaces.Mappers;
 using StepanCarSevice.DetailService.Application.Interfaces.Services;
 using StepanCarSevice.DetailService.Application.Models.DTO;
 using StepanCarSevice.DetailService.Domain.Entities;
@@ -13,20 +14,22 @@ namespace StepanCarSevice.DetailService.Application.Services
 {
     public class DetailInteractionService : IDetailService
     {
-        private readonly ICarManufactureRepository _carManufactureRepository;
+        private readonly IRepository<CarManufacture> _carManufactureRepository;
         private readonly ICarModelRepository _carModelRepository;
-        private readonly IDetailManufactureRepository _detailManufactureRepository;
+        private readonly IRepository<DetailManufacture> _detailManufactureRepository;
         private readonly IDetailRepository _detailRepository;
         private readonly ILogger<DetailInteractionService> _logger;
         private readonly IMultiTenantContextAccessor<TenantInfoEntity> _accessor;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IDetailMappers _detailMappers;
         public DetailInteractionService(IDetailRepository repository,
             ILogger<DetailInteractionService> logger,
             IMultiTenantContextAccessor<TenantInfoEntity> accessor,
             IUnitOfWork unitOfWork,
             ICarModelRepository carModelRepository,
-            IDetailManufactureRepository detailManufactureRepository,
-            ICarManufactureRepository carManufactureRepository)
+            IRepository<DetailManufacture> detailManufactureRepository,
+            IRepository<CarManufacture> carManufactureRepository,
+            IDetailMappers detailMappers)
         {
             _detailRepository = repository;
             _logger = logger;
@@ -35,6 +38,7 @@ namespace StepanCarSevice.DetailService.Application.Services
             _carModelRepository = carModelRepository;
             _detailManufactureRepository = detailManufactureRepository;
             _carManufactureRepository = carManufactureRepository;
+            _detailMappers = detailMappers;
         }
         private TenantInfoEntity? CurrentTenant => _accessor.MultiTenantContext?.TenantInfo;
         private string? GetTenantId()
@@ -86,9 +90,7 @@ namespace StepanCarSevice.DetailService.Application.Services
                 {
                     carManufacture = new CarManufacture()
                     {
-                        NameEN = detailDto.CarModel.Manufacture.NameEng,
-                        NameRU = detailDto.CarModel.Manufacture.NameEng,
-                        Country = "default" // ToDo: remove country
+                        Name = detailDto.CarModel.Manufacture.NameEng
                     };
                     await _carManufactureRepository.AddAsync(carManufacture);
                 }
@@ -104,12 +106,10 @@ namespace StepanCarSevice.DetailService.Application.Services
                     carModel = new CarModel()
                     {
                         Manufacture = carManufacture,
-                        NameEN = detailDto.CarModel.NameEng,
-                        NameRU = detailDto.CarModel.NameEng,
+                        Name = detailDto.CarModel.NameEng,
                         YearFrom = (int)detailDto.CarModel.YearFrom,
                         YearTo = (int)detailDto.CarModel.YearTo
                     };
-                    detail.CarModel = carModel;
                 }
             }
             try
@@ -117,12 +117,12 @@ namespace StepanCarSevice.DetailService.Application.Services
                 _detailRepository.Update(detail);
                 await _unitOfWork.SaveChangesAsync();
                 _logger.LogInformation($"{detail.Id} обновлена информация в БД");
-                return Result.Success();
+                return Result.Success(_detailMappers.DetailToReadDto(detail));
             }
             catch (Exception ex)
             {
                 _logger.LogError($"{detail.Id} ошибка БД при попытке обновления информации о детали\n{ex}");
-                return Result.Failure(SystemErrors.DatabaseError);
+                return Result.Failure<DetailReadDto>(SystemErrors.DatabaseError);
             }
         }
 
@@ -136,7 +136,7 @@ namespace StepanCarSevice.DetailService.Application.Services
                 List<DetailReadDto> result = new List<DetailReadDto>();
                 foreach (var detail in list)
                 {
-                    result.Add(MapDetailToReadDto(detail));
+                    result.Add(_detailMappers.DetailToReadDto(detail));
                 }
                 return Result.Success(result);
             }
@@ -154,7 +154,7 @@ namespace StepanCarSevice.DetailService.Application.Services
                 Detail? detail = await _detailRepository.GetByIdAsync(id, GetTenantId());
                 if (detail == null)
                     return Result.Failure<DetailReadDto>(ModelErrors.ModelNotFound);
-                return Result.Success(MapDetailToReadDto(detail));
+                return Result.Success(_detailMappers.DetailToReadDto(detail));
             }
             catch (Exception e)
             {
@@ -173,7 +173,7 @@ namespace StepanCarSevice.DetailService.Application.Services
                 List<DetailReadDto> result = new List<DetailReadDto>();
                 foreach (var detail in list)
                 {
-                    result.Add(MapDetailToReadDto(detail));
+                    result.Add(_detailMappers.DetailToReadDto(detail));
                 }
                 return Result.Success(result);
             }
@@ -182,19 +182,6 @@ namespace StepanCarSevice.DetailService.Application.Services
                 _logger.LogError($"Ошибка получения списка деталей по коду на складе\n{e}");
                 return Result.Failure<List<DetailReadDto>>(SystemErrors.DatabaseError);
             }
-        }
-
-        private DetailReadDto MapDetailToReadDto(Detail detail)
-        {
-            DetailReadDto readDto = new DetailReadDto(detail.Id,
-                detail.Code,
-                detail.OriginalCode,
-                detail.DetailManufactureId,
-                detail.Name,
-                detail.CarModelId,
-                detail.Price,
-                detail.Count);
-            return readDto;
         }
         public async Task<Result<DetailReadDto>> AddAsync(DetailCreateDto model)
         {
@@ -223,9 +210,7 @@ namespace StepanCarSevice.DetailService.Application.Services
             {
                 carManufacture = new CarManufacture()
                 {
-                    NameEN = model.CarModel.Manufacture.NameEng,
-                    NameRU = model.CarModel.Manufacture.NameEng,
-                    Country = "default" // ToDo: remove country
+                    Name = model.CarModel.Manufacture.NameEng
                 };
                 await _carManufactureRepository.AddAsync(carManufacture);
             }
@@ -241,8 +226,7 @@ namespace StepanCarSevice.DetailService.Application.Services
                 carModel = new CarModel()
                 {
                     Manufacture = carManufacture,
-                    NameEN = model.CarModel.NameEng,
-                    NameRU = model.CarModel.NameEng,
+                    Name = model.CarModel.NameEng,
                     YearFrom = model.CarModel.YearFrom,
                     YearTo = model.CarModel.YearTo
                 };
@@ -257,7 +241,6 @@ namespace StepanCarSevice.DetailService.Application.Services
                 Code = model.Code,
                 OriginalCode = model.OriginalCode,
                 DetailManufacture = detailManufacture,
-                CarModel = carModel,
                 Price = model.Price,
                 Name = model.Name,
                 Count = model.Count,
@@ -267,7 +250,7 @@ namespace StepanCarSevice.DetailService.Application.Services
             {
                 await _detailRepository.AddAsync(detail);
                 await _unitOfWork.SaveChangesAsync();
-                return Result.Success(MapDetailToReadDto(detail));
+                return Result.Success(_detailMappers.DetailToReadDto(detail));
             }
             catch (Exception ex)
             {

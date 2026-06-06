@@ -5,6 +5,7 @@ using StepanCarService.Common.Core.Entities;
 using StepanCarService.Common.Core.Repositories;
 using StepanCarSevice.DetailService.Application.Interfaces.Services;
 using StepanCarSevice.DetailService.Application.Models.DTO;
+using StepanCarSevice.DetailService.Domain.Entities;
 using StepanCarSevice.DetailService.Domain.Repositories;
 using System;
 using System.Collections.Generic;
@@ -16,11 +17,11 @@ namespace StepanCarSevice.DetailService.Application.Services
 {
     public class CarManufactureService : ICarManufactureService
     {
-        private readonly ICarManufactureRepository _carManufactureRepository;
+        private readonly IRepository<CarManufacture> _carManufactureRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMultiTenantContextAccessor<TenantInfoEntity> _accessor;
         private readonly ILogger<CarManufactureService> _logger;
-        public CarManufactureService(ICarManufactureRepository carManufactureRepository,
+        public CarManufactureService(IRepository<CarManufacture> carManufactureRepository,
             IUnitOfWork unitOfWork,
             IMultiTenantContextAccessor<TenantInfoEntity> accessor,
             ILogger<CarManufactureService> logger)

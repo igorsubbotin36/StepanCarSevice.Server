@@ -24,7 +24,7 @@ namespace StepanCarSevice.DetailService.API.Controllers
         [Authorize(Policy = "TenantModeratorInTenant")]
         public async Task<IActionResult> AddDetail(DetailCreateDto detail)
         {
-            var result = await _detailService.AddASync(detail);
+            var result = await _detailService.AddAsync(detail);
             return HandleResult(result);
         }
 
@@ -32,7 +32,7 @@ namespace StepanCarSevice.DetailService.API.Controllers
         [Authorize(Policy = "TenantModeratorInTenant")]
         public async Task<IActionResult> GetAllDetailsAsync()
         {
-            var result = await _detailService.GetAllDetailsAsync();
+            var result = await _detailService.GetAllAsync();
             return HandleResult(result);
         }
 
@@ -40,7 +40,7 @@ namespace StepanCarSevice.DetailService.API.Controllers
         [Authorize(Roles = "TenantModeratorInTenant")]
         public async Task<IActionResult> GetDetailByIdAsync([FromBody] int id)
         {
-            var result = await _detailService.GetDetailByIdAsync(id);
+            var result = await _detailService.GetByIdAsync(id);
             return HandleResult(result);
         }
 
@@ -48,7 +48,7 @@ namespace StepanCarSevice.DetailService.API.Controllers
         [Authorize(Roles = "TenantModeratorInTenant")]
         public async Task<IActionResult> GetDetailsByCodeAsync([FromBody] string code)
         {
-            var result = await _detailService.GetDetailsByCodeAsync(code);
+            var result = await _detailService.GetByCodeAsync(code);
             return HandleResult(result);
         }
 
@@ -56,7 +56,7 @@ namespace StepanCarSevice.DetailService.API.Controllers
         [Authorize(Roles = "TenantModeratorInTenant")]
         public async Task<IActionResult> EditDetailAsync([FromBody] DetailUpdateDto detail)
         {
-            var result = await _detailService.EditDetailAsync(detail);
+            var result = await _detailService.UpdateAsync(detail);
             return HandleResult(result);
         }
     }
