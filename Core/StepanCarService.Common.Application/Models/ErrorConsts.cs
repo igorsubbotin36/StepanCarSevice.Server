@@ -48,7 +48,10 @@ namespace StepanCarService.Common.Application.Models
         public const string DatabaseError = "DATABASE_ERROR";
         public const string ExternalServiceError = "EXTERNAL_SERVICE_ERROR";
     }
-
+    public static class EntityErrors
+    {
+        public const string EntityNotFound = "ENTITY_NOT_FOUND";
+    }
     public static class TenantErrors
     {
         public const string TenantIsNull = "TENANT_IS_NULL";

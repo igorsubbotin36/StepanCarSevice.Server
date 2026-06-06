@@ -9,13 +9,9 @@ using System.Threading.Tasks;
 
 namespace StepanCarSevice.DetailService.Application.Interfaces.Services
 {
-    public interface ICarManufactureService
+    public interface ICarManufactureService : IService<CarManufactureReadDto, CarManufactureCreateDto, CarManufactureUpdateDto>
     {
-        Task<Result<CarManufactureReadDto>> AddAsync(CarManufactureCreateDto model);
-        Task<Result<CarManufactureReadDto>> UpdateAsync(CarManufactureUpdateDto model);
         Task<Result<CarManufactureReadDto>> GetByNameOrCreateAsync(CarManufactureCreateDto model);
-        Task<Result<List<CarManufactureReadDto>>> GetAllAsync();
-        Task<Result<CarManufactureReadDto>> GetByNameAsync(string name);
-        Task<Result> DeleteByIdAsync(int Id);
+        Task<Result<List<CarManufactureReadDto>>> GetByNameAsync(string name);
     }
 }

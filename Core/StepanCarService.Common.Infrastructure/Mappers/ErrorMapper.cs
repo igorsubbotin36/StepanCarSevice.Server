@@ -65,7 +65,11 @@ namespace StepanCarService.Common.Infastructure.Mappers
                 "Ошибка базы данных"),
                 [SystemErrors.ExternalServiceError] = (HttpStatusCode.ServiceUnavailable,
                 "Сервис временно недоступен"),
-                
+
+                //Entity Erros
+                [EntityErrors.EntityNotFound] = (HttpStatusCode.NotFound,
+                "Не найдено в бд"),
+
                 //Tenant errors
                 [TenantErrors.TenantIsNull] = (HttpStatusCode.BadRequest, 
                     "Переданный тенант пустой"),
