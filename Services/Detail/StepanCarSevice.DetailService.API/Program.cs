@@ -1,9 +1,7 @@
-using Finbuckle.MultiTenant;
-using Microsoft.OpenApi.Models;
-using NLog.Web;
 using StepanCarService.Common.API.AppExtensions;
 using StepanCarService.Common.API.BuilderExtensions;
 using StepanCarSevice.DetailService.Infrastructure;
+
 namespace StepanCarSevice.DetailService.API
 {
     public class Program

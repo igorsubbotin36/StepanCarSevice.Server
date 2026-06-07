@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using StepanCarSevice.DetailService.Domain.Entities;
 using StepanCarSevice.DetailService.Domain.Repositories;
 using StepanCarSevice.DetailService.Infrastructure.DBContexts;
+
 namespace StepanCarSevice.DetailService.Infrastructure.Repositories
 {
     public class DetailRepository : Repository<Detail>, IDetailRepository

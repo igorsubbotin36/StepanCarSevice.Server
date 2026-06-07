@@ -1,26 +1,14 @@
-﻿using Finbuckle.MultiTenant;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
 using NLog;
-using StepanCarService.Common.Application.Interfaces;
-using StepanCarService.Common.Core.Entities;
-using StepanCarService.Common.Core.Repositories;
 using StepanCarService.Common.Infastructure.DependencyInjection;
-using StepanCarService.Common.Infastructure.Messaging;
-using StepanCarService.Common.Infastructure.Messaging.Handlers;
-using StepanCarService.Common.Infastructure.Repositories;
 using StepanCarSevice.DetailService.Application.Interfaces.Mappers;
-using StepanCarSevice.DetailService.Application.Interfaces.Services;
 using StepanCarSevice.DetailService.Application.Models.Mappers;
-using StepanCarSevice.DetailService.Application.Services;
 using StepanCarSevice.DetailService.Domain.Repositories;
 using StepanCarSevice.DetailService.Infrastructure.DBContexts;
 using StepanCarSevice.DetailService.Infrastructure.DBContexts.Inits;
 using StepanCarSevice.DetailService.Infrastructure.Repositories;
-using System.Text;
 
 namespace StepanCarSevice.DetailService.Infrastructure
 {

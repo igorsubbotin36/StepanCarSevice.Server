@@ -4,12 +4,6 @@ using StepanCarService.Common.Core.Repositories;
 using StepanCarSevice.DetailService.Application.Interfaces.Orchestrators;
 using StepanCarSevice.DetailService.Application.Interfaces.Services;
 using StepanCarSevice.DetailService.Application.Models.DTO;
-using StepanCarSevice.DetailService.Application.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StepanCarSevice.DetailService.Application.Orchestrators
 {

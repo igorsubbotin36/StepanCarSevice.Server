@@ -5,13 +5,7 @@ using StepanCarService.Common.Core.Entities;
 using StepanCarSevice.DetailService.Application.Interfaces.Mappers;
 using StepanCarSevice.DetailService.Application.Interfaces.Services;
 using StepanCarSevice.DetailService.Application.Models.DTO;
-using StepanCarSevice.DetailService.Application.Models.Mappers;
 using StepanCarSevice.DetailService.Domain.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StepanCarSevice.DetailService.Application.Services
 {

@@ -4,7 +4,6 @@ using StepanCarService.Common.API.Controllers;
 using StepanCarService.Common.Application.Interfaces;
 using StepanCarSevice.DetailService.Application.Interfaces.Services;
 using StepanCarSevice.DetailService.Application.Models.DTO;
-using StepanCarSevice.DetailService.Domain.Entities;
 
 namespace StepanCarSevice.DetailService.API.Controllers
 {
