@@ -10,7 +10,7 @@ namespace StepanCarSevice.DetailService.Application.Interfaces.Mappers
 {
     public interface ICarModelMappers
     {
-        CarModelReadDto CarManufactureToReadDto(CarModel carModel);
+        CarModelReadDto CarModelToReadDto(CarModel carModel);
         CarModel UpdateDtoToCarModel(CarModelUpdateDto model);
         CarModel CreateDtoToCarModel(CarModelCreateDto model);
     }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace StepanCarSevice.DetailService.Application.Models.DTO
 {
     public record CarManufactureCreateDto(string NameEng);
-    public record CarModelCreateDto(CarManufactureCreateDto Manufacture, string NameEng, int YearFrom, int YearTo);
+    public record CarModelCreateDto(int ManufactureId, string Name, int YearFrom, int YearTo);
     public record DetailManufactureCreateDto(string Name);
-    public record DetailCreateDto(string Code, string OriginalCode, DetailManufactureCreateDto DetailManufacture, string Name, CarModelCreateDto CarModel, decimal Price, int Count);
+    public record DetailCreateDto(string Code, string OriginalCode, int DetailManufactureId, string Name, decimal Price, int Count);
 }

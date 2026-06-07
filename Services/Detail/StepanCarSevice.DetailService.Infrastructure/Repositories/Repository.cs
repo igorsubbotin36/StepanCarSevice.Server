@@ -15,9 +15,10 @@ namespace StepanCarSevice.DetailService.Infrastructure.Repositories
             _dbSet = context.Set<T>();
         }
 
-        public async Task AddAsync(T entity)
+        public async Task<T> AddAsync(T entity)
         {
             await _dbSet.AddAsync(entity);
+            return entity;
         }
 
         public void Delete(T entity)
@@ -43,9 +44,10 @@ namespace StepanCarSevice.DetailService.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public void Update(T entity)
+        public T Update(T entity)
         {
             _dbSet.Update(entity);
+            return entity;
         }
     }
 }

@@ -20,7 +20,6 @@ namespace StepanCarSevice.DetailService.Application.Services
     public class CarManufactureService : ServiceBase, ICarManufactureService
     {
         private readonly IRepository<CarManufacture> _carManufactureRepository;
-        private readonly IMultiTenantContextAccessor<TenantInfoEntity> _accessor;
         private readonly ILogger<CarManufactureService> _logger;
         private readonly ICarManufactureMappers _carManufactureMapper;
         public CarManufactureService(IRepository<CarManufacture> carManufactureRepository,
@@ -29,7 +28,6 @@ namespace StepanCarSevice.DetailService.Application.Services
             ICarManufactureMappers carManufactureMapper) : base(accessor)
         {
             _carManufactureRepository = carManufactureRepository;
-            _accessor = accessor;
             _logger = logger;
             _carManufactureMapper = carManufactureMapper;
         }
@@ -153,8 +151,8 @@ namespace StepanCarSevice.DetailService.Application.Services
                 var resultEntity = await _carManufactureRepository.GetByIdAsync(model.Id, tenantId);
                 if (resultEntity == null)
                     return Result.Failure<CarManufactureReadDto>(EntityErrors.EntityNotFound);
-                if (model.NameEng != null || model.NameEng != resultEntity.Name)
-                    resultEntity.Name = model.NameEng;
+                if (model.Name != null || model.Name != resultEntity.Name)
+                    resultEntity.Name = model.Name;
                 var result = _carManufactureRepository.Update(resultEntity);
                 return Result.Success(_carManufactureMapper.CarManufactureToReadDto(result));
             }
