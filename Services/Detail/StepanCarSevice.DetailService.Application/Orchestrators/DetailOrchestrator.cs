@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace StepanCarSevice.DetailService.Application.Orchestrators
 {
-    public class DetailOrchestrator : IDetailOrchestrator
+    /*public class DetailOrchestrator : IDetailOrchestrator
     {
         private readonly IDetailManufactureService _detailManufactureService;
         private readonly IDetailService _detailService;
@@ -78,5 +78,5 @@ namespace StepanCarSevice.DetailService.Application.Orchestrators
                 return Result.Failure<DetailReadDto>(SystemErrors.DatabaseError);
             }
         }
-    }
+    }*/
 }

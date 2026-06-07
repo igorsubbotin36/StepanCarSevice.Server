@@ -32,7 +32,7 @@ namespace StepanCarSevice.DetailService.Application.Orchestrators
             {
                 var creationResult = await _carManufactureService.AddAsync(model);
                 await _unitOfWork.CommitTransactionAsync();
-                _logger.LogInformation($"{creationResult.Value.NameEng} транзакция добавления завершена");
+                _logger.LogInformation($"{creationResult.Value.Name} транзакция добавления завершена");
                 return creationResult;
             }
             catch (Exception ex)
@@ -50,13 +50,13 @@ namespace StepanCarSevice.DetailService.Application.Orchestrators
             {
                 var updateResult = await _carManufactureService.UpdateAsync(model);
                 await _unitOfWork.CommitTransactionAsync();
-                _logger.LogInformation($"{updateResult.Value.NameEng} транзакция обновления завершена");
+                _logger.LogInformation($"{updateResult.Value.Name} транзакция обновления завершена");
                 return Result.Success(updateResult.Value);
             }
             catch (Exception ex)
             {
                 await _unitOfWork.RollBackTransactionAsync();
-                _logger.LogError($"{model.NameEng} ошибка при сохранении транзакции обновления. Откат\n{ex}");
+                _logger.LogError($"{model.Name} ошибка при сохранении транзакции обновления. Откат\n{ex}");
                 return Result.Failure<CarManufactureReadDto>(SystemErrors.DatabaseError);
             }
         }

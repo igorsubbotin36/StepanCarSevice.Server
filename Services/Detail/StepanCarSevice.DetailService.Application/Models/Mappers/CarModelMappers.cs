@@ -16,6 +16,11 @@ namespace StepanCarSevice.DetailService.Application.Models.Mappers
             throw new NotImplementedException();
         }
 
+        public CarModelReadDto CarModelToReadDto(CarModel carModel)
+        {
+            throw new NotImplementedException();
+        }
+
         public CarModel CreateDtoToCarModel(CarModelCreateDto model)
         {
             throw new NotImplementedException();

@@ -18,6 +18,7 @@ using StepanCarSevice.DetailService.Application.Models.Mappers;
 using StepanCarSevice.DetailService.Application.Services;
 using StepanCarSevice.DetailService.Domain.Repositories;
 using StepanCarSevice.DetailService.Infrastructure.DBContexts;
+using StepanCarSevice.DetailService.Infrastructure.DBContexts.Inits;
 using StepanCarSevice.DetailService.Infrastructure.Repositories;
 using System.Text;
 
@@ -38,7 +39,7 @@ namespace StepanCarSevice.DetailService.Infrastructure
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<ICarModelRepository, CarModelRepository>();
             services.AddScoped<IDetailRepository, DetailRepository>();
-            services.AddScoped<IDetailService, DetailInteractionService>();
+            //services.AddScoped<IDetailService, DetailInteractionService>();
             services.AddScoped<IDetailMappers, DetailMappers>();
 
             return services;
@@ -48,7 +49,7 @@ namespace StepanCarSevice.DetailService.Infrastructure
             using var scope = serviceProvider.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<DetailDbContext>();
             await dbContext.Database.MigrateAsync();
-            //DbInitializer.Init(dbContext);
+            DbInitializer.Init(dbContext);
         }
     }
 }

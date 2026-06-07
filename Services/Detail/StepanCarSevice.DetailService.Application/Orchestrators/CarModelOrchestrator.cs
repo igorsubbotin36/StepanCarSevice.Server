@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace StepanCarSevice.DetailService.Application.Orchestrators
 {
-    public class CarModelOrchestrator : ICarModelOrchestrator
+    /*public class CarModelOrchestrator : ICarModelOrchestrator
     {
         private readonly ICarManufactureService _carManufactureService;
         private readonly ICarModelService _carModelService;
@@ -44,7 +44,7 @@ namespace StepanCarSevice.DetailService.Application.Orchestrators
             catch (Exception ex) 
             {
                 await _unitOfWork.RollBackTransactionAsync();
-                _logger.LogError($"{model.NameEng} ошибка при сохранении транзакции добавления. Откат\n{ex}");
+                _logger.LogError($"{model.Name} ошибка при сохранении транзакции добавления. Откат\n{ex}");
                 return Result.Failure<CarModelReadDto>(SystemErrors.DatabaseError);
             }
         }
@@ -65,9 +65,9 @@ namespace StepanCarSevice.DetailService.Application.Orchestrators
             catch (Exception ex)
             {
                 await _unitOfWork.RollBackTransactionAsync();
-                _logger.LogError($"{model.NameEng} ошибка при сохранении транзакции обновления. Откат\n{ex}");
+                _logger.LogError($"{model.Name} ошибка при сохранении транзакции обновления. Откат\n{ex}");
                 return Result.Failure<CarModelReadDto>(SystemErrors.DatabaseError);
             }
         }
-    }
+    }*/
 }

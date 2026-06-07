@@ -12,9 +12,9 @@ using System.Reflection;
 
 namespace StepanCarSevice.DetailService.Application.Services
 {
-    public class DetailInteractionService : IDetailService
+    public class DetailInteractionService /*: IDetailService*/
     {
-        private readonly IRepository<CarManufacture> _carManufactureRepository;
+        /*private readonly IRepository<CarManufacture> _carManufactureRepository;
         private readonly ICarModelRepository _carModelRepository;
         private readonly IRepository<DetailManufacture> _detailManufactureRepository;
         private readonly IDetailRepository _detailRepository;
@@ -58,13 +58,13 @@ namespace StepanCarSevice.DetailService.Application.Services
                 return Result.Failure<DetailReadDto>(ModelErrors.ModelNotFound);
             if (detailDto.Count != null)
                 detail.Count = (int)detailDto.Count;
-            if (detailDto.DetailManufacture != null)
+            if (detailDto.DetailManufactureId != null)
             {
-                var detailManufacturesList = await _detailManufactureRepository.GetByNameAsync(detailDto.DetailManufacture.Name, tenantId);
+                var detailManufacturesList = await _detailManufactureRepository.GetByIdAsync(detailDto.DetailManufactureId, tenantId);
                 DetailManufacture detailManufacture;
                 if (detailManufacturesList == null || detailManufacturesList.Count == 0)
                 {
-                    detailManufacture = new DetailManufacture() { Name = detailDto.DetailManufacture.Name, TenantId = tenantId };
+                    detailManufacture = new DetailManufacture() { Name = detailDto.DetailManufactureId, TenantId = tenantId };
                     await _detailManufactureRepository.AddAsync(detailManufacture);
                 }
                 else
@@ -263,5 +263,6 @@ namespace StepanCarSevice.DetailService.Application.Services
         {
             throw new NotImplementedException();
         }
+    }*/
     }
 }

@@ -170,25 +170,6 @@ namespace StepanCarSevice.DetailService.Infrastructure.DBContexts
                 .WithMany()
                 .HasForeignKey(e => e.TenantId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<EngineType>()
-                .HasOne(e => e.Tenant)
-                .WithMany()
-                .HasForeignKey(e => e.TenantId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<TransmissionType>()
-                .HasOne(t => t.Tenant)
-                .WithMany()
-                .HasForeignKey(t => t.TenantId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<WheelDriveType>()
-                .HasOne(w => w.Tenant)
-                .WithMany()
-                .HasForeignKey(w => w.TenantId)
-                .OnDelete(DeleteBehavior.Restrict);
-
             // ========== 11. Индексы для ускорения фильтрации по TenantId ==========
             modelBuilder.Entity<CarManufacture>().HasIndex(e => e.TenantId);
             modelBuilder.Entity<CarModel>().HasIndex(e => e.TenantId);
@@ -196,9 +177,6 @@ namespace StepanCarSevice.DetailService.Infrastructure.DBContexts
             modelBuilder.Entity<Detail>().HasIndex(e => e.TenantId);
             modelBuilder.Entity<DetailManufacture>().HasIndex(e => e.TenantId);
             modelBuilder.Entity<Engine>().HasIndex(e => e.TenantId);
-            modelBuilder.Entity<EngineType>().HasIndex(e => e.TenantId);
-            modelBuilder.Entity<TransmissionType>().HasIndex(e => e.TenantId);
-            modelBuilder.Entity<WheelDriveType>().HasIndex(e => e.TenantId);
 
             // Дополнительные индексы на внешние ключи (для часто используемых JOIN)
             modelBuilder.Entity<CarModel>().HasIndex(e => e.ManufactureId);
