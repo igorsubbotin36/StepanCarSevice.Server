@@ -2,7 +2,7 @@
 
 namespace StepanCarSevice.DetailService.Domain.Entities
 {
-    public class DetailManufacture : AppBaseEntity
+    public class DetailManufacture : AppBaseTenantsEntity
     {
         public List<Detail> Details { get; set; } = new List<Detail>();
     }

@@ -1,7 +1,7 @@
 ﻿using StepanCarService.Common.Core.Entities;
 namespace StepanCarSevice.DetailService.Domain.Entities
 {
-    public class CarModel : AppBaseEntity
+    public class CarModel : AppBaseTenantsEntity
     {
         public int ManufactureId { get; set; }
         public required CarManufacture Manufacture { get; set; }

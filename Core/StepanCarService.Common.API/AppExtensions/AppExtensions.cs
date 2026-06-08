@@ -23,7 +23,7 @@ namespace StepanCarService.Common.API.AppExtensions
                     options.RoutePrefix = string.Empty;
                 });
             }
-
+            app.MapOpenApi();
             app.UseHttpsRedirection();
 
             app.UseRouting();

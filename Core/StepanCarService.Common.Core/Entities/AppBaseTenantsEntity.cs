@@ -2,11 +2,8 @@
 
 namespace StepanCarService.Common.Core.Entities
 {
-    abstract public class AppBaseEntity
+    abstract public class AppBaseTenantsEntity : AppCommonEntity
     {
-        [Key]
-        public int Id { get; set; }
-        public required string Name { get; set; }
         public string TenantId { get; set; }
         public TenantInfoEntity Tenant { get; set; }
     }

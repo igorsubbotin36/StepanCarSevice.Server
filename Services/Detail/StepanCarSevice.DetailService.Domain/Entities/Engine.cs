@@ -2,7 +2,7 @@
 
 namespace StepanCarSevice.DetailService.Domain.Entities
 {
-    public class Engine : AppBaseEntity
+    public class Engine : AppBaseTenantsEntity
     {
         public string? EngineValue { get; set; }
         public int EngineTypeId { get; set; }

@@ -2,7 +2,7 @@
 
 namespace StepanCarSevice.DetailService.Domain.Entities
 {
-    public class Detail : AppBaseEntity
+    public class Detail : AppBaseTenantsEntity
     {
         public required string Code { get; set; }
         public required string OriginalCode { get; set; }

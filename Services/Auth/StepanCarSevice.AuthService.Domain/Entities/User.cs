@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace StepanCarSevice.AuthService.Domain.Entities
 {
-    public class User : AppBaseEntity
+    public class User : AppBaseTenantsEntity
     {
         public string? FirstName { get; set; }
         public string? SecondName { get; set; }

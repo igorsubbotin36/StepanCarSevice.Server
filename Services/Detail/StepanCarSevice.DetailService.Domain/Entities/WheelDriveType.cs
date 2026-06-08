@@ -1,11 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using StepanCarService.Common.Core.Entities;
+using System.ComponentModel.DataAnnotations;
 
 namespace StepanCarSevice.DetailService.Domain.Entities
 {
-    public class WheelDriveType
+    public class WheelDriveType : AppCommonEntity
     {
-        [Key]
-        public int Id { get; set; }
-        public string Name { get; set; }
     }
 }

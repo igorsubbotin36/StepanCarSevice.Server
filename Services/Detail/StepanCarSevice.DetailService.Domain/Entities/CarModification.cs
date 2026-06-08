@@ -2,7 +2,7 @@
 
 namespace StepanCarSevice.DetailService.Domain.Entities
 {
-    public class CarModification : AppBaseEntity
+    public class CarModification : AppBaseTenantsEntity
     {
         public int CarModelId { get; set; }
         public CarModel CarModel { get; set; }

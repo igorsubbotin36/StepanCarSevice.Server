@@ -2,7 +2,7 @@
 {
     public record CarManufactureUpdateDto(int Id, string? Name);
     public record CarModelUpdateDto(int Id, int ManufactureId, string? Name, int? YearFrom, int? YearTo);
-    public record CarModificationUpdateDto(int id, int? CarModelId, string? EngineName, int? EnginePower, int? WheelDriveTypeId, int? TransmissionTypeId);
+    public record CarModificationUpdateDto(int Id, string? Name, string? EngineValue, int? EngineTypeId, int? CarModelId, string? EngineName, int? EnginePower, int? WheelDriveTypeId, int? TransmissionTypeId);
     public record DetailManufactureUpdateDto(int Id, string? Name);
     public record DetailUpdateDto(int Id, string? Code, string? OriginalCode, int DetailManufactureId, string? Name, decimal? Price, int? Count);
 }
