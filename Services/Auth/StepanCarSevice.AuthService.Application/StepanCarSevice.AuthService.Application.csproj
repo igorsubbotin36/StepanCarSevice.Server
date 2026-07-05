@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Core\StepanCarService.Common.Application\StepanCarService.Common.Application.csproj" />
+    <ProjectReference Include="..\..\..\Core\StepanCarService.Common.Core\StepanCarService.Common.Core.csproj" />
+    <ProjectReference Include="..\StepanCarSevice.AuthService.Domain\StepanCarSevice.AuthService.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

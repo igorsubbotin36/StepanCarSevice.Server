@@ -1,0 +1,6 @@
+@StepanCarSevice.AuthService_HostAddress = http://localhost:5186
+
+GET {{StepanCarSevice.AuthService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

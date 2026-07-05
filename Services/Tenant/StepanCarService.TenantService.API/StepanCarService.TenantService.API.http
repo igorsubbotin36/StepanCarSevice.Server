@@ -1,0 +1,6 @@
+@StepanCarService.TenantService.API_HostAddress = http://localhost:5010
+
+GET {{StepanCarService.TenantService.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

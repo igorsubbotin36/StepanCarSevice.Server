@@ -1,0 +1,6 @@
+@StepanCarSevice.VisitService.API_HostAddress = http://localhost:5183
+
+GET {{StepanCarSevice.VisitService.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
