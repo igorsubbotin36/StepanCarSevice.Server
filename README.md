@@ -362,6 +362,4 @@ Services/
 - 🚧 Detail — partially ready
 - 🚧 Visit — under development
 
-## License
 
-MIT (replace before publishing).
