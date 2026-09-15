@@ -6,6 +6,9 @@ namespace StepanCarService.TenantService.Infrastructure.DbContexts.Factories;
 
 public class TenantServiceDbContextFactory : IDesignTimeDbContextFactory<TenantServiceDbContext>
 {
+    // Должен совпадать с <UserSecretsId> в StepanCarService.TenantService.API.csproj
+    private const string UserSecretsId = "2ffc3358-4bb2-49b3-82a9-23733c6998b5";
+
     public TenantServiceDbContext CreateDbContext(string[] args)
     {
         var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
@@ -16,6 +19,7 @@ public class TenantServiceDbContextFactory : IDesignTimeDbContextFactory<TenantS
             .SetBasePath(basePath)
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
             .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: false)
+            .AddUserSecrets(UserSecretsId)
             .AddEnvironmentVariables()
             .Build();
 

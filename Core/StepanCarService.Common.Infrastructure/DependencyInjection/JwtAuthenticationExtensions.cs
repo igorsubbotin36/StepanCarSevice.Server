@@ -14,6 +14,8 @@ namespace StepanCarService.Common.Infastructure.DependencyInjection
 {
     public static class JwtAuthenticationExtensions
     {
+        private const int MinJwtKeyBytes = 32;
+
         public static IServiceCollection AddSharedJwtAuthentication(
         this IServiceCollection services,
         IConfiguration configuration)
@@ -29,6 +31,13 @@ namespace StepanCarService.Common.Infastructure.DependencyInjection
             if (string.IsNullOrWhiteSpace(jwtOptions.Key))
             {
                 throw new InvalidOperationException("JWT Key is not configured.");
+            }
+            // HS256 требует ключ не короче 256 бит
+            if (Encoding.UTF8.GetByteCount(jwtOptions.Key) < MinJwtKeyBytes)
+            {
+                throw new InvalidOperationException(
+                    $"JWT Key is too short: at least {MinJwtKeyBytes} bytes are required. " +
+                    "Store the key in user-secrets or environment variables, not in appsettings.");
             }
             if (string.IsNullOrWhiteSpace(jwtOptions.Issuer))
             {

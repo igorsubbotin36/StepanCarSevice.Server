@@ -362,4 +362,6 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /Services/Auth/StepanCarSevice.AuthService/appsettings.Development.json
-/Services/Detail/StepanCarSevice.DetailService.API/appsettings.Development.json
+
+# Local scripts with secrets
+*.local.ps1

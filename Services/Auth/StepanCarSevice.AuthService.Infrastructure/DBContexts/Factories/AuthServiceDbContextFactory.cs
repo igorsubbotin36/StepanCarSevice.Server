@@ -11,6 +11,9 @@ namespace StepanCarSevice.AuthService.Infrastructure.DBContexts.Factories
 {
     public class AuthServiceDbContextFactory : IDesignTimeDbContextFactory<AuthDbContext>
     {
+        // Должен совпадать с <UserSecretsId> в StepanCarSevice.AuthService.API.csproj
+        private const string UserSecretsId = "44eb5a33-857e-46b0-b233-2a5856610f32";
+
         public AuthDbContext CreateDbContext(string[] args)
         {
             var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
@@ -21,6 +24,7 @@ namespace StepanCarSevice.AuthService.Infrastructure.DBContexts.Factories
                 .SetBasePath(basePath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
                 .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: false)
+                .AddUserSecrets(UserSecretsId)
                 .AddEnvironmentVariables()
                 .Build();
 

@@ -58,7 +58,7 @@
 - Tenant сервис публикует события о регистрации тенанта в exchange `tenant.events.exchange`.
 - Остальные сервисы (Auth/Detail/Visit) подписываются на эти события через `TenantEventsConsumer`.
 
-Настройки RabbitMQ указываются в `appsettings.Development.json` каждого сервиса.
+Несекретные настройки RabbitMQ (хост, exchange, очередь) указываются в `appsettings.Development.json` каждого сервиса, логин и пароль — в user-secrets (см. «Конфигурация»).
 
 ## Быстрый старт
 
@@ -77,11 +77,27 @@ cd StepanCarSevice.Server
 
 ### 2. Конфигурация
 
-Проверьте `appsettings.Development.json` в каждом сервисе:
+Несекретные настройки лежат в `appsettings.Development.json` каждого сервиса:
 
-- `ConnectionStrings:PostgreSQL`
-- `Jwt` (Issuer, Audience, Key, LifetimeMinutes)
-- `RabbitMQ` (HostName, Port, UserName, Password, VirtualHost, ExchangeName, QueueName)
+- `Jwt` (Issuer, Audience, LifetimeMinutes)
+- `RabbitMQ` (HostName, Port, VirtualHost, ExchangeName, QueueName)
+
+**Секреты в репозиторий не коммитятся.** Локально они хранятся в [user-secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets), в окружениях — в переменных окружения (`ConnectionStrings__PostgreSQL`, `Jwt__Key`, `RabbitMQ__UserName`, `RabbitMQ__Password`).
+
+`Jwt:Key` должен быть **одинаковым во всех сервисах** и не короче 32 байт — иначе сервис не запустится. Сгенерировать ключ (PowerShell):
+
+```powershell
+$b = New-Object byte[] 64; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); [Convert]::ToBase64String($b)
+```
+
+Для каждого API-проекта (`Services/Auth/StepanCarSevice.AuthService.API`, `Services/Tenant/StepanCarService.TenantService.API`, `Services/Detail/StepanCarSevice.DetailService.API`, `Services/Visit/StepanCarSevice.VisitService.API`) выполните, подставив свои значения и имя БД сервиса:
+
+```bash
+dotnet user-secrets set "ConnectionStrings:PostgreSQL" "host=localhost;port=5432;database=AuthService;User Id=postgres;password=<пароль>" --project <путь к API-проекту>
+dotnet user-secrets set "Jwt:Key" "<сгенерированный ключ>" --project <путь к API-проекту>
+dotnet user-secrets set "RabbitMQ:UserName" "<логин>" --project <путь к API-проекту>
+dotnet user-secrets set "RabbitMQ:Password" "<пароль>" --project <путь к API-проекту>
+```
 
 ### 3. Запуск БД и RabbitMQ
 
@@ -237,7 +253,7 @@ Key rules:
 - Tenant service publishes tenant registration events to `tenant.events.exchange`.
 - Other services (Auth/Detail/Visit) subscribe via `TenantEventsConsumer`.
 
-RabbitMQ settings are defined in each service's `appsettings.Development.json`.
+Non-secret RabbitMQ settings (host, exchange, queue) are defined in each service's `appsettings.Development.json`; username and password are stored in user-secrets (see "Configuration").
 
 ## Quick Start
 
@@ -256,11 +272,27 @@ cd StepanCarSevice.Server
 
 ### 2. Configuration
 
-Check `appsettings.Development.json` in each service:
+Non-secret settings live in each service's `appsettings.Development.json`:
 
-- `ConnectionStrings:PostgreSQL`
-- `Jwt` (Issuer, Audience, Key, LifetimeMinutes)
-- `RabbitMQ` (HostName, Port, UserName, Password, VirtualHost, ExchangeName, QueueName)
+- `Jwt` (Issuer, Audience, LifetimeMinutes)
+- `RabbitMQ` (HostName, Port, VirtualHost, ExchangeName, QueueName)
+
+**Secrets are never committed.** Locally they are kept in [user-secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets); in deployed environments use environment variables (`ConnectionStrings__PostgreSQL`, `Jwt__Key`, `RabbitMQ__UserName`, `RabbitMQ__Password`).
+
+`Jwt:Key` must be **the same in all services** and at least 32 bytes long, otherwise the service won't start. Generate a key (PowerShell):
+
+```powershell
+$b = New-Object byte[] 64; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); [Convert]::ToBase64String($b)
+```
+
+For each API project (`Services/Auth/StepanCarSevice.AuthService.API`, `Services/Tenant/StepanCarService.TenantService.API`, `Services/Detail/StepanCarSevice.DetailService.API`, `Services/Visit/StepanCarSevice.VisitService.API`) run, substituting your values and the service's database name:
+
+```bash
+dotnet user-secrets set "ConnectionStrings:PostgreSQL" "host=localhost;port=5432;database=AuthService;User Id=postgres;password=<password>" --project <path to API project>
+dotnet user-secrets set "Jwt:Key" "<generated key>" --project <path to API project>
+dotnet user-secrets set "RabbitMQ:UserName" "<username>" --project <path to API project>
+dotnet user-secrets set "RabbitMQ:Password" "<password>" --project <path to API project>
+```
 
 ### 3. Start DB and RabbitMQ
 
