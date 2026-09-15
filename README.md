@@ -80,7 +80,8 @@ cd StepanCarSevice.Server
 Несекретные настройки лежат в `appsettings.Development.json` каждого сервиса:
 
 - `Jwt` (Issuer, Audience, LifetimeMinutes)
-- `RabbitMQ` (HostName, Port, VirtualHost, ExchangeName, QueueName)
+- `RabbitMQ` (HostName, Port, VirtualHost, ExchangeName, QueueName; необязательно: `PrefetchCount` — по умолчанию 10, `MaxFailedAttempts` — по умолчанию 5). События о тенантах, которые не удалось обработать (некорректное сообщение или ошибка, не исчезающая после `MaxFailedAttempts` попыток), перемещаются в очередь `<QueueName>.dead` с причиной в заголовке `x-error`. Временные ошибки (недоступна БД) повторяются до успеха, события при этом не теряются
+- `Outbox` (Tenant, необязательно: `PollIntervalMilliseconds` — по умолчанию 1000, `BatchSize` — 50, `RetentionDays` — 7). Tenant-сервис сохраняет событие о тенанте в таблицу `OutboxMessages` в одной транзакции с изменением тенанта и публикует его в RabbitMQ фоном, по порядку, с подтверждением брокера. Если брокер недоступен, API продолжает работать, а события отправляются после его восстановления (ошибка последней попытки — в колонке `LastError`)
 - `AllowedHosts` — разрешённые значения заголовка `Host` (в Development: `localhost;*.localhost;127.0.0.1`)
 - `RateLimiting:Auth` (необязательно) — лимит на вход, регистрацию и смену пароля с одного IP: `PermitLimit` (по умолчанию 10) за `WindowSeconds` (по умолчанию 60)
 - `RateLimiting:Public` (необязательно) — лимит на публичные эндпоинты без авторизации (каталог автосервисов): `PermitLimit` (по умолчанию 60) за `WindowSeconds` (по умолчанию 60)
@@ -282,7 +283,8 @@ cd StepanCarSevice.Server
 Non-secret settings live in each service's `appsettings.Development.json`:
 
 - `Jwt` (Issuer, Audience, LifetimeMinutes)
-- `RabbitMQ` (HostName, Port, VirtualHost, ExchangeName, QueueName)
+- `RabbitMQ` (HostName, Port, VirtualHost, ExchangeName, QueueName; optional: `PrefetchCount` — default 10, `MaxFailedAttempts` — default 5). Tenant events that cannot be processed (malformed message, or an error that persists after `MaxFailedAttempts` attempts) are moved to the `<QueueName>.dead` queue with the reason in the `x-error` header. Transient errors (database unavailable) are retried until they succeed, so events are not lost
+- `Outbox` (Tenant, optional: `PollIntervalMilliseconds` — default 1000, `BatchSize` — 50, `RetentionDays` — 7). The Tenant service stores tenant events in the `OutboxMessages` table in the same transaction as the tenant change and publishes them to RabbitMQ in the background, in order, with broker confirmation. If the broker is down the API keeps working and events are sent once it recovers (last error in the `LastError` column)
 - `AllowedHosts` — permitted `Host` header values (Development: `localhost;*.localhost;127.0.0.1`)
 - `RateLimiting:Auth` (optional) — per-IP limit for login, registration and password change: `PermitLimit` (default 10) per `WindowSeconds` (default 60)
 - `RateLimiting:Public` (optional) — per-IP limit for anonymous endpoints (connected car services catalog): `PermitLimit` (default 60) per `WindowSeconds` (default 60)

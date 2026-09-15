@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using StepanCarService.TenantService.Infrastructure.DbContexts;
@@ -11,9 +12,11 @@ using StepanCarService.TenantService.Infrastructure.DbContexts;
 namespace StepanCarService.TenantService.Infrastructure.Migrations
 {
     [DbContext(typeof(TenantServiceDbContext))]
-    partial class TenantServiceDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260915211336_AddedOutboxMessages")]
+    partial class AddedOutboxMessages
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

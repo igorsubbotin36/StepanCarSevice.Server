@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using StepanCarService.Common.Infastructure.DbContexts;
 
@@ -17,7 +19,11 @@ namespace StepanCarService.Common.Infastructure.DependencyInjection
                 throw new InvalidOperationException("Connection string 'PostgreSQL' is not configured.");
             }
 
-            services.AddDbContext<T>(options => options.UseNpgsql(connectionString));
+            services.AddDbContext<T>(options => options
+                .UseNpgsql(connectionString)
+                // Текст каждого выполненного SQL-запроса — только на уровне Debug (в обычном логе Info его нет).
+                // Ошибки выполнения запросов (CommandError) по-прежнему логируются как Error
+                .ConfigureWarnings(warnings => warnings.Log((RelationalEventId.CommandExecuted, LogLevel.Debug))));
             return services;
         }
     }

@@ -22,7 +22,7 @@ namespace StepanCarService.Common.Infastructure.DependencyInjection
             services.Configure<RabbitMQConsumerSetting>(
                 configuration.GetSection("RabbitMQ"));
             services.AddScoped<TenantBaseRepository<T>>();
-            services.AddScoped<ITenantRegisteredHandler, TenantRegisteredHandler<TenantBaseRepository<T>>>();
+            services.AddScoped<ITenantEventHandler, TenantEventHandler<TenantBaseRepository<T>>>();
             services.AddHostedService<TenantEventsConsumer>();
             return services;
         }

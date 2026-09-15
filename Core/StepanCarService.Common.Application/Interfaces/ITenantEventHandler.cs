@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace StepanCarService.Common.Application.Interfaces
 {
-    public interface ITenantRegisteredHandler
+    public interface ITenantEventHandler
     {
         Task<Result> HandleAsync(TenantEvent tenantEvent);
     }

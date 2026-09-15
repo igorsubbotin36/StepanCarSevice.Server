@@ -36,14 +36,18 @@ namespace StepanCarSevice.DetailService.Infrastructure.DBContexts
                 .HasMany(m => m.CarModels)
                 .WithOne(c => c.Manufacture)
                 .HasForeignKey(c => c.ManufactureId)
-                .OnDelete(DeleteBehavior.Restrict); // Осторожно: не удаляем модели при удалении производителя
+                // NO ACTION: удалить родителя с дочерними записями по-прежнему нельзя, но каскаду от тенанта
+                // проверка не мешает (выполняется в конце операции, в отличие от RESTRICT)
+                .OnDelete(DeleteBehavior.ClientNoAction);
 
             // ========== 2. CarModel -> CarModification (один ко многим) ==========
             modelBuilder.Entity<CarModel>()
                 .HasMany(m => m.CarModifications)
                 .WithOne(c => c.CarModel)
                 .HasForeignKey(c => c.CarModelId)
-                .OnDelete(DeleteBehavior.Restrict);
+                // NO ACTION: удалить родителя с дочерними записями по-прежнему нельзя, но каскаду от тенанта
+                // проверка не мешает (выполняется в конце операции, в отличие от RESTRICT)
+                .OnDelete(DeleteBehavior.ClientNoAction);
 
             // ========== 3. CarModification -> WheelDriveType (многие к одному) ==========
             modelBuilder.Entity<CarModification>()
@@ -94,7 +98,9 @@ namespace StepanCarSevice.DetailService.Infrastructure.DBContexts
                 .HasOne(d => d.DetailManufacture)
                 .WithMany(dm => dm.Details)
                 .HasForeignKey(d => d.DetailManufactureId)
-                .OnDelete(DeleteBehavior.Restrict);
+                // NO ACTION: удалить родителя с дочерними записями по-прежнему нельзя, но каскаду от тенанта
+                // проверка не мешает (выполняется в конце операции, в отличие от RESTRICT)
+                .OnDelete(DeleteBehavior.ClientNoAction);
 
             // ========== 8. Самореферентные связи Detail (оригиналы и альтернативы) ==========
             // Оригиналы: текущая деталь может ссылаться на несколько оригинальных деталей
@@ -133,6 +139,7 @@ namespace StepanCarSevice.DetailService.Infrastructure.DBContexts
                 .OnDelete(DeleteBehavior.Restrict);
 
             // ========== 10. Настройка связей с TenantInfoEntity ==========
+            // При удалении тенанта все данные автосервиса удаляются вместе с ним (каскадом в БД)
             // Предполагается, что у TenantInfoEntity есть первичный ключ TenantId (string)
             // и, возможно, коллекции для каждой сущности (CarManufactures, CarModels и т.д.)
             // Если коллекций нет, используем .WithMany()
@@ -140,37 +147,37 @@ namespace StepanCarSevice.DetailService.Infrastructure.DBContexts
                 .HasOne(e => e.Tenant)
                 .WithMany() // .WithMany(t => t.CarManufactures) если коллекция есть
                 .HasForeignKey(e => e.TenantId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<CarModel>()
                 .HasOne(e => e.Tenant)
                 .WithMany()
                 .HasForeignKey(e => e.TenantId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<CarModification>()
                 .HasOne(e => e.Tenant)
                 .WithMany()
                 .HasForeignKey(e => e.TenantId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Detail>()
                 .HasOne(e => e.Tenant)
                 .WithMany()
                 .HasForeignKey(e => e.TenantId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<DetailManufacture>()
                 .HasOne(e => e.Tenant)
                 .WithMany()
                 .HasForeignKey(e => e.TenantId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Engine>()
                 .HasOne(e => e.Tenant)
                 .WithMany()
                 .HasForeignKey(e => e.TenantId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
             // ========== 11. Индексы для ускорения фильтрации по TenantId ==========
             modelBuilder.Entity<CarManufacture>().HasIndex(e => e.TenantId);
             modelBuilder.Entity<CarModel>().HasIndex(e => e.TenantId);

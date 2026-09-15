@@ -18,16 +18,16 @@ public class TenantManagementService : ITenantService
     private static readonly HashSet<string> ReservedIdentifiers = new() { "management", "www", "api" };
 
     private readonly ITenantRepository _tenantRepository;
-    private readonly IMessageBus _messageBus;
+    private readonly IEventOutbox _eventOutbox;
     private readonly ILogger<TenantManagementService> _logger;
     private readonly IUnitOfWork _unitOfWork;
     public TenantManagementService(ITenantRepository tenantRepository,
-        IMessageBus messageBus,
+        IEventOutbox eventOutbox,
         ILogger<TenantManagementService> logger,
         IUnitOfWork unitOfWork)
     {
         _tenantRepository = tenantRepository;
-        _messageBus = messageBus;
+        _eventOutbox = eventOutbox;
         _logger = logger;
         _unitOfWork = unitOfWork;
     }
@@ -63,22 +63,11 @@ public class TenantManagementService : ITenantService
             IsActive = true,
             OwnerUserId = ownerUserId
         };
-        try
-        {
-            await _tenantRepository.AddAsync(newTenant);
-            await _unitOfWork.SaveChangesAsync();
-            _logger.LogInformation($"{newTenant.Id} зарегистрирован!");
-        }
-        catch (Exception e)
-        {
-            _logger.LogError($"Ошибка БД при регистрации тенанта\n{e}");
-            return Result.Failure<TenantReadDto>(SystemErrors.DatabaseError);
-        }
         var tenantEvent = new TenantRegisteredEvent();
         FillEvent(tenantEvent, newTenant);
-        var publishResult = await PublishAsync(tenantEvent);
-        if (!publishResult.IsSuccess)
-            return Result.Failure<TenantReadDto>(publishResult.ErrorCode);
+        if (!await SaveWithEventAsync(() => _tenantRepository.AddAsync(newTenant), tenantEvent))
+            return Result.Failure<TenantReadDto>(SystemErrors.DatabaseError);
+        _logger.LogInformation($"{newTenant.Id} зарегистрирован!");
         return Result.Success(TenantReadDto.FromTenant(newTenant));
     }
 
@@ -101,22 +90,11 @@ public class TenantManagementService : ITenantService
         }
         tempTenant.Name = tenant.Name.Trim();
 
-        try
-        {
-            await _tenantRepository.UpdateAsync(tempTenant);
-            await _unitOfWork.SaveChangesAsync();
-            _logger.LogInformation($"{tempTenant.Id} данные обновлены!");
-        }
-        catch (Exception e)
-        {
-            _logger.LogError($"Ошибка БД при обновлении данных тенанта\n{e}");
-            return Result.Failure<TenantReadDto>(SystemErrors.DatabaseError);
-        }
         var tenantEvent = new TenantUpdatedEvent();
         FillEvent(tenantEvent, tempTenant);
-        var publishResult = await PublishAsync(tenantEvent);
-        if (!publishResult.IsSuccess)
-            return Result.Failure<TenantReadDto>(publishResult.ErrorCode);
+        if (!await SaveWithEventAsync(() => _tenantRepository.UpdateAsync(tempTenant), tenantEvent))
+            return Result.Failure<TenantReadDto>(SystemErrors.DatabaseError);
+        _logger.LogInformation($"{tempTenant.Id} данные обновлены!");
         return Result.Success(TenantReadDto.FromTenant(tempTenant));
     }
 
@@ -129,20 +107,12 @@ public class TenantManagementService : ITenantService
             return Result.Failure(TenantErrors.TenantNotFound);
         if (!CanManage(tempTenant, caller))
             return Result.Failure(AuthErrors.Forbidden);
-        try
-        {
-            await _tenantRepository.DeleteAsync(tempTenant);
-            await _unitOfWork.SaveChangesAsync();
-            _logger.LogInformation($"{tempTenant.Id} тенант удален!");
-        }
-        catch (Exception e)
-        {
-            _logger.LogError($"Ошибка БД при удалении тенанта\n{e}");
-            return Result.Failure(SystemErrors.DatabaseError);
-        }
         var tenantEvent = new TenantDeletedEvent();
         FillEvent(tenantEvent, tempTenant);
-        return await PublishAsync(tenantEvent);
+        if (!await SaveWithEventAsync(() => _tenantRepository.DeleteAsync(tempTenant), tenantEvent))
+            return Result.Failure(SystemErrors.DatabaseError);
+        _logger.LogInformation($"{tempTenant.Id} тенант удален!");
+        return Result.Success();
     }
 
     public async Task<Result<TenantReadDto>> GetByIdAsync(string tenantId, TenantCaller caller)
@@ -255,25 +225,24 @@ public class TenantManagementService : ITenantService
         tenantEvent.OwnerUserId = tenant.OwnerUserId;
     }
 
-    // Изменение в БД к этому моменту уже сохранено: при ошибке публикации другие сервисы о нём не узнают
-    private async Task<Result> PublishAsync(TenantEvent tenantEvent)
+    // Изменение тенанта и событие для других сервисов сохраняются в одной транзакции (Transactional Outbox):
+    // либо записано и то и другое, либо ничего. Публикацию в RabbitMQ выполняет фоновый OutboxPublisher
+    private async Task<bool> SaveWithEventAsync(Func<Task> changeTenant, TenantEvent tenantEvent)
     {
-        Result result;
+        await _unitOfWork.BeginTransactionAsync();
         try
         {
-            result = await _messageBus.PublishAsync(tenantEvent);
+            await changeTenant();
+            _eventOutbox.Enqueue(tenantEvent);
+            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.CommitTransactionAsync();
+            return true;
         }
         catch (Exception e)
         {
-            _logger.LogError($"{tenantEvent.EventType} {tenantEvent.Id} сообщение не отправлено\n{e}");
-            return Result.Failure(MessageBusErrors.MessageNotDelivered);
+            await _unitOfWork.RollBackTransactionAsync();
+            _logger.LogError($"Ошибка БД: {tenantEvent.EventType} {tenantEvent.Id} не сохранен, изменения отменены\n{e}");
+            return false;
         }
-        if (!result.IsSuccess)
-        {
-            _logger.LogError($"{tenantEvent.EventType} {tenantEvent.Id} сообщение не отправлено: {result.ErrorCode}");
-            return result;
-        }
-        _logger.LogInformation($"{tenantEvent.EventType} сообщение другим сервисам отправлено");
-        return result;
     }
 }

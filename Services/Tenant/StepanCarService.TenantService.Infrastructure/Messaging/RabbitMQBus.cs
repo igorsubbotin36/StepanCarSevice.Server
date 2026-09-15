@@ -1,99 +1,106 @@
-﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
-using StepanCarService.Common.Application.Models;
 using StepanCarService.TenantService.Application.Interfaces;
 using System.Text;
-using System.Text.Json;
 
 namespace StepanCarService.TenantService.Infrastructure.Messaging
 {
+    // Публикация в fanout exchange с подтверждением брокера (publisher confirms).
+    // Соединение создаётся при первой публикации и пересоздаётся после ошибки,
+    // поэтому недоступный при старте RabbitMQ не роняет сервис
     public class RabbitMQBus : IMessageBus, IAsyncDisposable
     {
-        private readonly IConnection _connection;
-        private readonly IChannel _channel;
         private readonly RabbitMQProducerSettings _settings;
-        private bool _disposed;
+        private readonly SemaphoreSlim _lock = new(1, 1);
+        private IConnection? _connection;
+        private IChannel? _channel;
+
         public RabbitMQBus(IOptions<RabbitMQProducerSettings> options)
         {
             _settings = options.Value;
+        }
 
+        public async Task PublishAsync(string payload, string messageId, CancellationToken cancellationToken = default)
+        {
+            await _lock.WaitAsync(cancellationToken);
+            try
+            {
+                var channel = await GetChannelAsync(cancellationToken);
+                var properties = new BasicProperties
+                {
+                    Persistent = true,
+                    ContentType = "application/json",
+                    MessageId = messageId,
+                    Timestamp = new AmqpTimestamp(DateTimeOffset.UtcNow.ToUnixTimeSeconds())
+                };
+                // mandatory: если сообщение некуда доставить (нет ни одной очереди), публикация завершится ошибкой,
+                // и outbox повторит её позже, а не потеряет событие
+                await channel.BasicPublishAsync(
+                    exchange: _settings.ExchangeName,
+                    routingKey: string.Empty,
+                    mandatory: true,
+                    basicProperties: properties,
+                    body: Encoding.UTF8.GetBytes(payload),
+                    cancellationToken: cancellationToken);
+            }
+            catch
+            {
+                await ResetAsync();
+                throw;
+            }
+            finally
+            {
+                _lock.Release();
+            }
+        }
+
+        private async Task<IChannel> GetChannelAsync(CancellationToken cancellationToken)
+        {
+            if (_channel is { IsOpen: true })
+                return _channel;
+
+            await ResetAsync();
             var factory = new ConnectionFactory
             {
                 HostName = _settings.HostName,
                 Port = _settings.Port,
                 UserName = _settings.UserName,
                 Password = _settings.Password,
-                VirtualHost = _settings.VirtualHost
+                VirtualHost = _settings.VirtualHost,
+                AutomaticRecoveryEnabled = true,
+                ClientProvidedName = "tenant-service-outbox"
             };
-            try
-            {
-                _connection = factory.CreateConnectionAsync().GetAwaiter().GetResult();
-                if (_connection == null)
-                    throw new Exception("Failed to create connection");
-                _channel = _connection.CreateChannelAsync().GetAwaiter().GetResult();
-                if (_channel == null)
-                    throw new Exception("Failed to create channel");
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"RabbitMQ connection failed: {ex.Message}", ex);
-            }
+            _connection = await factory.CreateConnectionAsync(cancellationToken);
+            _channel = await _connection.CreateChannelAsync(
+                new CreateChannelOptions(publisherConfirmationsEnabled: true, publisherConfirmationTrackingEnabled: true),
+                cancellationToken);
+            await _channel.ExchangeDeclareAsync(_settings.ExchangeName, ExchangeType.Fanout,
+                durable: true, autoDelete: false, arguments: null, cancellationToken: cancellationToken);
+            return _channel;
         }
-        public async Task<Result> PublishAsync<T>(T message) where T : class
+
+        private async Task ResetAsync()
         {
             try
             {
-                await _channel.ExchangeDeclareAsync(
-                    exchange: _settings.ExchangeName,
-                    type: ExchangeType.Fanout,
-                    durable: true,
-                    autoDelete: false,
-                    arguments: null);
-                var json = JsonSerializer.Serialize(message, new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                });
-                var body = Encoding.UTF8.GetBytes(json);
-                var properties = new BasicProperties()
-                {
-                    Persistent = true,
-                    ContentType = "application/json",
-                    MessageId = Guid.NewGuid().ToString(),
-                    Timestamp = new AmqpTimestamp(DateTimeOffset.UtcNow.ToUnixTimeSeconds())
-                };
-
-                await _channel.BasicPublishAsync(
-                    exchange: _settings.ExchangeName,
-                    routingKey: null,
-                    mandatory: true,
-                    basicProperties: properties,
-                    body: body);
-
-                return Result.Success();
+                if (_channel != null) await _channel.DisposeAsync();
+                if (_connection != null) await _connection.DisposeAsync();
             }
-            catch (Exception ex)
+            catch
             {
-                return Result.Failure(MessageBusErrors.MessageNotDelivered);
+                // Соединение уже разорвано — пересоздадим при следующей публикации
+            }
+            finally
+            {
+                _channel = null;
+                _connection = null;
             }
         }
 
         public async ValueTask DisposeAsync()
         {
-            if (_disposed) return;
-
-            if (_channel != null)
-            {
-                await _channel.CloseAsync();
-                await _channel.DisposeAsync();
-            }
-
-            if (_connection != null)
-            {
-                await _connection.CloseAsync();
-                await _connection.DisposeAsync();
-            }
-
-            _disposed = true;
+            await ResetAsync();
+            _lock.Dispose();
         }
     }
 }

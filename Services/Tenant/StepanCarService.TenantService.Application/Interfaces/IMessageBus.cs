@@ -1,9 +1,9 @@
-﻿using StepanCarService.Common.Application.Models;
-
 namespace StepanCarService.TenantService.Application.Interfaces
 {
     public interface IMessageBus
     {
-        Task<Result> PublishAsync<T>(T message) where T : class;
+        // Публикует уже сериализованное сообщение. Завершается только после подтверждения брокера,
+        // при любой ошибке бросает исключение
+        Task PublishAsync(string payload, string messageId, CancellationToken cancellationToken = default);
     }
 }

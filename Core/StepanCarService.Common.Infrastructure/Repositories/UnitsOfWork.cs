@@ -28,19 +28,32 @@ namespace StepanCarService.Common.Infastructure.Repositories
 
         public async Task CommitTransactionAsync()
         {
-            if (_transaction != null)
+            if (_transaction == null)
+                return;
+            try
             {
                 await _transaction.CommitAsync();
+            }
+            finally
+            {
                 await _transaction.DisposeAsync();
+                _transaction = null;
             }
         }
 
         public async Task RollBackTransactionAsync()
         {
-            if (_transaction != null)
+            // Транзакции может уже не быть (например, Commit упал и она освобождена): откатывать нечего
+            if (_transaction == null)
+                return;
+            try
             {
                 await _transaction.RollbackAsync();
+            }
+            finally
+            {
                 await _transaction.DisposeAsync();
+                _transaction = null;
             }
         }
 

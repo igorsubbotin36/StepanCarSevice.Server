@@ -13,6 +13,7 @@ using StepanCarService.TenantService.Application.Interfaces;
 using StepanCarService.TenantService.Application.Services;
 using StepanCarService.TenantService.Infrastructure.DbContexts;
 using StepanCarService.TenantService.Infrastructure.Messaging;
+using StepanCarService.TenantService.Infrastructure.Messaging.Outbox;
 
 namespace StepanCarService.TenantService.Infrastructure;
 
@@ -34,6 +35,11 @@ public static class DependencyInjection
         services.Configure<RabbitMQProducerSettings>(
                 configuration.GetSection("RabbitMQ"));
         services.AddSingleton<IMessageBus, RabbitMQBus>();
+
+        // Transactional Outbox: события пишутся в БД вместе с изменением тенанта и публикуются фоном
+        services.Configure<OutboxSettings>(configuration.GetSection("Outbox"));
+        services.AddScoped<IEventOutbox, EfEventOutbox>();
+        services.AddHostedService<OutboxPublisher>();
 
         return services;
     }
