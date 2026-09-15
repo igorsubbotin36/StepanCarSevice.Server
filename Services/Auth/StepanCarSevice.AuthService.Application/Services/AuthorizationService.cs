@@ -41,19 +41,27 @@ namespace StepanCarSevice.AuthService.Application.Services
         private TenantInfoEntity? CurrentTenant => _accessor.MultiTenantContext?.TenantInfo;
         public async Task<Result<AuthResponseDto>> LoginAsync(LoginRequestDto request)
         {
-            var identity = await GetIdentityAsync(request.Phone, request.Password);
+            var person = await FindUserForLoginAsync(request.Phone, request.Password);
 
-            if (identity == null)
+            if (person == null)
             {
                 return Result.Failure<AuthResponseDto>(AuthErrors.InvalidCredentials);
             }
-            var token = _tokenGeneratorService.GenerateToken(identity);
+            var tenant = CurrentTenant;
+            if (tenant != null && !tenant.IsActive && person.Role.Name != Roles.GodMode)
+            {
+                return Result.Failure<AuthResponseDto>(TenantErrors.TenantInactive);
+            }
+            var token = _tokenGeneratorService.GenerateToken(BuildIdentity(person));
             return Result.Success(token);
         }
         public async Task<Result> RegisterAsync(RegisterRequestDto request)
         {
             if (request.Password != request.ConfirmPassword)
                 return Result.Failure(RegisterErrors.PasswordsDontMatch);
+
+            if (CurrentTenant is { IsActive: false })
+                return Result.Failure(TenantErrors.TenantInactive);
 
             if (await _userRepository.ExistsByPhoneAsync(request.Phone, GetTenantId()))
                 return Result.Failure(RegisterErrors.UserAlreadyExists);
@@ -73,14 +81,15 @@ namespace StepanCarSevice.AuthService.Application.Services
             int? userRoleId;
             if (tenantId == null)
             {
-                userRoleId = await _userRepository.GetRoleIdAsync("TenantOwner");
+                // Регистрация на портале — это владелец автосервиса
+                userRoleId = await _userRepository.GetRoleIdAsync(Roles.TenantOwner);
                 if (userRoleId == null)
                     return Result.Failure(RegisterErrors.RoleIdNotFound);
                 user.TenantId = null;
             }
             else
             {
-                userRoleId = await _userRepository.GetRoleIdAsync("User");
+                userRoleId = await _userRepository.GetRoleIdAsync(Roles.User);
                 if (userRoleId == null)
                     return Result.Failure(RegisterErrors.RoleIdNotFound);
                 user.TenantId = tenantId;
@@ -100,34 +109,50 @@ namespace StepanCarSevice.AuthService.Application.Services
             }
         }
 
-        private async Task<ClaimsIdentity?> GetIdentityAsync(string phone, string password)
+        // Портал: только GodMode и TenantOwner.
+        // Поддомен тенанта: пользователь этого тенанта, либо GodMode, либо владелец именно этого тенанта с логином портала
+        private async Task<User?> FindUserForLoginAsync(string phone, string password)
         {
-            var tenantId = GetTenantId();
-            User? person = await _userRepository.GetUserByPhoneAsync(phone, tenantId);
-            if (person == null)
+            var tenant = CurrentTenant;
+
+            if (tenant != null)
             {
-                person = await _userRepository.GetUserByPhoneAsync(phone, null);
-                if (person != null && person.Role.Name != "GodMode")
-                    return null;
+                var tenantUser = await _userRepository.GetUserByPhoneAsync(phone, tenant.Id);
+                if (tenantUser != null && _passwordHasher.Verify(password, tenantUser.Password))
+                    return tenantUser;
             }
-            if (person != null && _passwordHasher.Verify(password, person.Password))
-            {
-                var claims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.NameIdentifier, person.Id.ToString()),
-                    new Claim(ClaimTypes.MobilePhone, person.Phone ?? string.Empty),
-                    new Claim(ClaimTypes.Role, person.Role.Name),
-                    new Claim(ClaimTypes.Email, person.Email),
-                    new Claim(ClaimTypes.GivenName, person.FirstName ?? string.Empty),
-                    new Claim(ClaimTypes.Surname, person.SecondName ?? string.Empty)
-                };
-                if (!string.IsNullOrEmpty(person.TenantId))
-                {
-                    claims.Add(new Claim("tenant_id", person.TenantId));
-                }
-                return new ClaimsIdentity(claims, "Token", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
-            }
+
+            var portalUser = await _userRepository.GetUserByPhoneAsync(phone, null);
+            if (portalUser == null || !_passwordHasher.Verify(password, portalUser.Password))
+                return null;
+
+            var role = portalUser.Role.Name;
+            if (tenant == null)
+                return role is Roles.GodMode or Roles.TenantOwner ? portalUser : null;
+            if (role == Roles.GodMode)
+                return portalUser;
+            if (role == Roles.TenantOwner && tenant.OwnerUserId == portalUser.Id)
+                return portalUser;
             return null;
+        }
+
+        private static ClaimsIdentity BuildIdentity(User person)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, person.Id.ToString()),
+                new Claim(ClaimTypes.MobilePhone, person.Phone ?? string.Empty),
+                new Claim(ClaimTypes.Role, person.Role.Name),
+                new Claim(ClaimTypes.Email, person.Email),
+                new Claim(ClaimTypes.GivenName, person.FirstName ?? string.Empty),
+                new Claim(ClaimTypes.Surname, person.SecondName ?? string.Empty)
+            };
+            // У пользователей портала tenant_id нет: права владельца в тенанте проверяются при каждом запросе
+            if (!string.IsNullOrEmpty(person.TenantId))
+            {
+                claims.Add(new Claim("tenant_id", person.TenantId));
+            }
+            return new ClaimsIdentity(claims, "Token", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
         }
         private string? GetTenantId()
         {

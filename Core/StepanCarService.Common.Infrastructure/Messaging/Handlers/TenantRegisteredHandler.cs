@@ -33,6 +33,7 @@ namespace StepanCarService.Common.Infastructure.Messaging.Handlers
                             newTenant.ApiKey = tenantEvent.ApiKey;
                             newTenant.ConnectionString = tenantEvent.ConnectionString;
                             newTenant.Identifier = tenantEvent.Identifier;
+                            newTenant.OwnerUserId = tenantEvent.OwnerUserId;
                             try
                             {
                                 await _tenantRepository.AddAsync(newTenant);
@@ -56,6 +57,7 @@ namespace StepanCarService.Common.Infastructure.Messaging.Handlers
                                 tenant.ApiKey = tenantEvent.ApiKey;
                                 tenant.ConnectionString = tenantEvent.ConnectionString;
                                 tenant.Identifier = tenantEvent.Identifier;
+                                tenant.OwnerUserId = tenantEvent.OwnerUserId;
                             }
                             else
                             {

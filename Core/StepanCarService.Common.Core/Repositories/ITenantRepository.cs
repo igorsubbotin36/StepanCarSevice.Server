@@ -15,6 +15,7 @@ namespace StepanCarService.Common.Core.Repositories
         Task<TenantInfoEntity?> GetByIdAsync(string tenantId);
         Task<TenantInfoEntity?> GetByNameAsync(string tenantName);
         Task<TenantInfoEntity?> GetByIdentifierAsync(string identifier);
+        Task<TenantInfoEntity?> GetByOwnerAsync(int ownerUserId);
         Task<IEnumerable<TenantInfoEntity>?> GetAllAsync();
     }
 }

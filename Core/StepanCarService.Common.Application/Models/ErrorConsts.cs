@@ -60,5 +60,7 @@ namespace StepanCarService.Common.Application.Models
         public const string TenantNotFound = "TENANT_NOT_FOUND";
         public const string TenantAlreadyExists = "TENANT_ALREADY_EXISTS";
         public const string InvalidIdentifier = "TENANT_INVALID_IDENTIFIER";
+        public const string TenantInactive = "TENANT_INACTIVE";
+        public const string OwnerAlreadyHasTenant = "TENANT_OWNER_ALREADY_HAS_TENANT";
     }
 }

@@ -33,7 +33,7 @@ public class TenantManagementService : ITenantService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Result<TenantReadDto>> AddAsync(TenantCreateDto tenant)
+    public async Task<Result<TenantReadDto>> AddAsync(TenantCreateDto tenant, TenantCaller caller)
     {
         if (tenant == null)
             return Result.Failure<TenantReadDto>(TenantErrors.TenantIsNull);
@@ -41,6 +41,18 @@ public class TenantManagementService : ITenantService
             return Result.Failure<TenantReadDto>(ValidationErrors.RequiredField);
         if (!IsValidIdentifier(tenant.Identifier))
             return Result.Failure<TenantReadDto>(TenantErrors.InvalidIdentifier);
+
+        // Тенант, созданный владельцем, принадлежит ему; у владельца может быть только один тенант
+        int? ownerUserId = null;
+        if (!caller.IsGodMode)
+        {
+            if (caller.UserId == null)
+                return Result.Failure<TenantReadDto>(AuthErrors.InvalidCredentials);
+            if (await _tenantRepository.GetByOwnerAsync(caller.UserId.Value) != null)
+                return Result.Failure<TenantReadDto>(TenantErrors.OwnerAlreadyHasTenant);
+            ownerUserId = caller.UserId;
+        }
+
         if (await _tenantRepository.GetByIdentifierAsync(tenant.Identifier) != null)
             return Result.Failure<TenantReadDto>(TenantErrors.TenantAlreadyExists);
 
@@ -51,7 +63,8 @@ public class TenantManagementService : ITenantService
             Name = tenant.Name.Trim(),
             ConnectionString = string.Empty,
             IsActive = true,
-            ApiKey = GenerateApiKey()
+            ApiKey = GenerateApiKey(),
+            OwnerUserId = ownerUserId
         };
         try
         {
@@ -72,7 +85,7 @@ public class TenantManagementService : ITenantService
         return Result.Success(TenantReadDto.FromTenant(newTenant));
     }
 
-    public async Task<Result<TenantReadDto>> UpdateAsync(TenantUpdateDto tenant)
+    public async Task<Result<TenantReadDto>> UpdateAsync(TenantUpdateDto tenant, TenantCaller caller)
     {
         if (tenant == null)
             return Result.Failure<TenantReadDto>(TenantErrors.TenantIsNull);
@@ -81,7 +94,14 @@ public class TenantManagementService : ITenantService
         var tempTenant = await _tenantRepository.GetByIdAsync(tenant.Id);
         if (tempTenant == null)
             return Result.Failure<TenantReadDto>(TenantErrors.TenantNotFound);
-        tempTenant.IsActive = tenant.IsActive;
+        if (!CanManage(tempTenant, caller))
+            return Result.Failure<TenantReadDto>(AuthErrors.Forbidden);
+        if (tenant.IsActive != null && tenant.IsActive != tempTenant.IsActive)
+        {
+            if (!caller.IsGodMode)
+                return Result.Failure<TenantReadDto>(AuthErrors.Forbidden);
+            tempTenant.IsActive = tenant.IsActive.Value;
+        }
         tempTenant.Name = tenant.Name.Trim();
 
         try
@@ -103,13 +123,15 @@ public class TenantManagementService : ITenantService
         return Result.Success(TenantReadDto.FromTenant(tempTenant));
     }
 
-    public async Task<Result> DeleteAsync(string id)
+    public async Task<Result> DeleteAsync(string id, TenantCaller caller)
     {
         if (id == null)
             return Result.Failure(TenantErrors.TenantIsNull);
         var tempTenant = await _tenantRepository.GetByIdAsync(id);
         if (tempTenant == null)
             return Result.Failure(TenantErrors.TenantNotFound);
+        if (!CanManage(tempTenant, caller))
+            return Result.Failure(AuthErrors.Forbidden);
         try
         {
             await _tenantRepository.DeleteAsync(tempTenant);
@@ -126,18 +148,38 @@ public class TenantManagementService : ITenantService
         return await PublishAsync(tenantEvent);
     }
 
-    public async Task<Result<TenantReadDto>> GetByIdAsync(string tenantId)
+    public async Task<Result<TenantReadDto>> GetByIdAsync(string tenantId, TenantCaller caller)
     {
         try
         {
             var tenant = await _tenantRepository.GetByIdAsync(tenantId);
             if (tenant == null)
                 return Result.Failure<TenantReadDto>(TenantErrors.TenantNotFound);
+            if (!CanManage(tenant, caller))
+                return Result.Failure<TenantReadDto>(AuthErrors.Forbidden);
             return Result.Success(TenantReadDto.FromTenant(tenant));
         }
         catch (Exception e)
         {
             _logger.LogError($"Ошибка БД при получении тенанта по Id {tenantId}\n{e}");
+            return Result.Failure<TenantReadDto>(SystemErrors.DatabaseError);
+        }
+    }
+
+    public async Task<Result<TenantReadDto>> GetMyTenantAsync(TenantCaller caller)
+    {
+        if (caller.UserId == null)
+            return Result.Failure<TenantReadDto>(AuthErrors.InvalidCredentials);
+        try
+        {
+            var tenant = await _tenantRepository.GetByOwnerAsync(caller.UserId.Value);
+            if (tenant == null)
+                return Result.Failure<TenantReadDto>(TenantErrors.TenantNotFound);
+            return Result.Success(TenantReadDto.FromTenant(tenant));
+        }
+        catch (Exception e)
+        {
+            _logger.LogError($"Ошибка БД при получении тенанта владельца {caller.UserId}\n{e}");
             return Result.Failure<TenantReadDto>(SystemErrors.DatabaseError);
         }
     }
@@ -177,6 +219,11 @@ public class TenantManagementService : ITenantService
         }
     }
 
+    // GodMode — любой тенант, TenantOwner — только свой
+    private static bool CanManage(TenantInfoEntity tenant, TenantCaller caller) =>
+        caller.IsGodMode
+        || (caller.UserId != null && tenant.OwnerUserId == caller.UserId);
+
     private static bool IsValidIdentifier(string? identifier) =>
         identifier != null
         && IdentifierPattern.IsMatch(identifier)
@@ -193,6 +240,7 @@ public class TenantManagementService : ITenantService
         tenantEvent.ConnectionString = tenant.ConnectionString;
         tenantEvent.IsActive = tenant.IsActive;
         tenantEvent.ApiKey = tenant.ApiKey;
+        tenantEvent.OwnerUserId = tenant.OwnerUserId;
     }
 
     // Изменение в БД к этому моменту уже сохранено: при ошибке публикации другие сервисы о нём не узнают

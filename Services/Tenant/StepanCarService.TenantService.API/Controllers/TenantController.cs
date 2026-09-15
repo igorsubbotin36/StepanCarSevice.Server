@@ -5,11 +5,14 @@ using StepanCarService.Common.Application.Interfaces;
 using StepanCarService.Common.Application.Models;
 using StepanCarService.TenantService.Application.Interfaces;
 using StepanCarService.TenantService.Application.Models.DTOs;
+using System.Security.Claims;
 
 namespace StepanCarService.TenantService.API.Controllers;
 
+// Управление тенантами — функция портала: доступно только GodMode и владельцам (TenantOwner)
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = $"{Roles.TenantOwner}, {Roles.GodMode}")]
 public class TenantController : ApiControllerBase<TenantController>
 {
     private readonly ITenantService _tenantService;
@@ -21,55 +24,47 @@ public class TenantController : ApiControllerBase<TenantController>
     }
 
     [HttpPost("registerTenant")]
-    [Authorize(Roles = "TenantOwner, GodMode")]
     public async Task<IActionResult> RegisterTenantAsync([FromBody] TenantCreateDto tenantDto)
     {
-        var result = await _tenantService.AddAsync(tenantDto);
+        var result = await _tenantService.AddAsync(tenantDto, GetCaller());
         return HandleResult(result);
     }
     [HttpPatch("updateTenant")]
-    [Authorize(Roles = "TenantOwner, GodMode")]
     public async Task<IActionResult> UpdateTenantAsync([FromBody] TenantUpdateDto tenantDto)
     {
-        if (!HasAccessToTenant(tenantDto.Id))
-            return HandleResult(Result.Failure(AuthErrors.Forbidden));
-        var result = await _tenantService.UpdateAsync(tenantDto);
+        var result = await _tenantService.UpdateAsync(tenantDto, GetCaller());
         return HandleResult(result);
     }
     [HttpDelete("deleteTenant")]
-    [Authorize(Roles = "TenantOwner, GodMode")]
     public async Task<IActionResult> DeleteTenantAsync(string id)
     {
-        if (!HasAccessToTenant(id))
-            return HandleResult(Result.Failure(AuthErrors.Forbidden));
-        var result = await _tenantService.DeleteAsync(id);
+        var result = await _tenantService.DeleteAsync(id, GetCaller());
         return HandleResult(result);
     }
     [HttpGet("getAllTenants")]
-    [Authorize(Roles = "GodMode")]
+    [Authorize(Roles = Roles.GodMode)]
     public async Task<IActionResult> GetAllTenantsAsync()
     {
         var result = await _tenantService.GetAllAsync();
         return HandleResult(result);
     }
     [HttpGet("getTenantById")]
-    [Authorize]
     public async Task<IActionResult> GetTenantByIdAsync(string id)
     {
-        if (!HasAccessToTenant(id))
-            return HandleResult(Result.Failure(AuthErrors.Forbidden));
-        var result = await _tenantService.GetByIdAsync(id);
+        var result = await _tenantService.GetByIdAsync(id, GetCaller());
+        return HandleResult(result);
+    }
+    [HttpGet("getMyTenant")]
+    [Authorize(Roles = Roles.TenantOwner)]
+    public async Task<IActionResult> GetMyTenantAsync()
+    {
+        var result = await _tenantService.GetMyTenantAsync(GetCaller());
         return HandleResult(result);
     }
 
-    // Временное правило до появления владельца тенанта (этап 2):
-    // GodMode — к любому тенанту, остальные — только к тенанту из своего токена
-    private bool HasAccessToTenant(string? tenantId)
+    private TenantCaller GetCaller()
     {
-        if (User.IsInRole("GodMode"))
-            return true;
-        var tokenTenantId = User.FindFirst("tenant_id")?.Value;
-        return !string.IsNullOrEmpty(tenantId)
-            && string.Equals(tokenTenantId, tenantId, StringComparison.Ordinal);
+        var userId = int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : (int?)null;
+        return new TenantCaller(userId, User.IsInRole(Roles.GodMode));
     }
 }

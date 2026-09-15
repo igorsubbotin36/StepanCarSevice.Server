@@ -47,6 +47,11 @@ namespace StepanCarService.Common.Infastructure.Repositories
             return await _tenantServiceDbContext.Tenants.SingleOrDefaultAsync(t => t.Identifier == identifier);
         }
 
+        public async Task<TenantInfoEntity?> GetByOwnerAsync(int ownerUserId)
+        {
+            return await _tenantServiceDbContext.Tenants.SingleOrDefaultAsync(t => t.OwnerUserId == ownerUserId);
+        }
+
         public async Task<IEnumerable<TenantInfoEntity>?> GetAllAsync()
         {
             var entities = await _tenantServiceDbContext.Tenants.AsNoTracking().ToListAsync();

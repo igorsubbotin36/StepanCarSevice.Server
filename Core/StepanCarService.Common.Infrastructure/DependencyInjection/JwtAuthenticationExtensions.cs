@@ -90,13 +90,22 @@ namespace StepanCarService.Common.Infastructure.DependencyInjection
                                return;
                            }
 
-                           // 1. Текущий тенант из Finbuckle
+                           // 1. Текущий тенант из Finbuckle (null — запрос к порталу)
                            var accessor = context.HttpContext.RequestServices
                                .GetRequiredService<IMultiTenantContextAccessor<TenantInfoEntity>>();
-                           var requestTenantId = accessor.MultiTenantContext?.TenantInfo?.Id;
+                           var requestTenant = accessor.MultiTenantContext?.TenantInfo;
+                           var requestTenantId = requestTenant?.Id;
 
-                           // 2. tenant_id из токена (может отсутствовать у GodMode)
+                           // 2. tenant_id из токена (отсутствует у пользователей портала: GodMode и TenantOwner)
                            var tokenTenantId = principal.FindFirst("tenant_id")?.Value;
+                           var tokenRole = principal.FindFirst(ClaimTypes.Role)?.Value;
+
+                           // Неактивный тенант (например, закончилась подписка) доступен только GodMode
+                           if (requestTenant != null && !requestTenant.IsActive && tokenRole != "GodMode")
+                           {
+                               context.Fail("Tenant is inactive.");
+                               return;
+                           }
 
                            if (!string.IsNullOrWhiteSpace(tokenTenantId))
                            {
@@ -110,8 +119,7 @@ namespace StepanCarService.Common.Infastructure.DependencyInjection
                            }
                            else
                            {
-                               var role = principal.FindFirst(ClaimTypes.Role)?.Value;
-                               if (role == "GodMode")
+                               if (tokenRole == "GodMode")
                                {
                                    if (!string.IsNullOrWhiteSpace(requestTenantId))
                                    {
@@ -119,12 +127,20 @@ namespace StepanCarService.Common.Infastructure.DependencyInjection
                                        identity.AddClaim(new Claim("tenant_id", requestTenantId));
                                    }
                                }
-                               else if (role == "TenantOwner")
+                               else if (tokenRole == "TenantOwner")
                                {
-                                   if (requestTenantId != null)
+                                   if (requestTenant != null)
                                    {
-                                       context.Fail("TenantOwner without tenant cannot access a tenant subdomain");
-                                       return;
+                                       // Владелец входит на поддомен логином портала, но только в свой тенант
+                                       var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                                       if (requestTenant.OwnerUserId == null
+                                           || userId != requestTenant.OwnerUserId.Value.ToString())
+                                       {
+                                           context.Fail("TenantOwner is not the owner of this tenant.");
+                                           return;
+                                       }
+                                       var identity = (ClaimsIdentity)principal.Identity!;
+                                       identity.AddClaim(new Claim("tenant_id", requestTenant.Id!));
                                    }
                                }
                                else

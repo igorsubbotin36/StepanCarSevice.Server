@@ -23,6 +23,15 @@ namespace StepanCarSevice.AuthService.Infrastructure.DBContexts
         {
             base.OnModelCreating(modelBuilder);
 
+            // Пользователи портала (GodMode, TenantOwner) не принадлежат тенанту.
+            // Пользователи тенанта удаляются вместе с ним, поэтому «осиротевших» учёток на портале не бывает
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Tenant)
+                .WithMany()
+                .HasForeignKey(u => u.TenantId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Cascade);
+
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AuthDbContext).Assembly);
         }
     }

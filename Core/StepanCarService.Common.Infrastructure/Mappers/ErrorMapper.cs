@@ -81,6 +81,10 @@ namespace StepanCarService.Common.Infastructure.Mappers
                         "Тенант не найден"),
                 [TenantErrors.TenantAlreadyExists] = (HttpStatusCode.Conflict,
                         "Тенант с таким идентификатором уже существует"),
+                [TenantErrors.TenantInactive] = (HttpStatusCode.Forbidden,
+                        "Тенант неактивен"),
+                [TenantErrors.OwnerAlreadyHasTenant] = (HttpStatusCode.Conflict,
+                        "У владельца уже есть тенант"),
                 [TenantErrors.InvalidIdentifier] = (HttpStatusCode.BadRequest,
                         "Идентификатор тенанта должен состоять из 3–63 символов a-z, 0-9 и дефиса, не начинаться и не заканчиваться дефисом и не быть зарезервированным")
             };

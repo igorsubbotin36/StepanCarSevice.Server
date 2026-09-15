@@ -97,9 +97,12 @@ namespace StepanCarSevice.AuthService.Application.Services
                 return Result.Failure(SystemErrors.DatabaseError);
             }
         }
-        // Пользователь существует только в своём тенанте: не полагаемся лишь на проверку tenant_id в JWT
+        // Пользователь существует только в своём тенанте: не полагаемся лишь на проверку tenant_id в JWT.
+        // Владелец тенанта — пользователь портала, но в своём тенанте тоже может управлять своей учёткой
         private bool BelongsToCurrentTenant(User user) =>
-            user.Role?.Name == "GodMode" || user.TenantId == GetTenantId();
+            user.Role?.Name == Roles.GodMode
+            || user.TenantId == GetTenantId()
+            || (user.Role?.Name == Roles.TenantOwner && user.TenantId == null && CurrentTenant?.OwnerUserId == user.Id);
 
         private string? GetTenantId()
         {
