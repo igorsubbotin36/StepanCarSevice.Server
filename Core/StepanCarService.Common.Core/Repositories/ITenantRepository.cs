@@ -14,6 +14,7 @@ namespace StepanCarService.Common.Core.Repositories
         Task DeleteAsync(TenantInfoEntity tenant);
         Task<TenantInfoEntity?> GetByIdAsync(string tenantId);
         Task<TenantInfoEntity?> GetByNameAsync(string tenantName);
+        Task<TenantInfoEntity?> GetByIdentifierAsync(string identifier);
         Task<IEnumerable<TenantInfoEntity>?> GetAllAsync();
     }
 }

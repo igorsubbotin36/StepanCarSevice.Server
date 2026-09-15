@@ -13,6 +13,7 @@ namespace StepanCarService.Common.Application.Models
         public const string PhoneNotConfirmed = "AUTH_PHONE_NOT_CONFIRMED";
         public const string TokenExpired = "AUTH_TOKEN_EXPIRED";
         public const string TokenIsNotValid = "TOKEN_IS_NOT_VALID";
+        public const string Forbidden = "AUTH_FORBIDDEN";
     }
     public static class RegisterErrors
     {
@@ -24,6 +25,7 @@ namespace StepanCarService.Common.Application.Models
     {
         public const string NotFound = "USER_NOT_FOUND";
         public const string InvalidPhone = "USER_INVALID_PHONE";
+        public const string WrongPassword = "USER_WRONG_PASSWORD";
     }
 
     public static class ValidationErrors
@@ -56,5 +58,7 @@ namespace StepanCarService.Common.Application.Models
     {
         public const string TenantIsNull = "TENANT_IS_NULL";
         public const string TenantNotFound = "TENANT_NOT_FOUND";
+        public const string TenantAlreadyExists = "TENANT_ALREADY_EXISTS";
+        public const string InvalidIdentifier = "TENANT_INVALID_IDENTIFIER";
     }
 }

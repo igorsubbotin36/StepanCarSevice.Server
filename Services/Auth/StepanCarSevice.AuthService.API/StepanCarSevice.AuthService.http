@@ -1,6 +1,71 @@
-@StepanCarSevice.AuthService_HostAddress = http://localhost:5186
+@host = http://localhost:5186
+# Tenant is resolved from the subdomain: <identifier>.localhost
+@tenantHost = my-tenant.localhost:5186
+@phone = +79990000001
+@password = Passw0rd-1
+# Paste accessToken from the login response
+@token = <access token>
 
-GET {{StepanCarSevice.AuthService_HostAddress}}/weatherforecast/
-Accept: application/json
+### Register a user in a tenant
+POST {{host}}/api/Auth/register
+Host: {{tenantHost}}
+Content-Type: application/json
 
-###
+{
+  "email": "user@example.com",
+  "firstName": "Ivan",
+  "secondName": "Ivanov",
+  "phone": "{{phone}}",
+  "password": "{{password}}",
+  "confirmPassword": "{{password}}"
+}
+
+### Login
+POST {{host}}/api/Auth/login
+Host: {{tenantHost}}
+Content-Type: application/json
+
+{
+  "phone": "{{phone}}",
+  "password": "{{password}}"
+}
+
+### Token claims (includes nameidentifier and tenant_id)
+GET {{host}}/api/Auth/getTokenClaims
+Host: {{tenantHost}}
+Authorization: Bearer {{token}}
+
+### Change password: wrong oldPassword -> 400 USER_WRONG_PASSWORD
+PUT {{host}}/api/User/changePassword
+Host: {{tenantHost}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "oldPassword": "wrong-password",
+  "newPassword": "NewPassw0rd-1",
+  "confirmPassword": "NewPassw0rd-1"
+}
+
+### Change password: correct oldPassword -> 200
+PUT {{host}}/api/User/changePassword
+Host: {{tenantHost}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "oldPassword": "{{password}}",
+  "newPassword": "NewPassw0rd-1",
+  "confirmPassword": "NewPassw0rd-1"
+}
+
+### Update profile: all fields optional; tenantId is not accepted
+PATCH {{host}}/api/User/updateUser
+Host: {{tenantHost}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "firstName": "Petr",
+  "phone": "+79990000002"
+}

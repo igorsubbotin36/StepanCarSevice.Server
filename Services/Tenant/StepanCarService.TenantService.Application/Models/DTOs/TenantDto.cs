@@ -1,14 +1,19 @@
-﻿using StepanCarService.Common.Core.Entities;
+using StepanCarService.Common.Core.Entities;
 
 namespace StepanCarService.TenantService.Application.Models.DTOs;
 
-public record TenantDto(string Id, string Identifier, string Name, string ConnectionString, bool IsActive, string ApiKey)
+// Id и ApiKey генерируются сервером, ConnectionString клиентом не задаётся
+public record TenantCreateDto(string Identifier, string Name);
+
+// Identifier не меняется: от него зависят поддомен и данные в других сервисах
+public record TenantUpdateDto(string Id, string Name, bool IsActive);
+
+// Наружу не отдаются ConnectionString и ApiKey
+public record TenantReadDto(string Id, string Identifier, string Name, bool IsActive)
 {
-    public static TenantDto FromTenant(TenantInfoEntity t) => new TenantDto(t.Id, 
-        t.Identifier, 
-        t.Name, 
-        t.ConnectionString, 
-        t.IsActive, 
-        t.ApiKey
+    public static TenantReadDto FromTenant(TenantInfoEntity t) => new TenantReadDto(t.Id,
+        t.Identifier,
+        t.Name,
+        t.IsActive
         );
 }

@@ -22,6 +22,13 @@ namespace StepanCarSevice.AuthService.Infrastructure.Repositories
             User? user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
             return user;
         }
+        public async Task<User?> GetUserByIdAsync(int id)
+        {
+            User? user = await _dbContext.Users
+                .Include(x => x.Role)
+                .FirstOrDefaultAsync(x => x.Id == id);
+            return user;
+        }
         public async Task DeleteUserAsync(User user)
         {
             _dbContext.Users.Remove(user);

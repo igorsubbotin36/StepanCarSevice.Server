@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using StepanCarService.Common.API.Controllers;
 using StepanCarService.Common.Application.Interfaces;
+using StepanCarService.Common.Application.Models;
 using StepanCarSevice.AuthService.Application.Extensions;
 using StepanCarSevice.AuthService.Application.Interfaces.Services;
 using StepanCarSevice.AuthService.Application.Models.Dto;
@@ -35,16 +36,20 @@ namespace StepanCarSevice.AuthService.API.Controllers
         [Authorize]
         public async Task<IActionResult> ChangePasswordAsync([FromBody] ChangePasswordRequestDto request)
         {
-            var phone = User.GetMobilePhone();
-            var result = await _userService.ChangePasswordAsync(request, phone);
+            var userId = User.TryGetUserId();
+            if (userId == null)
+                return HandleResult(Result.Failure(AuthErrors.InvalidCredentials));
+            var result = await _userService.ChangePasswordAsync(request, userId.Value);
             return HandleResult(result);
         }
         [HttpPatch("updateUser")]
         [Authorize]
         public async Task<IActionResult> UpdateUserInfoAsync([FromBody] EditUserRequestDto request)
         {
-            var phone = User.GetMobilePhone();
-            var result = await _userService.UpdateUserAsync(request, phone);
+            var userId = User.TryGetUserId();
+            if (userId == null)
+                return HandleResult(Result.Failure(AuthErrors.InvalidCredentials));
+            var result = await _userService.UpdateUserAsync(request, userId.Value);
             return HandleResult(result);
         }
     }

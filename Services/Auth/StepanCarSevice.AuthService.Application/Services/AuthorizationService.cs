@@ -114,11 +114,12 @@ namespace StepanCarSevice.AuthService.Application.Services
             {
                 var claims = new List<Claim>
                 {
+                    new Claim(ClaimTypes.NameIdentifier, person.Id.ToString()),
                     new Claim(ClaimTypes.MobilePhone, person.Phone ?? string.Empty),
                     new Claim(ClaimTypes.Role, person.Role.Name),
                     new Claim(ClaimTypes.Email, person.Email),
-                    new Claim(ClaimTypes.GivenName, person.FirstName),
-                    new Claim(ClaimTypes.Surname, person.SecondName)
+                    new Claim(ClaimTypes.GivenName, person.FirstName ?? string.Empty),
+                    new Claim(ClaimTypes.Surname, person.SecondName ?? string.Empty)
                 };
                 if (!string.IsNullOrEmpty(person.TenantId))
                 {

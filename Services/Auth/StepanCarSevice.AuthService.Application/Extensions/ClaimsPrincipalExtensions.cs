@@ -53,6 +53,14 @@ namespace StepanCarSevice.AuthService.Application.Extensions
         }
 
 
+        // Id пользователя из подписанного токена; null, если claim отсутствует (например, токен выпущен до его появления)
+        public static int? TryGetUserId(this ClaimsPrincipal principal)
+        {
+            var value = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? principal.FindFirst("nameid")?.Value;
+            return int.TryParse(value, out var id) ? id : null;
+        }
+
         // Optional: Safe versions without exceptions
         public static string? TryGetMobilePhone(this ClaimsPrincipal principal)
         {

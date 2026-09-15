@@ -23,6 +23,8 @@ namespace StepanCarService.Common.Infastructure.Mappers
                     "Токен истек"),
                 [AuthErrors.TokenIsNotValid] = (HttpStatusCode.BadRequest,
                     "Токен неверен"),
+                [AuthErrors.Forbidden] = (HttpStatusCode.Forbidden,
+                    "Недостаточно прав для выполнения операции"),
 
                 //Register errors
                 [RegisterErrors.UserAlreadyExists] = (HttpStatusCode.Conflict,
@@ -37,6 +39,8 @@ namespace StepanCarService.Common.Infastructure.Mappers
                 "Пользователь не найден"),
                 [UserErrors.InvalidPhone] = (HttpStatusCode.BadRequest,
                 "Неверный формат номера телефона"),
+                [UserErrors.WrongPassword] = (HttpStatusCode.BadRequest,
+                "Неверный текущий пароль"),
 
                 // Validation errors
                 [ValidationErrors.RequiredField] = (HttpStatusCode.BadRequest,
@@ -74,7 +78,11 @@ namespace StepanCarService.Common.Infastructure.Mappers
                 [TenantErrors.TenantIsNull] = (HttpStatusCode.BadRequest, 
                     "Переданный тенант пустой"),
                 [TenantErrors.TenantNotFound] = (HttpStatusCode.NotFound,
-                        "Тенант не найден")
+                        "Тенант не найден"),
+                [TenantErrors.TenantAlreadyExists] = (HttpStatusCode.Conflict,
+                        "Тенант с таким идентификатором уже существует"),
+                [TenantErrors.InvalidIdentifier] = (HttpStatusCode.BadRequest,
+                        "Идентификатор тенанта должен состоять из 3–63 символов a-z, 0-9 и дефиса, не начинаться и не заканчиваться дефисом и не быть зарезервированным")
             };
         }
 

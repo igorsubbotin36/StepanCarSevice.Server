@@ -11,9 +11,14 @@ namespace StepanCarSevice.AuthService.Infrastructure.Validation
             RuleFor(x => x.FirstName).NotEmpty().MaximumLength(100);
             RuleFor(x => x.SecondName).NotEmpty().MaximumLength(100);
             RuleFor(x => x.Phone).NotEmpty().MaximumLength(30);
-            RuleFor(x => x.Password).NotEmpty().MinimumLength(6);
+            RuleFor(x => x.Password).NotEmpty().MinimumLength(PasswordRules.MinLength);
             RuleFor(x => x.ConfirmPassword).NotEmpty().Equal(x => x.Password);
         }
+    }
+
+    internal static class PasswordRules
+    {
+        public const int MinLength = 8;
     }
 
     public class LoginDtoValidator : AbstractValidator<LoginRequestDto>
@@ -29,11 +34,11 @@ namespace StepanCarSevice.AuthService.Infrastructure.Validation
     {
         public EditUserDtoValidator()
         {
-            RuleFor(x => x.OldPhone).NotEmpty();
-            RuleFor(x => x.Email).EmailAddress().When(x => !string.IsNullOrEmpty(x.Email));
-            RuleFor(x => x.Phone).MaximumLength(30).When(x => !string.IsNullOrEmpty(x.Phone));
-            RuleFor(x => x.FirstName).MaximumLength(100).When(x => !string.IsNullOrEmpty(x.FirstName));
-            RuleFor(x => x.SecondName).MaximumLength(100).When(x => !string.IsNullOrEmpty(x.SecondName));
+            // Поле можно не передавать (null), но переданное значение не может быть пустым
+            RuleFor(x => x.Email).NotEmpty().EmailAddress().When(x => x.Email != null);
+            RuleFor(x => x.Phone).NotEmpty().MaximumLength(30).When(x => x.Phone != null);
+            RuleFor(x => x.FirstName).NotEmpty().MaximumLength(100).When(x => x.FirstName != null);
+            RuleFor(x => x.SecondName).NotEmpty().MaximumLength(100).When(x => x.SecondName != null);
         }
     }
 
@@ -42,8 +47,9 @@ namespace StepanCarSevice.AuthService.Infrastructure.Validation
         public ChangePasswordDtoValidator()
         {
             RuleFor(x => x.OldPassword).NotEmpty();
-            RuleFor(x => x.NewPassword).NotEmpty().MinimumLength(8);
-            RuleFor(x => x.ConfirmPassword).Equal(x => x.NewPassword);
+            RuleFor(x => x.NewPassword).NotEmpty().MinimumLength(PasswordRules.MinLength)
+                .NotEqual(x => x.OldPassword).WithMessage("Новый пароль должен отличаться от текущего");
+            RuleFor(x => x.ConfirmPassword).NotEmpty().Equal(x => x.NewPassword);
         }
     }
 

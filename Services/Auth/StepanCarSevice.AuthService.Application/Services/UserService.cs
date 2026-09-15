@@ -42,13 +42,16 @@ namespace StepanCarSevice.AuthService.Application.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Result> ChangePasswordAsync(ChangePasswordRequestDto request, string phone)
+        public async Task<Result> ChangePasswordAsync(ChangePasswordRequestDto request, int userId)
         {
-            if (phone == null)
-                return Result.Failure(AuthErrors.InvalidCredentials);
-            var user = await _userRepository.GetUserByPhoneAsync(phone, GetTenantId());
-            if (user == null) 
-                return Result.Failure(UserErrors.InvalidPhone);
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null || !BelongsToCurrentTenant(user))
+                return Result.Failure(UserErrors.NotFound);
+            if (!_passwordHasher.Verify(request.OldPassword, user.Password))
+            {
+                _logger.LogWarning($"{user.Id} неверный текущий пароль при попытке смены пароля");
+                return Result.Failure(UserErrors.WrongPassword);
+            }
             user.Password = _passwordHasher.Hash(request.NewPassword);
             try
             {
@@ -65,23 +68,22 @@ namespace StepanCarSevice.AuthService.Application.Services
             
         }
 
-        public async Task<Result> UpdateUserAsync(EditUserRequestDto request, string phone)
+        public async Task<Result> UpdateUserAsync(EditUserRequestDto request, int userId)
         {
-            if (phone == null)
-                return Result.Failure(AuthErrors.InvalidCredentials);
-            var user = await _userRepository.GetUserByPhoneAsync(phone, GetTenantId());
-            if (user == null)
-                return Result.Failure(UserErrors.InvalidPhone);
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null || !BelongsToCurrentTenant(user))
+                return Result.Failure(UserErrors.NotFound);
+            if (request.Phone != null && request.Phone != user.Phone
+                && await _userRepository.ExistsByPhoneAsync(request.Phone, user.TenantId))
+                return Result.Failure(RegisterErrors.UserAlreadyExists);
             if (request.FirstName != null)
                 user.FirstName = request.FirstName;
             if (request.SecondName != null)
-            user.SecondName = request.SecondName;
+                user.SecondName = request.SecondName;
             if (request.Email != null)
                 user.Email = request.Email;
             if (request.Phone != null)
                 user.Phone = request.Phone;
-            if (request.TenantId != null)
-                user.TenantId = request.TenantId;
             try
             {
                 await _userRepository.UpdateUserAsync(user);
@@ -95,6 +97,10 @@ namespace StepanCarSevice.AuthService.Application.Services
                 return Result.Failure(SystemErrors.DatabaseError);
             }
         }
+        // Пользователь существует только в своём тенанте: не полагаемся лишь на проверку tenant_id в JWT
+        private bool BelongsToCurrentTenant(User user) =>
+            user.Role?.Name == "GodMode" || user.TenantId == GetTenantId();
+
         private string? GetTenantId()
         {
             var tenant = CurrentTenant;

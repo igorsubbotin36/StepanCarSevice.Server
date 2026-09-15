@@ -1,21 +1,28 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using StepanCarService.Common.Application.Events;
 using StepanCarService.Common.Application.Models;
 using StepanCarService.Common.Core.Entities;
 using StepanCarService.Common.Core.Repositories;
 using StepanCarService.TenantService.Application.Interfaces;
 using StepanCarService.TenantService.Application.Models.DTOs;
-using System.Xml.Linq;
+using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 
 namespace StepanCarService.TenantService.Application.Services;
 
 public class TenantManagementService : ITenantService
 {
+    // Identifier — это поддомен тенанта: допустимая DNS-метка в нижнем регистре
+    private static readonly Regex IdentifierPattern = new("^[a-z0-9](?:[a-z0-9-]{1,61}[a-z0-9])$", RegexOptions.Compiled);
+
+    // "management" используется статической стратегией самого Tenant-сервиса
+    private static readonly HashSet<string> ReservedIdentifiers = new() { "management", "www", "api" };
+
     private readonly ITenantRepository _tenantRepository;
     private readonly IMessageBus _messageBus;
     private readonly ILogger<TenantManagementService> _logger;
     private readonly IUnitOfWork _unitOfWork;
-    public TenantManagementService(ITenantRepository tenantRepository, 
+    public TenantManagementService(ITenantRepository tenantRepository,
         IMessageBus messageBus,
         ILogger<TenantManagementService> logger,
         IUnitOfWork unitOfWork)
@@ -25,19 +32,26 @@ public class TenantManagementService : ITenantService
         _logger = logger;
         _unitOfWork = unitOfWork;
     }
-    
-    public async Task<Result> AddAsync(TenantDto tenant)
+
+    public async Task<Result<TenantReadDto>> AddAsync(TenantCreateDto tenant)
     {
         if (tenant == null)
-            return Result.Failure(TenantErrors.TenantIsNull);
+            return Result.Failure<TenantReadDto>(TenantErrors.TenantIsNull);
+        if (string.IsNullOrWhiteSpace(tenant.Name))
+            return Result.Failure<TenantReadDto>(ValidationErrors.RequiredField);
+        if (!IsValidIdentifier(tenant.Identifier))
+            return Result.Failure<TenantReadDto>(TenantErrors.InvalidIdentifier);
+        if (await _tenantRepository.GetByIdentifierAsync(tenant.Identifier) != null)
+            return Result.Failure<TenantReadDto>(TenantErrors.TenantAlreadyExists);
+
         TenantInfoEntity newTenant = new TenantInfoEntity()
         {
-            Id = tenant.Id,
+            Id = Guid.NewGuid().ToString(),
             Identifier = tenant.Identifier,
-            Name = tenant.Name,
-            ConnectionString = tenant.ConnectionString,
-            IsActive = tenant.IsActive,
-            ApiKey = tenant.ApiKey
+            Name = tenant.Name.Trim(),
+            ConnectionString = string.Empty,
+            IsActive = true,
+            ApiKey = GenerateApiKey()
         };
         try
         {
@@ -48,39 +62,27 @@ public class TenantManagementService : ITenantService
         catch (Exception e)
         {
             _logger.LogError($"Ошибка БД при регистрации тенанта\n{e}");
-            return Result.Failure(SystemErrors.DatabaseError);
+            return Result.Failure<TenantReadDto>(SystemErrors.DatabaseError);
         }
         var tenantEvent = new TenantRegisteredEvent();
-        tenantEvent.Identifier = tenant.Identifier;
-        tenantEvent.Id = tenant.Id;
-        tenantEvent.Name = tenant.Name;
-        tenantEvent.ConnectionString = tenant.ConnectionString;
-        tenantEvent.IsActive = tenant.IsActive;
-        tenantEvent.ApiKey = tenant.ApiKey;
-        try
-        {
-            await _messageBus.PublishAsync(tenantEvent);
-            _logger.LogInformation($"{tenantEvent.EventType} сообщение другим сервисам отправлено");
-            return Result.Success();
-        }
-        catch (Exception e)
-        {
-            _logger.LogError($"{tenantEvent.EventType} {tenantEvent.Id} сообщение не отправлено\n{e}");
-            return Result.Failure(MessageBusErrors.MessageNotDelivered);
-        }
+        FillEvent(tenantEvent, newTenant);
+        var publishResult = await PublishAsync(tenantEvent);
+        if (!publishResult.IsSuccess)
+            return Result.Failure<TenantReadDto>(publishResult.ErrorCode);
+        return Result.Success(TenantReadDto.FromTenant(newTenant));
     }
 
-    public async Task<Result> UpdateAsync(TenantDto tenant)
+    public async Task<Result<TenantReadDto>> UpdateAsync(TenantUpdateDto tenant)
     {
         if (tenant == null)
-            return Result.Failure(TenantErrors.TenantIsNull);
+            return Result.Failure<TenantReadDto>(TenantErrors.TenantIsNull);
+        if (string.IsNullOrWhiteSpace(tenant.Name))
+            return Result.Failure<TenantReadDto>(ValidationErrors.RequiredField);
         var tempTenant = await _tenantRepository.GetByIdAsync(tenant.Id);
         if (tempTenant == null)
-            return Result.Failure(TenantErrors.TenantNotFound);
-        tempTenant.ConnectionString = tenant.ConnectionString;
+            return Result.Failure<TenantReadDto>(TenantErrors.TenantNotFound);
         tempTenant.IsActive = tenant.IsActive;
-        tempTenant.ApiKey = tenant.ApiKey;
-        tempTenant.Name = tenant.Name;
+        tempTenant.Name = tenant.Name.Trim();
 
         try
         {
@@ -91,25 +93,14 @@ public class TenantManagementService : ITenantService
         catch (Exception e)
         {
             _logger.LogError($"Ошибка БД при обновлении данных тенанта\n{e}");
-            return Result.Failure(SystemErrors.DatabaseError);
+            return Result.Failure<TenantReadDto>(SystemErrors.DatabaseError);
         }
         var tenantEvent = new TenantUpdatedEvent();
-        tenantEvent.Id = tenant.Id;
-        tenantEvent.Name = tenant.Name;
-        tenantEvent.ConnectionString = tenant.ConnectionString;
-        tenantEvent.IsActive = tenant.IsActive;
-        tenantEvent.ApiKey = tenant.ApiKey;
-        try
-        {
-            await _messageBus.PublishAsync(tenantEvent);
-            _logger.LogInformation($"{tenantEvent.EventType} сообщение другим сервисам отправлено");
-            return Result.Success();
-        }
-        catch (Exception e)
-        {
-            _logger.LogError($"{tenantEvent.EventType} {tenantEvent.Id} сообщение не отправлено\n{e}");
-            return Result.Failure(MessageBusErrors.MessageNotDelivered);
-        }
+        FillEvent(tenantEvent, tempTenant);
+        var publishResult = await PublishAsync(tenantEvent);
+        if (!publishResult.IsSuccess)
+            return Result.Failure<TenantReadDto>(publishResult.ErrorCode);
+        return Result.Success(TenantReadDto.FromTenant(tempTenant));
     }
 
     public async Task<Result> DeleteAsync(string id)
@@ -131,72 +122,98 @@ public class TenantManagementService : ITenantService
             return Result.Failure(SystemErrors.DatabaseError);
         }
         var tenantEvent = new TenantDeletedEvent();
-        tenantEvent.Id = tempTenant.Id;
-        tenantEvent.Name = tempTenant.Name;
-        tenantEvent.ConnectionString = tempTenant.ConnectionString;
-        tenantEvent.IsActive = tempTenant.IsActive;
-        tenantEvent.ApiKey = tempTenant.ApiKey;
+        FillEvent(tenantEvent, tempTenant);
+        return await PublishAsync(tenantEvent);
+    }
+
+    public async Task<Result<TenantReadDto>> GetByIdAsync(string tenantId)
+    {
         try
         {
-            await _messageBus.PublishAsync(tenantEvent);
-            _logger.LogInformation($"{tenantEvent.EventType} сообщение другим сервисам отправлено");
-            return Result.Success();
+            var tenant = await _tenantRepository.GetByIdAsync(tenantId);
+            if (tenant == null)
+                return Result.Failure<TenantReadDto>(TenantErrors.TenantNotFound);
+            return Result.Success(TenantReadDto.FromTenant(tenant));
+        }
+        catch (Exception e)
+        {
+            _logger.LogError($"Ошибка БД при получении тенанта по Id {tenantId}\n{e}");
+            return Result.Failure<TenantReadDto>(SystemErrors.DatabaseError);
+        }
+    }
+
+    public async Task<Result<TenantReadDto>> GetByNameAsync(string tenantName)
+    {
+        try
+        {
+            var tenant = await _tenantRepository.GetByNameAsync(tenantName);
+            if (tenant == null)
+                return Result.Failure<TenantReadDto>(TenantErrors.TenantNotFound);
+            return Result.Success(TenantReadDto.FromTenant(tenant));
+        }
+        catch (Exception e)
+        {
+            _logger.LogError($"Ошибка БД при получении тенанта по Name {tenantName}\n{e}");
+            return Result.Failure<TenantReadDto>(SystemErrors.DatabaseError);
+        }
+    }
+
+    public async Task<Result<List<TenantReadDto>>> GetAllAsync()
+    {
+        try
+        {
+            var tenants = await _tenantRepository.GetAllAsync();
+            List<TenantReadDto> list = new List<TenantReadDto>();
+            foreach (var tenant in tenants ?? Enumerable.Empty<TenantInfoEntity>())
+            {
+                list.Add(TenantReadDto.FromTenant(tenant));
+            }
+            return Result.Success(list);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError($"Ошибка БД при получении всех тенантов\n{e}");
+            return Result.Failure<List<TenantReadDto>>(SystemErrors.DatabaseError);
+        }
+    }
+
+    private static bool IsValidIdentifier(string? identifier) =>
+        identifier != null
+        && IdentifierPattern.IsMatch(identifier)
+        && !ReservedIdentifiers.Contains(identifier);
+
+    private static string GenerateApiKey() =>
+        Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+
+    private static void FillEvent(TenantEvent tenantEvent, TenantInfoEntity tenant)
+    {
+        tenantEvent.Id = tenant.Id;
+        tenantEvent.Identifier = tenant.Identifier;
+        tenantEvent.Name = tenant.Name;
+        tenantEvent.ConnectionString = tenant.ConnectionString;
+        tenantEvent.IsActive = tenant.IsActive;
+        tenantEvent.ApiKey = tenant.ApiKey;
+    }
+
+    // Изменение в БД к этому моменту уже сохранено: при ошибке публикации другие сервисы о нём не узнают
+    private async Task<Result> PublishAsync(TenantEvent tenantEvent)
+    {
+        Result result;
+        try
+        {
+            result = await _messageBus.PublishAsync(tenantEvent);
         }
         catch (Exception e)
         {
             _logger.LogError($"{tenantEvent.EventType} {tenantEvent.Id} сообщение не отправлено\n{e}");
             return Result.Failure(MessageBusErrors.MessageNotDelivered);
         }
-    }
-
-    public async Task<Result<TenantDto>> GetByIdAsync(string tenantId)
-    {
-        try
+        if (!result.IsSuccess)
         {
-            var tenant = await _tenantRepository.GetByIdAsync(tenantId);
-            if (tenant == null)
-                return Result.Failure<TenantDto>(TenantErrors.TenantNotFound);
-            return Result.Success<TenantDto>(TenantDto.FromTenant(tenant));
+            _logger.LogError($"{tenantEvent.EventType} {tenantEvent.Id} сообщение не отправлено: {result.ErrorCode}");
+            return result;
         }
-        catch (Exception e)
-        {
-            _logger.LogError($"Ошибка БД при получении тенанта по Id {tenantId}\n{e}");
-            return Result.Failure<TenantDto>(SystemErrors.DatabaseError);
-        }
-    }
-
-    public async Task<Result<TenantDto>> GetByNameAsync(string tenantName)
-    {
-        try
-        {
-            var tenant = await _tenantRepository.GetByNameAsync(tenantName);
-            if (tenant == null)
-                return Result.Failure<TenantDto>(TenantErrors.TenantNotFound);
-            return Result.Success<TenantDto>(TenantDto.FromTenant(tenant));
-        }
-        catch (Exception e)
-        {
-            _logger.LogError($"Ошибка БД при получении тенанта по Name {tenantName}\n{e}");
-            return Result.Failure<TenantDto>(SystemErrors.DatabaseError);
-        }
-    }
-
-    public async Task<Result<List<TenantDto>>> GetAllAsync()
-    {
-        try
-        {
-            var tenants = await _tenantRepository.GetAllAsync();
-            List<TenantDto> list = new List<TenantDto>();
-            foreach (var tenant in tenants)
-            {
-                list.Add(TenantDto.FromTenant(tenant));
-            }
-            return Result.Success<List<TenantDto>>(list);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError($"Ошибка БД при получении всех тенантов\n{e}");
-            return Result.Failure<List<TenantDto>>(SystemErrors.DatabaseError);
-        }
+        _logger.LogInformation($"{tenantEvent.EventType} сообщение другим сервисам отправлено");
+        return result;
     }
 }
