@@ -16,6 +16,7 @@ namespace StepanCarService.Common.API.AppExtensions
 
             if (app.Environment.IsDevelopment())
             {
+                app.MapOpenApi();
                 app.UseSwagger();
                 app.UseSwaggerUI(options =>
                 {
@@ -23,7 +24,11 @@ namespace StepanCarService.Common.API.AppExtensions
                     options.RoutePrefix = string.Empty;
                 });
             }
-            app.MapOpenApi();
+            else
+            {
+                EnsureAllowedHostsConfigured(app);
+                app.UseHsts();
+            }
             app.UseHttpsRedirection();
 
             app.UseRouting();
@@ -35,6 +40,22 @@ namespace StepanCarService.Common.API.AppExtensions
 
             app.MapControllers();
             return app;
+        }
+
+        // Тенант определяется по заголовку Host, поэтому вне Development
+        // список разрешённых хостов обязан быть задан явно
+        private static void EnsureAllowedHostsConfigured(WebApplication app)
+        {
+            var allowedHosts = app.Configuration["AllowedHosts"];
+            var hosts = (allowedHosts ?? string.Empty)
+                .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            if (hosts.Length == 0 || hosts.Contains("*"))
+            {
+                throw new InvalidOperationException(
+                    "AllowedHosts must list explicit host names outside Development " +
+                    "(e.g. \"example.com;*.example.com\"). Wildcard \"*\" is not allowed.");
+            }
         }
     }
 }

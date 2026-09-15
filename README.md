@@ -81,6 +81,9 @@ cd StepanCarSevice.Server
 
 - `Jwt` (Issuer, Audience, LifetimeMinutes)
 - `RabbitMQ` (HostName, Port, VirtualHost, ExchangeName, QueueName)
+- `AllowedHosts` — разрешённые значения заголовка `Host` (в Development: `localhost;*.localhost;127.0.0.1`)
+
+Вне Development `AllowedHosts` обязателен и должен содержать явный список доменов, например `example.com;*.example.com` (переменная окружения `AllowedHosts`). Со значением `*` или без него сервис не запустится: тенант определяется по заголовку `Host`.
 
 **Секреты в репозиторий не коммитятся.** Локально они хранятся в [user-secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets), в окружениях — в переменных окружения (`ConnectionStrings__PostgreSQL`, `Jwt__Key`, `RabbitMQ__UserName`, `RabbitMQ__Password`).
 
@@ -276,6 +279,9 @@ Non-secret settings live in each service's `appsettings.Development.json`:
 
 - `Jwt` (Issuer, Audience, LifetimeMinutes)
 - `RabbitMQ` (HostName, Port, VirtualHost, ExchangeName, QueueName)
+- `AllowedHosts` — permitted `Host` header values (Development: `localhost;*.localhost;127.0.0.1`)
+
+Outside Development `AllowedHosts` is required and must list explicit domains, e.g. `example.com;*.example.com` (environment variable `AllowedHosts`). With `*` or no value the service won't start, because the tenant is resolved from the `Host` header.
 
 **Secrets are never committed.** Locally they are kept in [user-secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets); in deployed environments use environment variables (`ConnectionStrings__PostgreSQL`, `Jwt__Key`, `RabbitMQ__UserName`, `RabbitMQ__Password`).
 
