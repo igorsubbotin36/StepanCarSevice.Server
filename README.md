@@ -82,8 +82,11 @@ cd StepanCarSevice.Server
 - `Jwt` (Issuer, Audience, LifetimeMinutes)
 - `RabbitMQ` (HostName, Port, VirtualHost, ExchangeName, QueueName)
 - `AllowedHosts` — разрешённые значения заголовка `Host` (в Development: `localhost;*.localhost;127.0.0.1`)
+- `RateLimiting:Auth` (необязательно) — лимит на вход, регистрацию и смену пароля с одного IP: `PermitLimit` (по умолчанию 10) за `WindowSeconds` (по умолчанию 60)
 
 Вне Development `AllowedHosts` обязателен и должен содержать явный список доменов, например `example.com;*.example.com` (переменная окружения `AllowedHosts`). Со значением `*` или без него сервис не запустится: тенант определяется по заголовку `Host`.
+
+Если сервисы стоят за обратным прокси, нужно настроить `ForwardedHeaders`, иначе лимит запросов будет считаться для IP прокси, а не клиентов.
 
 **Секреты в репозиторий не коммитятся.** Локально они хранятся в [user-secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets), в окружениях — в переменных окружения (`ConnectionStrings__PostgreSQL`, `Jwt__Key`, `RabbitMQ__UserName`, `RabbitMQ__Password`).
 
@@ -280,8 +283,11 @@ Non-secret settings live in each service's `appsettings.Development.json`:
 - `Jwt` (Issuer, Audience, LifetimeMinutes)
 - `RabbitMQ` (HostName, Port, VirtualHost, ExchangeName, QueueName)
 - `AllowedHosts` — permitted `Host` header values (Development: `localhost;*.localhost;127.0.0.1`)
+- `RateLimiting:Auth` (optional) — per-IP limit for login, registration and password change: `PermitLimit` (default 10) per `WindowSeconds` (default 60)
 
 Outside Development `AllowedHosts` is required and must list explicit domains, e.g. `example.com;*.example.com` (environment variable `AllowedHosts`). With `*` or no value the service won't start, because the tenant is resolved from the `Host` header.
+
+Behind a reverse proxy configure `ForwardedHeaders`, otherwise the rate limit is counted for the proxy IP instead of clients.
 
 **Secrets are never committed.** Locally they are kept in [user-secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets); in deployed environments use environment variables (`ConnectionStrings__PostgreSQL`, `Jwt__Key`, `RabbitMQ__UserName`, `RabbitMQ__Password`).
 

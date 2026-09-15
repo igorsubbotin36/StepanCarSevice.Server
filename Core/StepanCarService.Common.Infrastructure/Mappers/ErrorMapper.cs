@@ -25,6 +25,8 @@ namespace StepanCarService.Common.Infastructure.Mappers
                     "Токен неверен"),
                 [AuthErrors.Forbidden] = (HttpStatusCode.Forbidden,
                     "Недостаточно прав для выполнения операции"),
+                [AuthErrors.TooManyRequests] = (HttpStatusCode.TooManyRequests,
+                    "Слишком много попыток. Повторите позже"),
 
                 //Register errors
                 [RegisterErrors.UserAlreadyExists] = (HttpStatusCode.Conflict,

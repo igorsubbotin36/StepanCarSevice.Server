@@ -47,7 +47,8 @@ Content-Type: application/json
   "confirmPassword": "NewPassw0rd-1"
 }
 
-### Change password: correct oldPassword -> 200
+### Change password: correct oldPassword -> 200 with a new accessToken
+# All tokens issued before the change are revoked in the Auth service
 PUT {{host}}/api/User/changePassword
 Host: {{tenantHost}}
 Authorization: Bearer {{token}}

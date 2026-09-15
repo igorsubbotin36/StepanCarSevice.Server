@@ -32,6 +32,7 @@ namespace StepanCarService.Common.API.AppExtensions
             app.UseHttpsRedirection();
 
             app.UseRouting();
+            app.UseRateLimiter();
 
             app.UseMultiTenant();
 

@@ -10,6 +10,8 @@ namespace StepanCarSevice.AuthService.Domain.Entities
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public string? Phone { get; set; }
+        // Меняется при смене пароля: токены со старым значением отклоняются
+        public string SecurityStamp { get; set; } = Guid.NewGuid().ToString("N");
         public int RoleId { get; set; }
         public Role Role { get; set; }
     }

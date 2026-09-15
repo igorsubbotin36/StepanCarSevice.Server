@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using StepanCarService.Common.Application.Models;
 using StepanCarService.Common.Core.Entities;
+using StepanCarService.Common.Core.Exceptions;
 using StepanCarService.Common.Core.Repositories;
 using StepanCarSevice.AuthService.Application.Auth;
 using StepanCarSevice.AuthService.Application.Interfaces;
@@ -42,30 +43,31 @@ namespace StepanCarSevice.AuthService.Application.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Result> ChangePasswordAsync(ChangePasswordRequestDto request, int userId)
+        // Все ранее выданные токены пользователя перестают действовать; возвращается новый токен
+        public async Task<Result<AuthResponseDto>> ChangePasswordAsync(ChangePasswordRequestDto request, int userId)
         {
             var user = await _userRepository.GetUserByIdAsync(userId);
             if (user == null || !BelongsToCurrentTenant(user))
-                return Result.Failure(UserErrors.NotFound);
+                return Result.Failure<AuthResponseDto>(UserErrors.NotFound);
             if (!_passwordHasher.Verify(request.OldPassword, user.Password))
             {
                 _logger.LogWarning($"{user.Id} неверный текущий пароль при попытке смены пароля");
-                return Result.Failure(UserErrors.WrongPassword);
+                return Result.Failure<AuthResponseDto>(UserErrors.WrongPassword);
             }
             user.Password = _passwordHasher.Hash(request.NewPassword);
+            user.SecurityStamp = Guid.NewGuid().ToString("N");
             try
             {
                 await _userRepository.UpdateUserAsync(user);
                 await _unitOfWork.SaveChangesAsync();
-                _logger.LogInformation($"{user.Id} пароль сменен");
-                return Result.Success();
+                _logger.LogInformation($"{user.Id} пароль сменен, старые токены отозваны");
+                return Result.Success(_tokenGeneratorService.GenerateToken(UserClaimsFactory.BuildIdentity(user)));
             }
-            catch (Exception e) 
+            catch (Exception e)
             {
                 _logger.LogError($"{user.Id} ошибка при попытке смены пароля\n{e}");
-                return Result.Failure(SystemErrors.DatabaseError);
+                return Result.Failure<AuthResponseDto>(SystemErrors.DatabaseError);
             }
-            
         }
 
         public async Task<Result> UpdateUserAsync(EditUserRequestDto request, int userId)
@@ -90,6 +92,10 @@ namespace StepanCarSevice.AuthService.Application.Services
                 await _unitOfWork.SaveChangesAsync();
                 _logger.LogInformation($"{user.Id} информация обновлена");
                 return Result.Success();
+            }
+            catch (UniqueConstraintViolationException)
+            {
+                return Result.Failure(RegisterErrors.UserAlreadyExists);
             }
             catch (Exception e)
             {

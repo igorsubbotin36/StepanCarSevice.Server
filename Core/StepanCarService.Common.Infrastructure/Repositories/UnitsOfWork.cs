@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore.Storage;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using Npgsql;
+using StepanCarService.Common.Core.Exceptions;
 using StepanCarService.Common.Core.Repositories;
 using StepanCarService.Common.Infastructure.DbContexts;
 using System;
@@ -43,7 +46,14 @@ namespace StepanCarService.Common.Infastructure.Repositories
 
         public async Task SaveChangesAsync()
         {
-            await _dbContext.SaveChangesAsync();
+            try
+            {
+                await _dbContext.SaveChangesAsync();
+            }
+            catch (DbUpdateException e) when (e.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+            {
+                throw new UniqueConstraintViolationException(e);
+            }
         }
     }
 }

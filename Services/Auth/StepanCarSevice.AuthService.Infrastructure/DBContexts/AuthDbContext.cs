@@ -32,6 +32,12 @@ namespace StepanCarSevice.AuthService.Infrastructure.DBContexts
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Телефон уникален в пределах тенанта, в том числе среди пользователей портала (TenantId = NULL)
+            modelBuilder.Entity<User>()
+                .HasIndex(u => new { u.TenantId, u.Phone })
+                .IsUnique()
+                .AreNullsDistinct(false);
+
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AuthDbContext).Assembly);
         }
     }

@@ -2,6 +2,8 @@ using Finbuckle.MultiTenant;
 using Finbuckle.MultiTenant.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using StepanCarService.Common.API.BuilderExtensions;
 using StepanCarService.Common.API.Controllers;
 using StepanCarService.Common.Application.Interfaces;
 using StepanCarService.Common.Core.Entities;
@@ -26,6 +28,7 @@ namespace StepanCarSevice.AuthService.Controllers
         }
 
         [HttpPost("register")]
+        [EnableRateLimiting(RateLimitPolicies.Auth)]
         public async Task<IActionResult> RegisterAsync([FromBody] RegisterRequestDto model)
         {
             var result = await _authService.RegisterAsync(model);
@@ -33,6 +36,7 @@ namespace StepanCarSevice.AuthService.Controllers
         }
 
         [HttpPost("login")]
+        [EnableRateLimiting(RateLimitPolicies.Auth)]
         public async Task<IActionResult> LoginAsync([FromBody] LoginRequestDto model)
         {
             var result = await _authService.LoginAsync(model);

@@ -60,7 +60,6 @@ namespace StepanCarService.Common.Infastructure.DependencyInjection
             })
                .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
                {
-                   options.RequireHttpsMetadata = false;
                    options.TokenValidationParameters = new TokenValidationParameters
                    {
                        ValidateIssuer = true,
@@ -68,9 +67,14 @@ namespace StepanCarService.Common.Infastructure.DependencyInjection
                        ValidateAudience = true,
                        ValidAudience = jwtOptions.Audience,
                        ValidateLifetime = true,
+                       RequireExpirationTime = true,
+                       // По умолчанию токен принимается ещё 5 минут после истечения
+                       ClockSkew = TimeSpan.FromSeconds(30),
                        IssuerSigningKey = new SymmetricSecurityKey(
                            Encoding.UTF8.GetBytes(jwtOptions.Key)),
                        ValidateIssuerSigningKey = true,
+                       // Принимаем только алгоритм, которым Auth подписывает токены
+                       ValidAlgorithms = new[] { SecurityAlgorithms.HmacSha256 },
                    };
 
                    // ВАЖНО: Добавьте обработчики событий для отладки

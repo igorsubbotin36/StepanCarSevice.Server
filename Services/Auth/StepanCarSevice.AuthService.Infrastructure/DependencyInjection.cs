@@ -51,8 +51,40 @@ namespace StepanCarSevice.AuthService.Infrastructure
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddFluentValidationAutoValidation();
             services.AddValidatorsFromAssemblyContaining<RegisterDtoValidator>();
+            services.AddSecurityStampValidation();
 
             return services;
+        }
+
+        // Токен, выданный до смены пароля, отклоняется: security_stamp в нём не совпадает с текущим.
+        // Проверка работает в Auth, где хранятся пользователи; остальные сервисы принимают токен до истечения срока
+        private static void AddSecurityStampValidation(this IServiceCollection services)
+        {
+            services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
+            {
+                var sharedValidation = options.Events.OnTokenValidated;
+                options.Events.OnTokenValidated = async context =>
+                {
+                    await sharedValidation(context);
+                    if (context.Result != null || context.Principal == null)
+                        return;
+
+                    var tokenStamp = context.Principal.FindFirst(AuthClaimTypes.SecurityStamp)?.Value;
+                    if (!int.TryParse(context.Principal.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var userId)
+                        || string.IsNullOrEmpty(tokenStamp))
+                    {
+                        context.Fail("Token has no user id or security stamp.");
+                        return;
+                    }
+
+                    var repository = context.HttpContext.RequestServices.GetRequiredService<IUserRepository>();
+                    var currentStamp = await repository.GetSecurityStampAsync(userId);
+                    if (currentStamp == null || !string.Equals(currentStamp, tokenStamp, StringComparison.Ordinal))
+                    {
+                        context.Fail("Token has been revoked.");
+                    }
+                };
+            });
         }
         public static async Task MigrateDatabaseAsync(this IServiceProvider serviceProvider)
         {

@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using StepanCarService.Common.API.BuilderExtensions;
 using StepanCarService.Common.API.Controllers;
 using StepanCarService.Common.Application.Interfaces;
 using StepanCarService.Common.Application.Models;
@@ -34,6 +36,7 @@ namespace StepanCarSevice.AuthService.API.Controllers
         }
         [HttpPut("changePassword")]
         [Authorize]
+        [EnableRateLimiting(RateLimitPolicies.Auth)]
         public async Task<IActionResult> ChangePasswordAsync([FromBody] ChangePasswordRequestDto request)
         {
             var userId = User.TryGetUserId();

@@ -29,6 +29,13 @@ namespace StepanCarSevice.AuthService.Infrastructure.Repositories
                 .FirstOrDefaultAsync(x => x.Id == id);
             return user;
         }
+        public async Task<string?> GetSecurityStampAsync(int id)
+        {
+            return await _dbContext.Users
+                .Where(x => x.Id == id)
+                .Select(x => x.SecurityStamp)
+                .FirstOrDefaultAsync();
+        }
         public async Task DeleteUserAsync(User user)
         {
             _dbContext.Users.Remove(user);

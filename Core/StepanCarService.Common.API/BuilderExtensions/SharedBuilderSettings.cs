@@ -16,6 +16,7 @@ namespace StepanCarService.Common.API.BuilderExtensions
             builder.UseNLog();
 
             builder.Services.AddControllers();
+            builder.Services.AddSharedRateLimiting(builder.Configuration);
 
             builder.Services.AddOpenApi();
             builder.Services.AddSwaggerGen(options =>

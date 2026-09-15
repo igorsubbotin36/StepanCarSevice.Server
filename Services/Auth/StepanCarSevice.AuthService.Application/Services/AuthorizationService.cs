@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using StepanCarService.Common.Application.Models;
 using StepanCarService.Common.Core.Entities;
+using StepanCarService.Common.Core.Exceptions;
 using StepanCarService.Common.Core.Repositories;
 using StepanCarSevice.AuthService.Application.Auth;
 using StepanCarSevice.AuthService.Application.Interfaces.Services;
@@ -39,6 +40,10 @@ namespace StepanCarSevice.AuthService.Application.Services
             _unitOfWork = unitOfWork;
         }
         private TenantInfoEntity? CurrentTenant => _accessor.MultiTenantContext?.TenantInfo;
+
+        // Хэш случайного пароля с теми же параметрами, что и настоящие — для выравнивания времени входа
+        private static string? _dummyPasswordHash;
+        private string DummyPasswordHash => _dummyPasswordHash ??= _passwordHasher.Hash(Guid.NewGuid().ToString());
         public async Task<Result<AuthResponseDto>> LoginAsync(LoginRequestDto request)
         {
             var person = await FindUserForLoginAsync(request.Phone, request.Password);
@@ -52,7 +57,7 @@ namespace StepanCarSevice.AuthService.Application.Services
             {
                 return Result.Failure<AuthResponseDto>(TenantErrors.TenantInactive);
             }
-            var token = _tokenGeneratorService.GenerateToken(BuildIdentity(person));
+            var token = _tokenGeneratorService.GenerateToken(UserClaimsFactory.BuildIdentity(person));
             return Result.Success(token);
         }
         public async Task<Result> RegisterAsync(RegisterRequestDto request)
@@ -99,12 +104,17 @@ namespace StepanCarSevice.AuthService.Application.Services
             {
                 await _userRepository.AddUserAsync(user);
                 await _unitOfWork.SaveChangesAsync();
-                _logger.LogInformation($"{user.Phone} зарегистрирован");
+                _logger.LogInformation($"Пользователь {user.Id} зарегистрирован (тенант: {user.TenantId ?? "портал"})");
                 return Result.Success();
+            }
+            catch (UniqueConstraintViolationException)
+            {
+                // Параллельная регистрация того же телефона: проверку выше обогнал другой запрос
+                return Result.Failure(RegisterErrors.UserAlreadyExists);
             }
             catch (Exception e)
             {
-                _logger.LogError($"Ошибка БД при регистрации пользователя {user.Phone}\n{e}");
+                _logger.LogError($"Ошибка БД при регистрации пользователя (тенант: {user.TenantId ?? "портал"})\n{e}");
                 return Result.Failure(SystemErrors.DatabaseError);
             }
         }
@@ -115,15 +125,17 @@ namespace StepanCarSevice.AuthService.Application.Services
         {
             var tenant = CurrentTenant;
 
+            // Хэш проверяется всегда, даже если пользователя нет: по времени ответа
+            // нельзя понять, зарегистрирован ли телефон
             if (tenant != null)
             {
                 var tenantUser = await _userRepository.GetUserByPhoneAsync(phone, tenant.Id);
-                if (tenantUser != null && _passwordHasher.Verify(password, tenantUser.Password))
+                if (_passwordHasher.Verify(password, tenantUser?.Password ?? DummyPasswordHash) && tenantUser != null)
                     return tenantUser;
             }
 
             var portalUser = await _userRepository.GetUserByPhoneAsync(phone, null);
-            if (portalUser == null || !_passwordHasher.Verify(password, portalUser.Password))
+            if (!_passwordHasher.Verify(password, portalUser?.Password ?? DummyPasswordHash) || portalUser == null)
                 return null;
 
             var role = portalUser.Role.Name;
@@ -136,24 +148,6 @@ namespace StepanCarSevice.AuthService.Application.Services
             return null;
         }
 
-        private static ClaimsIdentity BuildIdentity(User person)
-        {
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, person.Id.ToString()),
-                new Claim(ClaimTypes.MobilePhone, person.Phone ?? string.Empty),
-                new Claim(ClaimTypes.Role, person.Role.Name),
-                new Claim(ClaimTypes.Email, person.Email),
-                new Claim(ClaimTypes.GivenName, person.FirstName ?? string.Empty),
-                new Claim(ClaimTypes.Surname, person.SecondName ?? string.Empty)
-            };
-            // У пользователей портала tenant_id нет: права владельца в тенанте проверяются при каждом запросе
-            if (!string.IsNullOrEmpty(person.TenantId))
-            {
-                claims.Add(new Claim("tenant_id", person.TenantId));
-            }
-            return new ClaimsIdentity(claims, "Token", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
-        }
         private string? GetTenantId()
         {
             var tenant = CurrentTenant;

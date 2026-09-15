@@ -14,6 +14,7 @@ namespace StepanCarService.Common.Application.Models
         public const string TokenExpired = "AUTH_TOKEN_EXPIRED";
         public const string TokenIsNotValid = "TOKEN_IS_NOT_VALID";
         public const string Forbidden = "AUTH_FORBIDDEN";
+        public const string TooManyRequests = "AUTH_TOO_MANY_REQUESTS";
     }
     public static class RegisterErrors
     {

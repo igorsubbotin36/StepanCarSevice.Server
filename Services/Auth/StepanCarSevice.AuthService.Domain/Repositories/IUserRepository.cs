@@ -8,6 +8,7 @@ namespace StepanCarSevice.AuthService.Domain.Repositories
         Task<User?> GetUserByPhoneAsync(string phone, string? tenantId);
         Task<User?> GetUserByIdAsync(int id, string? tenantId);
         Task<User?> GetUserByIdAsync(int id);
+        Task<string?> GetSecurityStampAsync(int id);
         Task<List<User>> GetAllUsersAsync(string? tenantId);
         Task AddUserAsync(User user);
         Task UpdateUserAsync(User user);
