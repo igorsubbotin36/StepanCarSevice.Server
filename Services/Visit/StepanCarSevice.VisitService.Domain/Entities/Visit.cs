@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace StepanCarSevice.VisitService.Domain.Entities
 {
-    public class Visit
+    public class Visit : ITenantScoped
     {
         [Key]
         public int Id { get; set; }

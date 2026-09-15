@@ -8,9 +8,9 @@ namespace StepanCarSevice.DetailService.Infrastructure.Repositories
     public class CarModificationRepository : Repository<CarModification>, ICarModificationRepository
     {
         public CarModificationRepository(DetailDbContext context) : base(context) { }
-        public async Task<List<CarModification>> GetAllModificationsByModelId(int modelId, string tenantId)
+        public async Task<List<CarModification>> GetAllModificationsByModelId(int modelId)
         {
-            return await _dbSet.Where(x => x.TenantId == tenantId && x.CarModelId == modelId)
+            return await _dbSet.Where(x => x.CarModelId == modelId)
                 .ToListAsync();
         }
     }

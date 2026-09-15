@@ -13,6 +13,8 @@ namespace StepanCarService.Common.API.BuilderExtensions
     {
         // Вход, регистрация, смена пароля — защита от перебора паролей
         public const string Auth = "auth";
+        // Публичные эндпоинты без авторизации — защита от заваливания запросами
+        public const string Public = "public";
     }
 
     public static class RateLimitingSettings
@@ -21,23 +23,12 @@ namespace StepanCarService.Common.API.BuilderExtensions
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            var section = configuration.GetSection("RateLimiting:Auth");
-            var permitLimit = section.GetValue("PermitLimit", 10);
-            var window = TimeSpan.FromSeconds(section.GetValue("WindowSeconds", 60));
-
             services.AddRateLimiter(options =>
             {
-                // Лимит на IP клиента. За обратным прокси нужно настроить ForwardedHeaders,
+                // Лимиты на IP клиента. За обратным прокси нужно настроить ForwardedHeaders,
                 // иначе все запросы будут считаться с одного адреса прокси
-                options.AddPolicy(RateLimitPolicies.Auth, context =>
-                    RateLimitPartition.GetFixedWindowLimiter(
-                        context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-                        _ => new FixedWindowRateLimiterOptions
-                        {
-                            PermitLimit = permitLimit,
-                            Window = window,
-                            QueueLimit = 0
-                        }));
+                AddPerIpPolicy(options, RateLimitPolicies.Auth, configuration.GetSection("RateLimiting:Auth"), defaultPermitLimit: 10);
+                AddPerIpPolicy(options, RateLimitPolicies.Public, configuration.GetSection("RateLimiting:Public"), defaultPermitLimit: 60);
 
                 options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
                 options.OnRejected = async (context, cancellationToken) =>
@@ -46,13 +37,28 @@ namespace StepanCarService.Common.API.BuilderExtensions
                         context.HttpContext.Response.Headers.RetryAfter = ((int)retryAfter.TotalSeconds).ToString();
 
                     var errorMapper = context.HttpContext.RequestServices.GetRequiredService<IErrorMapper>();
-                    var (_, message) = errorMapper.Map(AuthErrors.TooManyRequests);
+                    var (_, message) = errorMapper.Map(SystemErrors.TooManyRequests);
                     await context.HttpContext.Response.WriteAsJsonAsync(
-                        new { errorCode = AuthErrors.TooManyRequests, errorText = message },
+                        new { errorCode = SystemErrors.TooManyRequests, errorText = message },
                         cancellationToken);
                 };
             });
             return services;
+        }
+
+        private static void AddPerIpPolicy(RateLimiterOptions options, string policyName, IConfigurationSection section, int defaultPermitLimit)
+        {
+            var permitLimit = section.GetValue("PermitLimit", defaultPermitLimit);
+            var window = TimeSpan.FromSeconds(section.GetValue("WindowSeconds", 60));
+            options.AddPolicy(policyName, context =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = permitLimit,
+                        Window = window,
+                        QueueLimit = 0
+                    }));
         }
     }
 }

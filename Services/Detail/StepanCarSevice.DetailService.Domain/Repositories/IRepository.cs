@@ -7,8 +7,8 @@ namespace StepanCarSevice.DetailService.Domain.Repositories
         Task<T> AddAsync(T entity);
         T Update(T entity);
         void Delete(T entity);
-        Task<T> GetByIdAsync(int id, string tenantId);
-        Task<List<T>> GetAllAsync(string tenantId);
-        Task<List<T>> GetByNameAsync(string name, string tenantId);
+        Task<T> GetByIdAsync(int id);
+        Task<List<T>> GetAllAsync();
+        Task<List<T>> GetByNameAsync(string name);
     }
 }

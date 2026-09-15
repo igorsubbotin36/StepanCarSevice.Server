@@ -9,10 +9,9 @@ namespace StepanCarSevice.DetailService.Infrastructure.Repositories
     {
         public CarModelRepository(DetailDbContext context) : base(context) { }
 
-        public async Task<List<CarModel>?> GetByYearAsync(int manufactureId, int year, string tenantId)
+        public async Task<List<CarModel>?> GetByYearAsync(int manufactureId, int year)
         {
-            return await _dbSet.Where(x => x.TenantId == tenantId
-                    && x.ManufactureId == manufactureId
+            return await _dbSet.Where(x => x.ManufactureId == manufactureId
                     && x.YearFrom <= year
                     && x.YearTo >= year)
                 .ToListAsync();

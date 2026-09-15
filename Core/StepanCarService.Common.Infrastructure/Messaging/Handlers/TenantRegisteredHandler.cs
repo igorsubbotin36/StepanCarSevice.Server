@@ -30,8 +30,6 @@ namespace StepanCarService.Common.Infastructure.Messaging.Handlers
                             newTenant.Id = tenantEvent.Id;
                             newTenant.Name = tenantEvent.Name;
                             newTenant.IsActive = tenantEvent.IsActive;
-                            newTenant.ApiKey = tenantEvent.ApiKey;
-                            newTenant.ConnectionString = tenantEvent.ConnectionString;
                             newTenant.Identifier = tenantEvent.Identifier;
                             newTenant.OwnerUserId = tenantEvent.OwnerUserId;
                             try
@@ -54,8 +52,6 @@ namespace StepanCarService.Common.Infastructure.Messaging.Handlers
                                 tenant.Id = tenantEvent.Id;
                                 tenant.Name = tenantEvent.Name;
                                 tenant.IsActive = tenantEvent.IsActive;
-                                tenant.ApiKey = tenantEvent.ApiKey;
-                                tenant.ConnectionString = tenantEvent.ConnectionString;
                                 tenant.Identifier = tenantEvent.Identifier;
                                 tenant.OwnerUserId = tenantEvent.OwnerUserId;
                             }

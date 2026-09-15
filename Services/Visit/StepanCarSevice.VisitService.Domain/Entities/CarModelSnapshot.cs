@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace StepanCarSevice.VisitService.Domain.Entities
 {
-    public class CarModelSnapshot
+    public class CarModelSnapshot : ITenantScoped
     {
         [Key]
         public int Id { get; set; }

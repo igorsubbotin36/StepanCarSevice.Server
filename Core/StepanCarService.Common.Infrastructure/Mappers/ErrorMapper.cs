@@ -25,8 +25,6 @@ namespace StepanCarService.Common.Infastructure.Mappers
                     "Токен неверен"),
                 [AuthErrors.Forbidden] = (HttpStatusCode.Forbidden,
                     "Недостаточно прав для выполнения операции"),
-                [AuthErrors.TooManyRequests] = (HttpStatusCode.TooManyRequests,
-                    "Слишком много попыток. Повторите позже"),
 
                 //Register errors
                 [RegisterErrors.UserAlreadyExists] = (HttpStatusCode.Conflict,
@@ -71,6 +69,8 @@ namespace StepanCarService.Common.Infastructure.Mappers
                 "Ошибка базы данных"),
                 [SystemErrors.ExternalServiceError] = (HttpStatusCode.ServiceUnavailable,
                 "Сервис временно недоступен"),
+                [SystemErrors.TooManyRequests] = (HttpStatusCode.TooManyRequests,
+                "Слишком много запросов. Повторите позже"),
 
                 //Entity Erros
                 [EntityErrors.EntityNotFound] = (HttpStatusCode.NotFound,

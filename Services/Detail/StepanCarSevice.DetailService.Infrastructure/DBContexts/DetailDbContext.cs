@@ -1,10 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Finbuckle.MultiTenant.Abstractions;
+using Microsoft.EntityFrameworkCore;
+using StepanCarService.Common.Core.Entities;
 using StepanCarService.Common.Infastructure.DbContexts;
 using StepanCarSevice.DetailService.Domain.Entities;
 
 namespace StepanCarSevice.DetailService.Infrastructure.DBContexts
 {
-    public class DetailDbContext : TenantBaseDbContext
+    public class DetailDbContext : TenantScopedDbContext
     {
         public DbSet<CarModel> CarModels { get; set; }
         public DbSet<CarModification> CarModifications { get; set; }
@@ -16,7 +18,8 @@ namespace StepanCarSevice.DetailService.Infrastructure.DBContexts
         public DbSet<CarManufacture> CarManufactures { get; set; }
         public DbSet<DetailManufacture> DetailManufactures { get; set; }
 
-        public DetailDbContext(DbContextOptions<DetailDbContext> options) : base(options) { }
+        public DetailDbContext(DbContextOptions<DetailDbContext> options,
+            IMultiTenantContextAccessor<TenantInfoEntity>? tenantAccessor = null) : base(options, tenantAccessor) { }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
@@ -26,10 +29,8 @@ namespace StepanCarSevice.DetailService.Infrastructure.DBContexts
                 object value = optionsBuilder.UseNpgsql(connectionString);
             }
         }
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void ConfigureModel(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
-
             // ========== 1. CarManufacture -> CarModel (один ко многим) ==========
             modelBuilder.Entity<CarManufacture>()
                 .HasMany(m => m.CarModels)

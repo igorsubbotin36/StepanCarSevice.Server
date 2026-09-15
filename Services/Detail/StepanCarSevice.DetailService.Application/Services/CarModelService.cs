@@ -29,8 +29,7 @@ namespace StepanCarSevice.DetailService.Application.Services
             {
                 if (model == null)
                     return Result.Failure<CarModelReadDto>(ModelErrors.RequestedModelIsNull);
-                var tenantId = GetTenantId();
-                var temp = await _carModelRepository.GetByNameAsync(model.Name, tenantId);
+                var temp = await _carModelRepository.GetByNameAsync(model.Name);
                 if (temp.Count != 0)
                     return Result.Failure<CarModelReadDto>(ModelErrors.ModelAlreadyExists);
                 var resultEntity = await _carModelRepository.AddAsync(_carModelMappers.CreateDtoToCarModel(model));
@@ -47,8 +46,7 @@ namespace StepanCarSevice.DetailService.Application.Services
         {
             try
             {
-                var tenantId = GetTenantId();
-                var entity = await _carModelRepository.GetByIdAsync(Id, tenantId);
+                var entity = await _carModelRepository.GetByIdAsync(Id);
                 _carModelRepository.Delete(entity);
                 return Result.Success();
             }
@@ -63,8 +61,7 @@ namespace StepanCarSevice.DetailService.Application.Services
         {
             try
             {
-                var tenantId = GetTenantId();
-                var resultEntities = await _carModelRepository.GetAllAsync(tenantId);
+                var resultEntities = await _carModelRepository.GetAllAsync();
                 if (resultEntities == null || resultEntities.Count == 0)
                     return Result.Failure<List<CarModelReadDto>>(EntityErrors.EntityNotFound);
                 List<CarModelReadDto> resultList = new List<CarModelReadDto>();
@@ -83,8 +80,7 @@ namespace StepanCarSevice.DetailService.Application.Services
         {
             try
             {
-                var tenantId = GetTenantId();
-                var resultEntity = await _carModelRepository.GetByIdAsync(id, tenantId);
+                var resultEntity = await _carModelRepository.GetByIdAsync(id);
                 if (resultEntity == null)
                     return Result.Failure<CarModelReadDto>(EntityErrors.EntityNotFound);
                 return Result.Success(_carModelMappers.CarModelToReadDto(resultEntity));
@@ -100,8 +96,7 @@ namespace StepanCarSevice.DetailService.Application.Services
         {
             try
             {
-                var tenantId = GetTenantId();
-                var resultEntities = await _carModelRepository.GetByNameAsync(name, tenantId);
+                var resultEntities = await _carModelRepository.GetByNameAsync(name);
                 if (resultEntities == null || resultEntities.Count == 0)
                     return Result.Failure<List<CarModelReadDto>>(EntityErrors.EntityNotFound);
                 List<CarModelReadDto> resultList = new List<CarModelReadDto>();
@@ -120,8 +115,7 @@ namespace StepanCarSevice.DetailService.Application.Services
         {
             try
             {
-                var tenantId = GetTenantId();
-                var resultEntities = await _carModelRepository.GetByNameAsync(model.Name, tenantId);
+                var resultEntities = await _carModelRepository.GetByNameAsync(model.Name);
                 Result<CarManufactureReadDto> result;
                 if (resultEntities == null || resultEntities.Count == 0)
                     return await AddAsync(model);
@@ -138,8 +132,7 @@ namespace StepanCarSevice.DetailService.Application.Services
         {
             try
             {
-                var tenantId = GetTenantId();
-                var resultEntity = await _carModelRepository.GetByIdAsync(model.Id, tenantId);
+                var resultEntity = await _carModelRepository.GetByIdAsync(model.Id);
                 if (resultEntity == null)
                     return Result.Failure<CarModelReadDto>(EntityErrors.EntityNotFound);
 

@@ -4,6 +4,6 @@ namespace StepanCarSevice.DetailService.Domain.Repositories
 {
     public interface ICarModelRepository : IRepository<CarModel>
     {
-        Task<List<CarModel>?> GetByYearAsync(int manufactureId, int year, string tenantId);
+        Task<List<CarModel>?> GetByYearAsync(int manufactureId, int year);
     }
 }

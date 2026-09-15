@@ -26,21 +26,20 @@ namespace StepanCarSevice.DetailService.Infrastructure.Repositories
             _dbSet.Remove(entity);
         }
 
-        public async Task<List<T>> GetAllAsync(string tenantId)
+        public async Task<List<T>> GetAllAsync()
         {
             return await _dbSet
-                .Where(x => x.TenantId == tenantId)
                 .ToListAsync();
         }
 
-        public async Task<T> GetByIdAsync(int id, string tenantId)
+        public async Task<T> GetByIdAsync(int id)
         {
-            return await _dbSet.SingleOrDefaultAsync(x => x.TenantId == tenantId && x.Id == id);
+            return await _dbSet.SingleOrDefaultAsync(x => x.Id == id);
         }
 
-        public async Task<List<T>> GetByNameAsync(string name, string tenantId)
+        public async Task<List<T>> GetByNameAsync(string name)
         {
-            return await _dbSet.Where(x => x.TenantId == tenantId && x.Name.Contains(name))
+            return await _dbSet.Where(x => x.Name.Contains(name))
                 .ToListAsync();
         }
 

@@ -5,7 +5,6 @@ using StepanCarService.Common.Core.Entities;
 using StepanCarService.Common.Core.Repositories;
 using StepanCarService.TenantService.Application.Interfaces;
 using StepanCarService.TenantService.Application.Models.DTOs;
-using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 
 namespace StepanCarService.TenantService.Application.Services;
@@ -61,9 +60,7 @@ public class TenantManagementService : ITenantService
             Id = Guid.NewGuid().ToString(),
             Identifier = tenant.Identifier,
             Name = tenant.Name.Trim(),
-            ConnectionString = string.Empty,
             IsActive = true,
-            ApiKey = GenerateApiKey(),
             OwnerUserId = ownerUserId
         };
         try
@@ -184,6 +181,26 @@ public class TenantManagementService : ITenantService
         }
     }
 
+    // Публичный каталог для портала: только активные тенанты и только название с поддоменом
+    public async Task<Result<List<ConnectedTenantDto>>> GetConnectedTenantsAsync()
+    {
+        try
+        {
+            var tenants = await _tenantRepository.GetAllAsync() ?? Enumerable.Empty<TenantInfoEntity>();
+            var list = tenants
+                .Where(t => t.IsActive)
+                .OrderBy(t => t.Name, StringComparer.CurrentCultureIgnoreCase)
+                .Select(t => new ConnectedTenantDto(t.Name ?? t.Identifier, t.Identifier))
+                .ToList();
+            return Result.Success(list);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError($"Ошибка БД при получении каталога тенантов\n{e}");
+            return Result.Failure<List<ConnectedTenantDto>>(SystemErrors.DatabaseError);
+        }
+    }
+
     public async Task<Result<TenantReadDto>> GetByNameAsync(string tenantName)
     {
         try
@@ -229,17 +246,12 @@ public class TenantManagementService : ITenantService
         && IdentifierPattern.IsMatch(identifier)
         && !ReservedIdentifiers.Contains(identifier);
 
-    private static string GenerateApiKey() =>
-        Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
-
     private static void FillEvent(TenantEvent tenantEvent, TenantInfoEntity tenant)
     {
         tenantEvent.Id = tenant.Id;
         tenantEvent.Identifier = tenant.Identifier;
         tenantEvent.Name = tenant.Name;
-        tenantEvent.ConnectionString = tenant.ConnectionString;
         tenantEvent.IsActive = tenant.IsActive;
-        tenantEvent.ApiKey = tenant.ApiKey;
         tenantEvent.OwnerUserId = tenant.OwnerUserId;
     }
 

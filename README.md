@@ -83,6 +83,7 @@ cd StepanCarSevice.Server
 - `RabbitMQ` (HostName, Port, VirtualHost, ExchangeName, QueueName)
 - `AllowedHosts` — разрешённые значения заголовка `Host` (в Development: `localhost;*.localhost;127.0.0.1`)
 - `RateLimiting:Auth` (необязательно) — лимит на вход, регистрацию и смену пароля с одного IP: `PermitLimit` (по умолчанию 10) за `WindowSeconds` (по умолчанию 60)
+- `RateLimiting:Public` (необязательно) — лимит на публичные эндпоинты без авторизации (каталог автосервисов): `PermitLimit` (по умолчанию 60) за `WindowSeconds` (по умолчанию 60)
 
 Вне Development `AllowedHosts` обязателен и должен содержать явный список доменов, например `example.com;*.example.com` (переменная окружения `AllowedHosts`). Со значением `*` или без него сервис не запустится: тенант определяется по заголовку `Host`.
 
@@ -284,6 +285,7 @@ Non-secret settings live in each service's `appsettings.Development.json`:
 - `RabbitMQ` (HostName, Port, VirtualHost, ExchangeName, QueueName)
 - `AllowedHosts` — permitted `Host` header values (Development: `localhost;*.localhost;127.0.0.1`)
 - `RateLimiting:Auth` (optional) — per-IP limit for login, registration and password change: `PermitLimit` (default 10) per `WindowSeconds` (default 60)
+- `RateLimiting:Public` (optional) — per-IP limit for anonymous endpoints (connected car services catalog): `PermitLimit` (default 60) per `WindowSeconds` (default 60)
 
 Outside Development `AllowedHosts` is required and must list explicit domains, e.g. `example.com;*.example.com` (environment variable `AllowedHosts`). With `*` or no value the service won't start, because the tenant is resolved from the `Host` header.
 

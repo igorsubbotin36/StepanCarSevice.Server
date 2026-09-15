@@ -10,10 +10,10 @@ namespace StepanCarSevice.DetailService.Infrastructure.Repositories
     {
         public DetailRepository(DetailDbContext context) : base(context) { }
 
-        public async Task<List<Detail>?> GetDetailsByCodeAsync(string code, string? tenantId)
+        public async Task<List<Detail>?> GetDetailsByCodeAsync(string code)
         {
             return await _dbSet
-                .Where(x => x.TenantId == tenantId && x.Code == code)
+                .Where(x => x.Code == code)
                 .Include(x => x.CarModifications)
                 .ToListAsync();
         }

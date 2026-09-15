@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace StepanCarSevice.VisitService.Domain.Entities
 {
-    public class OwnerSnapshot
+    public class OwnerSnapshot : ITenantScoped
     {
         [Key]
         public int Id { get; set; }

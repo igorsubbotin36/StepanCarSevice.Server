@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using StepanCarService.Common.API.BuilderExtensions;
 using StepanCarService.Common.API.Controllers;
 using StepanCarService.Common.Application.Interfaces;
 using StepanCarService.Common.Application.Models;
@@ -52,6 +54,15 @@ public class TenantController : ApiControllerBase<TenantController>
     public async Task<IActionResult> GetTenantByIdAsync(string id)
     {
         var result = await _tenantService.GetByIdAsync(id, GetCaller());
+        return HandleResult(result);
+    }
+    // Публичная страница портала «Подключённые автосервисы»: доступна без регистрации
+    [HttpGet("getConnectedTenants")]
+    [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.Public)]
+    public async Task<IActionResult> GetConnectedTenantsAsync()
+    {
+        var result = await _tenantService.GetConnectedTenantsAsync();
         return HandleResult(result);
     }
     [HttpGet("getMyTenant")]

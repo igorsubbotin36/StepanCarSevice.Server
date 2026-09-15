@@ -31,8 +31,7 @@ namespace StepanCarSevice.DetailService.Application.Services
             {
                 if (model == null)
                     return Result.Failure<CarManufactureReadDto>(ModelErrors.RequestedModelIsNull);
-                var tenantId = GetTenantId();
-                var temp = await _carManufactureRepository.GetByNameAsync(model.NameEng, tenantId);
+                var temp = await _carManufactureRepository.GetByNameAsync(model.NameEng);
                 if (temp.Count != 0)
                     return Result.Failure<CarManufactureReadDto>(ModelErrors.ModelAlreadyExists);
                 var resultEntity = await _carManufactureRepository.AddAsync(_carManufactureMapper.CreateDtoToCarManufacture(model));
@@ -49,8 +48,7 @@ namespace StepanCarSevice.DetailService.Application.Services
         {
             try
             {
-                var tenantId = GetTenantId();
-                var entity = await _carManufactureRepository.GetByIdAsync(Id, tenantId);
+                var entity = await _carManufactureRepository.GetByIdAsync(Id);
                 _carManufactureRepository.Delete(entity);
                 return Result.Success();
             }
@@ -65,8 +63,7 @@ namespace StepanCarSevice.DetailService.Application.Services
         {
             try
             {
-                var tenantId = GetTenantId();
-                var resultEntities = await _carManufactureRepository.GetAllAsync(tenantId);
+                var resultEntities = await _carManufactureRepository.GetAllAsync();
                 if (resultEntities == null || resultEntities.Count == 0)
                     return Result.Failure<List<CarManufactureReadDto>>(EntityErrors.EntityNotFound);
                 List<CarManufactureReadDto> resultList = new List<CarManufactureReadDto>();
@@ -85,8 +82,7 @@ namespace StepanCarSevice.DetailService.Application.Services
         {
             try
             {
-                var tenantId = GetTenantId();
-                var resultEntity = await _carManufactureRepository.GetByIdAsync(id, tenantId);
+                var resultEntity = await _carManufactureRepository.GetByIdAsync(id);
                 if (resultEntity == null)
                     return Result.Failure<CarManufactureReadDto>(EntityErrors.EntityNotFound);
                 return Result.Success(_carManufactureMapper.CarManufactureToReadDto(resultEntity));
@@ -102,8 +98,7 @@ namespace StepanCarSevice.DetailService.Application.Services
         {
             try
             {
-                var tenantId = GetTenantId();
-                var resultEntities = await _carManufactureRepository.GetByNameAsync(name, tenantId);
+                var resultEntities = await _carManufactureRepository.GetByNameAsync(name);
                 if (resultEntities == null || resultEntities.Count == 0)
                     return Result.Failure<List<CarManufactureReadDto>>(EntityErrors.EntityNotFound);
                 List<CarManufactureReadDto> resultList = new List<CarManufactureReadDto>();
@@ -122,8 +117,7 @@ namespace StepanCarSevice.DetailService.Application.Services
         {
             try
             {
-                var tenantId = GetTenantId();
-                var resultEntities = await _carManufactureRepository.GetByNameAsync(model.NameEng, tenantId);
+                var resultEntities = await _carManufactureRepository.GetByNameAsync(model.NameEng);
                 Result<CarManufactureReadDto> result;
                 if (resultEntities == null || resultEntities.Count == 0)
                     return await AddAsync(model);
@@ -140,8 +134,7 @@ namespace StepanCarSevice.DetailService.Application.Services
         {
             try
             {
-                var tenantId = GetTenantId();
-                var resultEntity = await _carManufactureRepository.GetByIdAsync(model.Id, tenantId);
+                var resultEntity = await _carManufactureRepository.GetByIdAsync(model.Id);
                 if (resultEntity == null)
                     return Result.Failure<CarManufactureReadDto>(EntityErrors.EntityNotFound);
                 if (model.Name != null || model.Name != resultEntity.Name)
