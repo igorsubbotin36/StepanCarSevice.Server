@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Сквозные сценарии: все 4 сервиса в процессе теста, общие PostgreSQL и RabbitMQ.
+       Пакеты тестов и TestKit подключает tests/Directory.Build.props -->
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Services\Auth\StepanCarSevice.AuthService.API\StepanCarSevice.AuthService.API.csproj" />
+    <ProjectReference Include="..\..\Services\Tenant\StepanCarService.TenantService.API\StepanCarService.TenantService.API.csproj" />
+    <ProjectReference Include="..\..\Services\Detail\StepanCarSevice.DetailService.API\StepanCarSevice.DetailService.API.csproj" />
+    <ProjectReference Include="..\..\Services\Visit\StepanCarSevice.VisitService.API\StepanCarSevice.VisitService.API.csproj" />
+  </ItemGroup>
+
+</Project>

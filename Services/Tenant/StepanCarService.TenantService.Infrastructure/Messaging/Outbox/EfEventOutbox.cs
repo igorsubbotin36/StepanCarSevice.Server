@@ -8,15 +8,17 @@ namespace StepanCarService.TenantService.Infrastructure.Messaging.Outbox
     {
         private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
         private readonly TenantServiceDbContext _dbContext;
+        private readonly TimeProvider _timeProvider;
 
-        public EfEventOutbox(TenantServiceDbContext dbContext)
+        public EfEventOutbox(TenantServiceDbContext dbContext, TimeProvider timeProvider)
         {
             _dbContext = dbContext;
+            _timeProvider = timeProvider;
         }
 
         public void Enqueue<T>(T message) where T : class
         {
-            var now = DateTimeOffset.UtcNow;
+            var now = _timeProvider.GetUtcNow();
             _dbContext.OutboxMessages.Add(new OutboxMessage
             {
                 MessageId = Guid.NewGuid(),

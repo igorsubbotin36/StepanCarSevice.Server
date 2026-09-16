@@ -1,6 +1,7 @@
 ﻿using Finbuckle.MultiTenant;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using StepanCarService.Common.Application.Interfaces;
 using StepanCarService.Common.Core.Entities;
@@ -30,6 +31,8 @@ namespace StepanCarService.Common.Infastructure.DependencyInjection
             services.AddScoped<IUnitOfWork, UnitsOfWork<T>>();
             services.AddScoped<IErrorMapper, ErrorMapper>();
             services.AddScoped<ITenantRepository, TenantBaseRepository<T>>();
+            // Источник времени для фоновых задач (паузы повторов); в тестах подменяется на FakeTimeProvider
+            services.TryAddSingleton(TimeProvider.System);
             return services;
         }
     }

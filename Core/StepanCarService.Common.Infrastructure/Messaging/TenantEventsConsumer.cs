@@ -22,22 +22,24 @@ namespace StepanCarService.Common.Infastructure.Messaging
     public class TenantEventsConsumer : BackgroundService
     {
         private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
-        private static readonly TimeSpan MaxRetryDelay = TimeSpan.FromSeconds(60);
 
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly RabbitMQConsumerSetting _settings;
         private readonly ILogger<TenantEventsConsumer> _logger;
+        private readonly TimeProvider _timeProvider;
         private IConnection? _connection;
         private IChannel? _channel;
         private CancellationToken _stoppingToken;
 
         public TenantEventsConsumer(IOptions<RabbitMQConsumerSetting> options,
             IServiceScopeFactory scopeFactory,
-            ILogger<TenantEventsConsumer> logger)
+            ILogger<TenantEventsConsumer> logger,
+            TimeProvider timeProvider)
         {
             _settings = options.Value;
             _scopeFactory = scopeFactory;
             _logger = logger;
+            _timeProvider = timeProvider;
         }
 
         private string DeadLetterQueue => $"{_settings.QueueName}.dead";
@@ -63,7 +65,7 @@ namespace StepanCarService.Common.Infastructure.Messaging
                 {
                     _logger.LogWarning($"RabbitMQ недоступен ({e.Message}). Повторное подключение через {delay.TotalSeconds:0} с");
                     await CloseAsync();
-                    try { await Task.Delay(delay, stoppingToken); } catch (OperationCanceledException) { return; }
+                    try { await Task.Delay(delay, _timeProvider, stoppingToken); } catch (OperationCanceledException) { return; }
                     delay = TimeSpan.FromSeconds(Math.Min(delay.TotalSeconds * 2, 30));
                 }
             }
@@ -118,7 +120,8 @@ namespace StepanCarService.Common.Infastructure.Messaging
                 }
 
                 var attempt = 0;
-                var delay = TimeSpan.FromSeconds(1);
+                var delay = TimeSpan.FromMilliseconds(_settings.RetryBaseDelayMilliseconds);
+                var maxDelay = TimeSpan.FromMilliseconds(_settings.RetryMaxDelayMilliseconds);
                 while (true)
                 {
                     attempt++;
@@ -148,8 +151,8 @@ namespace StepanCarService.Common.Infastructure.Messaging
                             return;
                         }
                         _logger.LogWarning($"Событие тенанта не обработано (попытка {attempt}, {(transient ? "временная ошибка" : "ошибка")}): {e.Message}. Повтор через {delay.TotalSeconds:0} с");
-                        await Task.Delay(delay, _stoppingToken);
-                        delay = TimeSpan.FromSeconds(Math.Min(delay.TotalSeconds * 2, MaxRetryDelay.TotalSeconds));
+                        await Task.Delay(delay, _timeProvider, _stoppingToken);
+                        delay = TimeSpan.FromTicks(Math.Min(delay.Ticks * 2, maxDelay.Ticks));
                     }
                 }
             }
@@ -176,7 +179,7 @@ namespace StepanCarService.Common.Infastructure.Messaging
                 Headers = new Dictionary<string, object?>
                 {
                     ["x-original-queue"] = _settings.QueueName,
-                    ["x-failed-at"] = DateTimeOffset.UtcNow.ToString("O"),
+                    ["x-failed-at"] = _timeProvider.GetUtcNow().ToString("O"),
                     ["x-attempts"] = attempts,
                     ["x-error"] = reason.Length > 2000 ? reason[..2000] : reason
                 }
@@ -201,7 +204,7 @@ namespace StepanCarService.Common.Infastructure.Messaging
         }
 
         // Временная ошибка — БД или сеть недоступны; такие события ждут восстановления без ограничения попыток
-        private static bool IsTransient(Exception exception)
+        internal static bool IsTransient(Exception exception)
         {
             for (var e = exception; e != null; e = e.InnerException)
             {

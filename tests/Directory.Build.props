@@ -1,0 +1,33 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <!-- xUnit1051: передавать TestContext.Current.CancellationToken в каждый вызов — лишний шум для этих тестов -->
+    <NoWarn>$(NoWarn);xUnit1051</NoWarn>
+    <!-- Тестовые проекты: имя заканчивается на Tests (TestKit — библиотека, не тесты) -->
+    <IsTestProject Condition="$(MSBuildProjectName.EndsWith('Tests'))">true</IsTestProject>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+    <!-- xUnit v3: тестовый проект собирается в исполняемый файл -->
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Shouldly" />
+    <PackageReference Include="NSubstitute" />
+
+    <Using Include="Xunit" />
+    <Using Include="Shouldly" />
+    <Using Include="StepanCarService.TestKit" />
+
+    <ProjectReference Include="$(MSBuildThisFileDirectory)StepanCarService.TestKit\StepanCarService.TestKit.csproj" />
+    <Content Include="$(MSBuildThisFileDirectory)xunit.runner.json" CopyToOutputDirectory="PreserveNewest" Link="xunit.runner.json" />
+  </ItemGroup>
+</Project>

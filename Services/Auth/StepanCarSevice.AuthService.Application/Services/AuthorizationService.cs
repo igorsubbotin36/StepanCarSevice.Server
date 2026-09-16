@@ -121,7 +121,7 @@ namespace StepanCarSevice.AuthService.Application.Services
 
         // Портал: только GodMode и TenantOwner.
         // Поддомен тенанта: пользователь этого тенанта, либо GodMode, либо владелец именно этого тенанта с логином портала
-        private async Task<User?> FindUserForLoginAsync(string phone, string password)
+        internal async Task<User?> FindUserForLoginAsync(string phone, string password)
         {
             var tenant = CurrentTenant;
 

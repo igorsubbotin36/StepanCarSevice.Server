@@ -24,31 +24,34 @@ namespace StepanCarService.TenantService.Infrastructure.Messaging.Outbox
         private readonly IMessageBus _messageBus;
         private readonly OutboxSettings _settings;
         private readonly ILogger<OutboxPublisher> _logger;
+        private readonly TimeProvider _timeProvider;
 
         public OutboxPublisher(IServiceScopeFactory scopeFactory,
             IMessageBus messageBus,
             IOptions<OutboxSettings> settings,
-            ILogger<OutboxPublisher> logger)
+            ILogger<OutboxPublisher> logger,
+            TimeProvider timeProvider)
         {
             _scopeFactory = scopeFactory;
             _messageBus = messageBus;
             _settings = settings.Value;
             _logger = logger;
+            _timeProvider = timeProvider;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var nextCleanupAt = DateTimeOffset.UtcNow;
+            var nextCleanupAt = _timeProvider.GetUtcNow();
             while (!stoppingToken.IsCancellationRequested)
             {
                 var published = 0;
                 try
                 {
                     published = await PublishPendingAsync(stoppingToken);
-                    if (DateTimeOffset.UtcNow >= nextCleanupAt)
+                    if (_timeProvider.GetUtcNow() >= nextCleanupAt)
                     {
                         await CleanupAsync(stoppingToken);
-                        nextCleanupAt = DateTimeOffset.UtcNow + CleanupInterval;
+                        nextCleanupAt = _timeProvider.GetUtcNow() + CleanupInterval;
                     }
                 }
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
@@ -64,7 +67,7 @@ namespace StepanCarService.TenantService.Infrastructure.Messaging.Outbox
                 // Если что-то отправили, сразу берём следующую пачку
                 if (published == 0)
                 {
-                    try { await Task.Delay(_settings.PollIntervalMilliseconds, stoppingToken); }
+                    try { await Task.Delay(TimeSpan.FromMilliseconds(_settings.PollIntervalMilliseconds), _timeProvider, stoppingToken); }
                     catch (OperationCanceledException) { return; }
                 }
             }
@@ -91,13 +94,13 @@ namespace StepanCarService.TenantService.Infrastructure.Messaging.Outbox
             var published = 0;
             foreach (var message in batch)
             {
-                if (message.NextAttemptAt > DateTimeOffset.UtcNow)
+                if (message.NextAttemptAt > _timeProvider.GetUtcNow())
                     break; // самое раннее событие ещё ждёт повтора — более поздние не обгоняют его
 
                 try
                 {
                     await _messageBus.PublishAsync(message.Payload, message.MessageId.ToString(), cancellationToken);
-                    message.ProcessedAt = DateTimeOffset.UtcNow;
+                    message.ProcessedAt = _timeProvider.GetUtcNow();
                     message.LastError = null;
                     published++;
                 }
@@ -106,7 +109,7 @@ namespace StepanCarService.TenantService.Infrastructure.Messaging.Outbox
                     message.Attempts++;
                     message.LastError = e.Message.Length > 2000 ? e.Message[..2000] : e.Message;
                     var delay = TimeSpan.FromSeconds(Math.Min(Math.Pow(2, message.Attempts), MaxRetryDelay.TotalSeconds));
-                    message.NextAttemptAt = DateTimeOffset.UtcNow + delay;
+                    message.NextAttemptAt = _timeProvider.GetUtcNow() + delay;
                     _logger.LogWarning($"Outbox: событие {message.Id} ({message.EventType}) не отправлено, попытка {message.Attempts}: {e.Message}. Повтор через {delay.TotalSeconds:0} с");
                     break;
                 }
@@ -123,7 +126,7 @@ namespace StepanCarService.TenantService.Infrastructure.Messaging.Outbox
         {
             using var scope = _scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<TenantServiceDbContext>();
-            var threshold = DateTimeOffset.UtcNow.AddDays(-_settings.RetentionDays);
+            var threshold = _timeProvider.GetUtcNow().AddDays(-_settings.RetentionDays);
             var removed = await db.OutboxMessages
                 .Where(m => m.ProcessedAt != null && m.ProcessedAt < threshold)
                 .ExecuteDeleteAsync(cancellationToken);

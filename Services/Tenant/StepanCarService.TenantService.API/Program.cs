@@ -21,3 +21,6 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+
+// Нужен тестам: WebApplicationFactory<Program> (top-level statements делают класс Program внутренним)
+public partial class Program { }

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Тесты общих библиотек Core. Пакеты тестов и TestKit подключает tests/Directory.Build.props -->
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.Testing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\StepanCarService.Common.API\StepanCarService.Common.API.csproj" />
+    <ProjectReference Include="..\..\Core\StepanCarService.Common.Infrastructure\StepanCarService.Common.Infastructure.csproj" />
+  </ItemGroup>
+
+</Project>

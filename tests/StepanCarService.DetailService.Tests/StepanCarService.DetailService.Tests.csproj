@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Тесты Detail: пока только изоляция данных, схема, миграции и запуск.
+       Функциональные тесты — после завершения разработки сервиса -->
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Services\Detail\StepanCarSevice.DetailService.API\StepanCarSevice.DetailService.API.csproj" />
+  </ItemGroup>
+
+</Project>

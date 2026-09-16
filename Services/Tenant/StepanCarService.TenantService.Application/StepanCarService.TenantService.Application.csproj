@@ -10,4 +10,9 @@
       <ProjectReference Include="..\..\..\Core\StepanCarService.Common.Application\StepanCarService.Common.Application.csproj" />
     </ItemGroup>
 
+  <ItemGroup>
+    <!-- Прямые unit-тесты internal-правил -->
+    <InternalsVisibleTo Include="StepanCarService.TenantService.Tests" />
+  </ItemGroup>
+
 </Project>

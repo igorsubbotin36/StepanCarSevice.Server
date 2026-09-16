@@ -9,5 +9,7 @@ namespace StepanCarService.TenantService.Infrastructure.Messaging
         public string Password { get; set; } = "guest";
         public string VirtualHost { get; set; } = "/";
         public string ExchangeName { get; set; } = "default";
+        // Имя соединения в RabbitMQ Management (диагностика; в тестах — отличить соединения прогонов)
+        public string ClientProvidedName { get; set; } = "tenant-service-outbox";
     }
 }

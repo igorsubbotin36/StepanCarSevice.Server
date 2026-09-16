@@ -207,11 +207,11 @@ public class TenantManagementService : ITenantService
     }
 
     // GodMode — любой тенант, TenantOwner — только свой
-    private static bool CanManage(TenantInfoEntity tenant, TenantCaller caller) =>
+    internal static bool CanManage(TenantInfoEntity tenant, TenantCaller caller) =>
         caller.IsGodMode
         || (caller.UserId != null && tenant.OwnerUserId == caller.UserId);
 
-    private static bool IsValidIdentifier(string? identifier) =>
+    internal static bool IsValidIdentifier(string? identifier) =>
         identifier != null
         && IdentifierPattern.IsMatch(identifier)
         && !ReservedIdentifiers.Contains(identifier);

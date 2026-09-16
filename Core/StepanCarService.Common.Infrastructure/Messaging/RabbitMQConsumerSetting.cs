@@ -14,5 +14,8 @@ namespace StepanCarService.Common.Infastructure.Messaging
         // Попыток для постоянных ошибок (например, нарушение ограничения в БД), после чего сообщение уходит в очередь «.dead».
         // Временные ошибки (БД или сеть недоступны) повторяются без ограничения, пока сервис работает
         public int MaxFailedAttempts { get; set; } = 5;
+        // Пауза перед повтором обработки: начинается с базовой и удваивается до максимальной
+        public int RetryBaseDelayMilliseconds { get; set; } = 1000;
+        public int RetryMaxDelayMilliseconds { get; set; } = 60_000;
     }
 }

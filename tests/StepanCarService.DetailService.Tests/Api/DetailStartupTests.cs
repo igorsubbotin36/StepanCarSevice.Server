@@ -1,0 +1,24 @@
+using System.Net;
+using StepanCarSevice.DetailService.API;
+using StepanCarSevice.DetailService.Infrastructure.DBContexts;
+using StepanCarService.TestKit.Hosting;
+using StepanCarService.TestKit.Http;
+
+namespace StepanCarService.DetailService.Tests.Api;
+
+[Trait(TestCategories.Name, TestCategories.Api)]
+[Collection(TestCollections.Database)]
+public class DetailStartupTests(DetailServiceFactory factory)
+    : ApiTestBase<DetailServiceFactory, Program, DetailDbContext>(factory)
+{
+    // DT-69 (часть): сервис стартует на пустой БД и отвечает на запросы
+    [Fact]
+    public async Task Service_StartsAndServesOpenApi()
+    {
+        using var client = Factory.CreateClientFor();
+
+        var response = await client.GetAsync("openapi/v1.json");
+
+        await response.ShouldBeStatusAsync(HttpStatusCode.OK);
+    }
+}

@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Тесты Visit: пока только изоляция данных, схема, миграции и запуск.
+       Функциональные тесты — когда появятся логика и API -->
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Services\Visit\StepanCarSevice.VisitService.API\StepanCarSevice.VisitService.API.csproj" />
+  </ItemGroup>
+
+</Project>

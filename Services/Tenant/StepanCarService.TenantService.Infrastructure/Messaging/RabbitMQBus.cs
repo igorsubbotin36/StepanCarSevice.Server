@@ -68,7 +68,7 @@ namespace StepanCarService.TenantService.Infrastructure.Messaging
                 Password = _settings.Password,
                 VirtualHost = _settings.VirtualHost,
                 AutomaticRecoveryEnabled = true,
-                ClientProvidedName = "tenant-service-outbox"
+                ClientProvidedName = _settings.ClientProvidedName
             };
             _connection = await factory.CreateConnectionAsync(cancellationToken);
             _channel = await _connection.CreateChannelAsync(

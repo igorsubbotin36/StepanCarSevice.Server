@@ -12,4 +12,9 @@
     <ProjectReference Include="..\StepanCarSevice.AuthService.Domain\StepanCarSevice.AuthService.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Прямые unit-тесты internal-правил -->
+    <InternalsVisibleTo Include="StepanCarService.AuthService.Tests" />
+  </ItemGroup>
+
 </Project>

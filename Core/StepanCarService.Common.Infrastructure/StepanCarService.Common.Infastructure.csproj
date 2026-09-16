@@ -26,4 +26,9 @@
     <ProjectReference Include="..\StepanCarService.Common.Core\StepanCarService.Common.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Прямые unit-тесты internal-правил -->
+    <InternalsVisibleTo Include="StepanCarService.Common.Tests" />
+  </ItemGroup>
+
 </Project>
