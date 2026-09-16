@@ -17,7 +17,6 @@ public class TenantEventsConsumerTests(RabbitMqVirtualHost virtualHost) : Messag
     private const string ExchangeName = "tenant.events.exchange";
     private const string QueueName = "common.tests.tenant.events";
 
-    // CE-24
     [Fact]
     public async Task ValidEvent_IsHandledAndAcknowledged()
     {

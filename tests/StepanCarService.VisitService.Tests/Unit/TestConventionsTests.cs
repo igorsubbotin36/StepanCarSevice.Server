@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using StepanCarSevice.VisitService.Infrastructure.DBContexts;
+using StepanCarService.Common.Infastructure.DbContexts;
 using StepanCarService.TestKit.Conventions;
 using StepanCarService.TestKit.Databases;
 
@@ -14,12 +15,19 @@ public class TestConventionsTests
         TestConventions.FindViolations(typeof(TestConventionsTests).Assembly).ShouldBeEmpty();
     }
 
-    // CD-75, VS-30: модель строится без подключения к БД
+    // Модель строится без подключения к БД
     [Fact]
     public void VisitModel_AllTenantDataIsIsolated()
     {
         using var db = new VisitDBContext(new DbContextOptionsBuilder<VisitDBContext>().UseNpgsql("Host=unused").Options);
 
         TenantIsolationGuard.FindViolations(db).ShouldBeEmpty();
+    }
+
+    // Данные Visit изолируются по тенанту общим контекстом
+    [Fact]
+    public void VisitDBContext_IsTenantScoped()
+    {
+        typeof(VisitDBContext).IsSubclassOf(typeof(TenantScopedDbContext)).ShouldBeTrue();
     }
 }

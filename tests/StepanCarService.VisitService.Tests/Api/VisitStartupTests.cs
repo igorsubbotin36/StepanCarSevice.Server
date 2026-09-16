@@ -11,7 +11,7 @@ namespace StepanCarService.VisitService.Tests.Api;
 public class VisitStartupTests(VisitServiceFactory factory)
     : ApiTestBase<VisitServiceFactory, Program, VisitDBContext>(factory)
 {
-    // VS-34 (часть): сервис стартует на пустой БД и отвечает на запросы
+    // Сервис стартует на пустой БД и отвечает на запросы
     [Fact]
     public async Task Service_StartsAndServesOpenApi()
     {

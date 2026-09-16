@@ -12,7 +12,6 @@ public class EfEventOutboxTests(TenantDatabase database) : DatabaseTestBase<Tena
 {
     private static readonly DateTimeOffset Now = new(2026, 9, 16, 12, 0, 0, TimeSpan.Zero);
 
-    // TN-30
     [Fact]
     public async Task Enqueue_WithoutSaveChanges_WritesNothing()
     {
@@ -23,7 +22,6 @@ public class EfEventOutboxTests(TenantDatabase database) : DatabaseTestBase<Tena
         (await check.OutboxMessages.CountAsync()).ShouldBe(0);
     }
 
-    // TN-31
     [Fact]
     public async Task Enqueue_ThenSaveChanges_StoresPendingMessage()
     {

@@ -9,7 +9,6 @@ namespace StepanCarService.Common.Tests.Unit;
 [Trait(TestCategories.Name, TestCategories.Unit)]
 public class TransientErrorTests
 {
-    // CE-40
     [Fact]
     public void IsTransient_NpgsqlSocketError_ReturnsTrue()
     {
@@ -18,7 +17,6 @@ public class TransientErrorTests
         TenantEventsConsumer.IsTransient(exception).ShouldBeTrue();
     }
 
-    // CE-41
     [Fact]
     public void IsTransient_TimeoutWrappedInDbUpdateException_ReturnsTrue()
     {
@@ -27,7 +25,6 @@ public class TransientErrorTests
         TenantEventsConsumer.IsTransient(exception).ShouldBeTrue();
     }
 
-    // CE-43
     [Fact]
     public void IsTransient_InvalidOperation_ReturnsFalse()
     {

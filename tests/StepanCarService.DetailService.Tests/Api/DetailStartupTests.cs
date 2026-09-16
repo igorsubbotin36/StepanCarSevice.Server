@@ -11,7 +11,7 @@ namespace StepanCarService.DetailService.Tests.Api;
 public class DetailStartupTests(DetailServiceFactory factory)
     : ApiTestBase<DetailServiceFactory, Program, DetailDbContext>(factory)
 {
-    // DT-69 (часть): сервис стартует на пустой БД и отвечает на запросы
+    // Сервис стартует на пустой БД и отвечает на запросы
     [Fact]
     public async Task Service_StartsAndServesOpenApi()
     {

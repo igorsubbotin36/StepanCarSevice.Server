@@ -3,7 +3,7 @@ using StepanCarService.Common.Core.Entities;
 
 namespace StepanCarService.TestKit.Databases;
 
-// Guard (CD-75): каждая сущность модели со свойством TenantId изолирована по тенанту —
+// Guard: каждая сущность модели со свойством TenantId изолирована по тенанту —
 // реализует ITenantScoped и имеет фильтр запросов. Ловит новую сущность, добавленную без изоляции
 public static class TenantIsolationGuard
 {

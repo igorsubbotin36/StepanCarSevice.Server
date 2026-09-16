@@ -14,7 +14,7 @@ public class TenantOnboardingTests(PlatformFixture platform)
 {
     private static readonly TimeSpan ReplicationTimeout = TimeSpan.FromSeconds(30);
 
-    // E2E-01 (часть): владелец создаёт тенант, тенант реплицируется во все сервисы, владелец входит на свой поддомен
+    // Владелец создаёт тенант, тенант реплицируется во все сервисы, владелец входит на свой поддомен
     [Fact]
     public async Task OwnerCreatesTenant_TenantReplicatedAndOwnerLogsInOnSubdomain()
     {

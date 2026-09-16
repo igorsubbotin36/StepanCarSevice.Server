@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using StepanCarSevice.VisitService.Infrastructure.DBContexts;
 using StepanCarService.TestKit.Databases;
 
 namespace StepanCarService.VisitService.Tests.Integration;
@@ -7,7 +8,10 @@ namespace StepanCarService.VisitService.Tests.Integration;
 [Collection(TestCollections.Database)]
 public class VisitMigrationsTests(VisitDatabase database) : DatabaseTestBase<VisitDatabase>(database)
 {
-    // VS-33 (часть): миграции применились к пустой БД, данных тенантов вне тенанта не видно
+    private static VisitDBContext CreateContext(string connectionString) =>
+        new(new DbContextOptionsBuilder<VisitDBContext>().UseNpgsql(connectionString).Options);
+
+    // Миграции применились к пустой БД, данных тенантов вне тенанта не видно
     [Fact]
     public async Task Migrations_AppliedToEmptyDatabase()
     {
@@ -15,5 +19,17 @@ public class VisitMigrationsTests(VisitDatabase database) : DatabaseTestBase<Vis
 
         (await db.Database.GetPendingMigrationsAsync()).ShouldBeEmpty();
         (await db.Visits.CountAsync()).ShouldBe(0);
+    }
+
+    [Fact]
+    public Task Migrations_ApplyToEmptyDatabase() =>
+        MigrationAssertions.ShouldApplyToEmptyDatabaseAsync("mig_visit", CreateContext);
+
+    [Fact]
+    public void Model_MatchesLastMigration()
+    {
+        using var db = CreateContext("Host=localhost");
+
+        db.ShouldHaveNoPendingModelChanges();
     }
 }

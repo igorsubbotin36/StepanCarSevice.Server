@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using StepanCarSevice.DetailService.Infrastructure.DBContexts;
+using StepanCarService.Common.Infastructure.DbContexts;
 using StepanCarService.TestKit.Conventions;
 using StepanCarService.TestKit.Databases;
 
@@ -14,12 +15,19 @@ public class TestConventionsTests
         TestConventions.FindViolations(typeof(TestConventionsTests).Assembly).ShouldBeEmpty();
     }
 
-    // CD-75, DT-68: модель строится без подключения к БД
+    // Модель строится без подключения к БД
     [Fact]
     public void DetailModel_AllTenantDataIsIsolated()
     {
         using var db = new DetailDbContext(new DbContextOptionsBuilder<DetailDbContext>().UseNpgsql("Host=unused").Options);
 
         TenantIsolationGuard.FindViolations(db).ShouldBeEmpty();
+    }
+
+    // Данные Detail изолируются по тенанту общим контекстом
+    [Fact]
+    public void DetailDbContext_IsTenantScoped()
+    {
+        typeof(DetailDbContext).IsSubclassOf(typeof(TenantScopedDbContext)).ShouldBeTrue();
     }
 }

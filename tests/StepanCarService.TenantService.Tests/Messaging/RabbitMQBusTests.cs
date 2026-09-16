@@ -12,7 +12,6 @@ public class RabbitMQBusTests(RabbitMqVirtualHost virtualHost) : MessagingTestBa
     private const string ExchangeName = "tenant.events.exchange";
     private const string Payload = "{\"eventType\":0}";
 
-    // TN-60
     [Fact]
     public async Task Publish_WithBoundQueue_DeliversPersistentJsonMessage()
     {

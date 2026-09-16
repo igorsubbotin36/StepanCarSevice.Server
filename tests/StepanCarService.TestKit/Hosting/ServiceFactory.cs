@@ -80,6 +80,27 @@ public abstract class ServiceFactory<TEntryPoint, TDbContext> : WebApplicationFa
     {
     }
 
+    // Отдельный запуск сервиса поверх настроек фабрики, но с другим окружением и частью настроек (тесты старта).
+    // Возвращает исключение, с которым сервис не запустился, или null, если запуск успешен
+    public Exception? TryStart(string environment, IDictionary<string, string?> settings)
+    {
+        using var factory = WithWebHostBuilder(builder =>
+        {
+            builder.UseEnvironment(environment);
+            foreach (var (key, value) in settings)
+                builder.UseSetting(key, value);
+        });
+        try
+        {
+            _ = factory.Server;
+            return null;
+        }
+        catch (Exception exception)
+        {
+            return exception;
+        }
+    }
+
     public HttpClient CreateClientFor(string? tenantIdentifier = null) =>
         CreateClient(new WebApplicationFactoryClientOptions
         {

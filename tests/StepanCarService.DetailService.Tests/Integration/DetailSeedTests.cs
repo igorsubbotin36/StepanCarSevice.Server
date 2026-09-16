@@ -8,7 +8,6 @@ namespace StepanCarService.DetailService.Tests.Integration;
 [Collection(TestCollections.Database)]
 public class DetailSeedTests(DetailDatabase database) : DatabaseTestBase<DetailDatabase>(database)
 {
-    // DT-65
     [Fact]
     public async Task Seed_CreatesDictionariesOnce()
     {

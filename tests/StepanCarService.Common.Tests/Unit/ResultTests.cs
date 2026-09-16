@@ -5,7 +5,6 @@ namespace StepanCarService.Common.Tests.Unit;
 [Trait(TestCategories.Name, TestCategories.Unit)]
 public class ResultTests
 {
-    // CA-01
     [Fact]
     public void Success_WithoutValue_IsSuccessWithoutErrorCode()
     {
@@ -15,7 +14,6 @@ public class ResultTests
         result.ErrorCode.ShouldBeNull();
     }
 
-    // CA-02
     [Fact]
     public void Success_WithValue_KeepsValue()
     {
@@ -25,7 +23,6 @@ public class ResultTests
         result.Value.ShouldBe(42);
     }
 
-    // CA-03
     [Fact]
     public void Failure_KeepsErrorCodeAndDefaultValue()
     {

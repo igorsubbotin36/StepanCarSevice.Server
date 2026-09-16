@@ -8,7 +8,6 @@ namespace StepanCarService.TenantService.Tests.Unit;
 [Trait(TestCategories.Name, TestCategories.Unit)]
 public class TenantRulesTests
 {
-    // TN-01
     [Theory]
     [InlineData("abc")]
     [InlineData("a-b")]
@@ -18,7 +17,6 @@ public class TenantRulesTests
         TenantManagementService.IsValidIdentifier(identifier).ShouldBeTrue();
     }
 
-    // TN-03
     [Theory]
     [InlineData("management")]
     [InlineData("www")]
@@ -28,7 +26,7 @@ public class TenantRulesTests
         TenantManagementService.IsValidIdentifier(identifier).ShouldBeFalse();
     }
 
-    // TN-06 (часть): владелец не управляет чужим тенантом
+    // Владелец не управляет чужим тенантом
     [Fact]
     public void CanManage_OwnerOfAnotherTenant_ReturnsFalse()
     {

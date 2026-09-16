@@ -17,8 +17,9 @@ public static class TestTokenFactory
     // Случайный ключ на прогон; тот же ключ получает сервис через ServiceFactory
     public static readonly string Key = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(48));
 
+    // role = null — токен без claim роли
     public static string Create(
-        string role,
+        string? role,
         int userId = 1,
         string? tenantId = null,
         string? securityStamp = null,
@@ -32,11 +33,9 @@ public static class TestTokenFactory
         bool includeUserId = true,
         IEnumerable<Claim>? extraClaims = null)
     {
-        var claims = new List<Claim>
-        {
-            new(ClaimTypes.MobilePhone, phone),
-            new(ClaimTypes.Role, role)
-        };
+        var claims = new List<Claim> { new(ClaimTypes.MobilePhone, phone) };
+        if (role != null)
+            claims.Add(new Claim(ClaimTypes.Role, role));
         if (includeUserId)
             claims.Add(new Claim(ClaimTypes.NameIdentifier, userId.ToString()));
         if (securityStamp != null)
