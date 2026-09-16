@@ -30,4 +30,13 @@ public class TransientErrorTests
     {
         TenantEventsConsumer.IsTransient(new InvalidOperationException()).ShouldBeFalse();
     }
+
+    [Fact]
+    public void IsTransient_UniqueViolationWrappedInDbUpdateException_ReturnsFalse()
+    {
+        var postgresException = new PostgresException("duplicate key value violates unique constraint", "ERROR", "ERROR", "23505");
+        var exception = new DbUpdateException("Save failed", postgresException);
+
+        TenantEventsConsumer.IsTransient(exception).ShouldBeFalse();
+    }
 }

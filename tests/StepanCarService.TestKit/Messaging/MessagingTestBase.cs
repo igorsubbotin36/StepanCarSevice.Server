@@ -1,5 +1,6 @@
 using System.Text;
 using RabbitMQ.Client;
+using RabbitMQ.Client.Exceptions;
 
 namespace StepanCarService.TestKit.Messaging;
 
@@ -14,12 +15,16 @@ public abstract class MessagingTestBase : IClassFixture<RabbitMqVirtualHost>, IA
     protected RabbitMqVirtualHost VirtualHost { get; }
     protected IConnection Connection { get; private set; } = null!;
     protected IChannel Channel { get; private set; } = null!;
+    // Обычный канал; выделен отдельно от Channel, чтобы попытка обратиться к ещё не созданной очереди
+    // (например, фоновым consumer'ом) не закрывала общий канал теста по правилам AMQP
+    private IChannel PollingChannel { get; set; } = null!;
 
     public virtual async ValueTask InitializeAsync()
     {
         var factory = await VirtualHost.CreateConnectionFactoryAsync();
         Connection = await factory.CreateConnectionAsync();
         Channel = await Connection.CreateChannelAsync();
+        PollingChannel = await Connection.CreateChannelAsync();
     }
 
     // Очередь, привязанная к fanout exchange: получает всё, что публикуется в exchange
@@ -43,24 +48,45 @@ public abstract class MessagingTestBase : IClassFixture<RabbitMqVirtualHost>, IA
         await Channel.BasicPublishAsync(exchangeName, routingKey, mandatory: false, properties, Encoding.UTF8.GetBytes(body));
     }
 
-    // Ждёт сообщение в очереди (опрос BasicGet); null — не пришло за timeout
+    // Ждёт сообщение в очереди (опрос BasicGet); null — не пришло за timeout.
+    // Если очередь ещё не объявлена (например, фоновым consumer'ом при подключении), AMQP закрывает канал
+    // ошибкой NOT_FOUND — переоткрываем отдельный опрашивающий канал и пробуем снова на следующем шаге опроса
     protected async Task<BasicGetResult?> WaitForMessageAsync(string queueName, TimeSpan? timeout = null)
     {
         BasicGetResult? result = null;
         await Eventually.WaitUntilAsync(async () =>
         {
-            result = await Channel.BasicGetAsync(queueName, autoAck: true);
-            return result != null;
+            try
+            {
+                result = await PollingChannel.BasicGetAsync(queueName, autoAck: true);
+                return result != null;
+            }
+            catch (OperationInterruptedException)
+            {
+                PollingChannel = await Connection.CreateChannelAsync();
+                return false;
+            }
         }, timeout ?? TimeSpan.FromSeconds(10), throwOnTimeout: false);
         return result;
     }
 
-    protected async Task<uint> GetMessageCountAsync(string queueName) =>
-        (await Channel.QueueDeclarePassiveAsync(queueName)).MessageCount;
+    protected async Task<uint> GetMessageCountAsync(string queueName)
+    {
+        try
+        {
+            return (await PollingChannel.QueueDeclarePassiveAsync(queueName)).MessageCount;
+        }
+        catch (OperationInterruptedException)
+        {
+            PollingChannel = await Connection.CreateChannelAsync();
+            throw;
+        }
+    }
 
     public virtual async ValueTask DisposeAsync()
     {
         await Channel.DisposeAsync();
+        await PollingChannel.DisposeAsync();
         await Connection.DisposeAsync();
         GC.SuppressFinalize(this);
     }

@@ -26,6 +26,28 @@ public class TenantRulesTests
         TenantManagementService.IsValidIdentifier(identifier).ShouldBeFalse();
     }
 
+    [Theory]
+    [InlineData("ab")]                  // короче 3 символов
+    [InlineData("Abc")]                 // заглавные буквы
+    [InlineData("-abc")]                // начинается с дефиса
+    [InlineData("abc-")]                // заканчивается дефисом
+    [InlineData("a_b")]                 // подчёркивание
+    [InlineData("a b")]                 // пробел
+    [InlineData("тенант")]              // кириллица
+    [InlineData("")]                    // пусто
+    [InlineData(null)]                  // null
+    public void IsValidIdentifier_InvalidDnsLabel_ReturnsFalse(string? identifier)
+    {
+        TenantManagementService.IsValidIdentifier(identifier).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void IsValidIdentifier_ExactBoundaryLengths_ReturnsExpected()
+    {
+        TenantManagementService.IsValidIdentifier(new string('a', 63)).ShouldBeTrue();
+        TenantManagementService.IsValidIdentifier(new string('a', 64)).ShouldBeFalse();
+    }
+
     // Владелец не управляет чужим тенантом
     [Fact]
     public void CanManage_OwnerOfAnotherTenant_ReturnsFalse()
@@ -33,5 +55,30 @@ public class TenantRulesTests
         TenantInfoEntity tenant = TenantBuilder.Tenant().OwnedBy(8);
 
         TenantManagementService.CanManage(tenant, new TenantCaller(UserId: 7, IsGodMode: false)).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void CanManage_GodMode_ReturnsTrueRegardlessOfOwner()
+    {
+        TenantInfoEntity tenant = TenantBuilder.Tenant().OwnedBy(8);
+
+        TenantManagementService.CanManage(tenant, new TenantCaller(UserId: null, IsGodMode: true)).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void CanManage_OwnerOfThisTenant_ReturnsTrue()
+    {
+        TenantInfoEntity tenant = TenantBuilder.Tenant().OwnedBy(7);
+
+        TenantManagementService.CanManage(tenant, new TenantCaller(UserId: 7, IsGodMode: false)).ShouldBeTrue();
+    }
+
+    // Аноним (нет claim пользователя) не управляет даже тенантом без владельца
+    [Fact]
+    public void CanManage_CallerWithoutUserId_ReturnsFalse()
+    {
+        TenantInfoEntity tenant = TenantBuilder.Tenant().Build();
+
+        TenantManagementService.CanManage(tenant, new TenantCaller(UserId: null, IsGodMode: false)).ShouldBeFalse();
     }
 }

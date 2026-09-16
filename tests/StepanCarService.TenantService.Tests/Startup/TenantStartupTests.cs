@@ -34,6 +34,7 @@ public class TenantStartupTests(TenantServiceFactory factory)
     [InlineData(typeof(ITenantRepository))]
     [InlineData(typeof(ITenantService))]
     [InlineData(typeof(IEventOutbox))]
+    [InlineData(typeof(IMessageBus))]
     public async Task Services_Resolve(Type serviceType)
     {
         await using var scope = Factory.Services.CreateAsyncScope();
